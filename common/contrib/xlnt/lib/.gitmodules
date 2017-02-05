@@ -1,0 +1,5 @@
+[submodule "third-party/libstudxml"]
+    path = third-party/libstudxml
+    url = http://scm.codesynthesis.com/libstudxml/libstudxml.git
+    branch = master
+    ignore = dirty
