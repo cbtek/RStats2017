@@ -36,6 +36,9 @@ SOFTWARE.
 #include <cmath>
 #include <iostream>
 #include <set>
+#include <string>
+#include <memory>
+#include <cstring>
 
 namespace oig {
 namespace ratstats {

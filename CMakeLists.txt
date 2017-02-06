@@ -21,9 +21,9 @@ include_directories("${PROJECT_SOURCE_DIR}/common")
 include_directories("${PROJECT_SOURCE_DIR}/products/RAT-STATS")
 
 add_subdirectory("${PROJECT_SOURCE_DIR}/common/utility")
-add_subdirectory("${PROJECT_SOURCE_DIR}/common/contrib/xlsxwriter")
-add_subdirectory("${PROJECT_SOURCE_DIR}/common/contrib/minizip")
-add_subdirectory("${PROJECT_SOURCE_DIR}/common/contrib/zlib")
+#add_subdirectory("${PROJECT_SOURCE_DIR}/common/contrib/xlsxwriter")
+#add_subdirectory("${PROJECT_SOURCE_DIR}/common/contrib/minizip")
+#add_subdirectory("${PROJECT_SOURCE_DIR}/common/contrib/zlib")
 add_subdirectory("${PROJECT_SOURCE_DIR}/products/RAT-STATS")
 
 #Added simple testbed project.  

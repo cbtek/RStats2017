@@ -5,6 +5,7 @@
 */
 
 #pragma once
+
 #include <QDialog>
 
 #include "rstats_utils/inc/RStatsConditionLogger.h"

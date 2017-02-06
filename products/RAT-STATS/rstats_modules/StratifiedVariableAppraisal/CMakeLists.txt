@@ -27,7 +27,6 @@ find_package(Qt5Widgets REQUIRED)
 file(GLOB CURR_TARGET_SOURCES "src/*.cpp")
 file(GLOB CURR_TARGET_HEADERS "inc/*.h*")
 file(GLOB CURR_TARGET_FORMS "src/*.ui")
-file(GLOB CURR_TARGET_RESOURCES "../../rstats_resx/*.qrc")
 
 #==============================================================================
 # Add Executable
@@ -36,8 +35,7 @@ add_executable(${CURR_TARGET}
                ${PLATFORM}
                ${CURR_TARGET_SOURCES}
                ${CURR_TARGET_HEADERS}
-               ${CURR_TARGET_FORMS}
-               ${CURR_TARGET_RESOURCES}
+               ${CURR_TARGET_FORMS}               
                )
 
 #==============================================================================
@@ -48,25 +46,21 @@ qt5_use_modules(${CURR_TARGET}
                  Widgets)
 
 add_dependencies(${CURR_TARGET}
-                rstats_utils
-                rstats_ui
-                common_utils
-                xlsxwriter
-                minizip
-                zlib
+                    rstats_ui
+                    Qt5::Widgets
+                    rstats_utils
+                    common_utils
                  )
 
 #==============================================================================
 # Target Link Libraries
 #==============================================================================
 target_link_libraries(${CURR_TARGET}
+                        rstats_ui
+                        Qt5::Widgets
                         rstats_utils
                         common_utils
-                        rstats_ui
-                        xlsxwriter
-                        minizip
-                        zlib
-                        Qt5::Widgets)
+)
 
 
 

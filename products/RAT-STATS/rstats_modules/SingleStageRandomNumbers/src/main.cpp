@@ -14,6 +14,5 @@ int main(int argc, char ** argv)
 {           
     QApplication a(argc,argv);
     UISSRN form;
-    form.resize(640,480);
     return form.exec();
 }

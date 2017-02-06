@@ -47,6 +47,7 @@ qt5_use_modules(${CURR_TARGET}
                  Widgets)
 
 add_dependencies(${CURR_TARGET}
-                 rstats_utils)
+                 rstats_utils
+                 Qt5::Widgets)
 
 

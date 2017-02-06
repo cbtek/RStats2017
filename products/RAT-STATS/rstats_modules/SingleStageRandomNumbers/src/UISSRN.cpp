@@ -43,7 +43,10 @@ UISSRN::UISSRN(QWidget *parent) :
     connect(m_ui->m_spnSpares,SIGNAL(valueChanged(int)),this,SLOT(onValidateForm()));
     connect(m_ui->m_spnOrder,SIGNAL(valueChanged(int)),this,SLOT(onValidateForm()));
 
-    m_ui->m_tblOutput->hide();
+    m_ui->m_grpOutput->hide();
+    m_ui->m_line->hide();
+    m_ui->m_frmTotals->hide();
+
     m_ui->m_spnSeed->setMaximum(std::numeric_limits<double>::max());
     m_ui->m_spnSeed->setMinimum(std::numeric_limits<double>::min());
     m_ui->m_spnSeed->setValue(TimeUtils::getMillisecondsNow());
@@ -110,7 +113,7 @@ UISSRN::UISSRN(QWidget *parent) :
     m_ui->m_grpReviewName->setFont(font);
     m_ui->m_grpSeed->setFont(font);
     QList<int> sizes;
-    sizes << 300 << 500;
+    sizes << 300 << 700;
     m_ui->splitter->setSizes(sizes);
 }
 
@@ -170,6 +173,13 @@ void UISSRN::onGenerate()
         m_ui->m_tblOutput->setItem(a2,0,new QTableWidgetItem(QString::number(items(a2))));
     }
     m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(0,QHeaderView::Stretch);
+
+    m_ui->m_grpOutput->show();
+    m_ui->m_line->show();
+    m_ui->m_frmTotals->show();
+    m_ui->m_lblTotalRandomNumbersValue->setText(QString::number(m_ui->m_spnOrder->value()+m_ui->m_spnSpares->value()));
+    m_ui->m_lblTotalFrameSizeValue->setText(QString::number(m_ui->m_spnHighNumber->value()-m_ui->m_spnLowNumber->value()));
+
 }
 
 void UISSRN::onBrowse()

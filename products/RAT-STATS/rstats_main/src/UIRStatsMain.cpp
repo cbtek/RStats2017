@@ -198,10 +198,11 @@ void UIRStatsMain::onInitialize()
                             moduleLaunchButton->setProperty("isHidden",isHidden);
                             moduleLaunchButton->setIconSize(QSize(buttonHeight-8,buttonHeight-8));
 
+                            std::string iconFile = subChild->getAttributeValue("icon");
                             std::string iconPath = FileUtils::buildFilePath(SystemUtils::getApplicationDirectory(),
-                                                                            subChild->getAttributeValue("icon"));
+                                                                            iconFile);
 
-                            if (StringUtils::trimmed(iconPath).size() > 0 &&
+                            if (StringUtils::trimmed(iconFile).size() > 0 &&
                                 FileUtils::fileExists(iconPath))
                             {
                                 moduleLaunchButton->setIcon(QIcon(QString::fromStdString(iconPath)));
@@ -379,6 +380,7 @@ void UIRStatsMain::onLaunchModule(QAbstractButton *button)
     QString command = button->property("exe").toString() +" "+button->property("args").toString();
     if (!command.trimmed().isEmpty())
     {
+        command = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getApplicationDirectory(),command.toStdString()));
         QProcess::startDetached(command);
     }
 }
