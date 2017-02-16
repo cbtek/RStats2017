@@ -35,7 +35,7 @@ namespace constants
 
 RStatsSVA RStatsSVA::m_instance = RStatsSVA();
 
-RStatsSVAOutputDataList RStatsSVA::execute(RStatsSVADataFormatType dataFormatType,
+RStatsSVAOutputDataList RStatsSVA::execute(RStatsDataFormatType dataFormatType,
                                            const RStatsSVAInputDataList &strataDataList)
 {
     RStatsSVAOutputDataList summaryDataList;
@@ -241,29 +241,29 @@ void RStatsSVA::populateWorkbookFromOutputList(RStatsSVAOutputDataList &outputLi
 
 void RStatsSVA::buildOutputData(RStatsSVAOutputDataList& outputDataList,
                                 const RStatsSVAInputData& inputData,
-                                RStatsSVADataFormatType type)
+                                RStatsDataFormatType type)
 {
-    if (type == RStatsSVADataFormatType::Examine ||
-        type == RStatsSVADataFormatType::ExamineAndAudit||
-        type == RStatsSVADataFormatType::ExamineAndDifference)
+    if (type == RStatsDataFormatType::Examine ||
+        type == RStatsDataFormatType::ExamineAndAudit||
+        type == RStatsDataFormatType::ExamineAndDifference)
     {
         RStatsSVAOutputData examine;
         copyOutputData(examine,inputData,type,0);
         outputDataList.push_back(examine);
     }
 
-    if (type == RStatsSVADataFormatType::Audit ||
-        type == RStatsSVADataFormatType::AuditAndDifference ||
-        type == RStatsSVADataFormatType::ExamineAndAudit)
+    if (type == RStatsDataFormatType::Audit ||
+        type == RStatsDataFormatType::AuditAndDifference ||
+        type == RStatsDataFormatType::ExamineAndAudit)
     {
         RStatsSVAOutputData audit;
         copyOutputData(audit,inputData,type,1);
         outputDataList.push_back(audit);
     }
 
-    if (type == RStatsSVADataFormatType::Difference ||
-        type == RStatsSVADataFormatType::AuditAndDifference ||
-        type == RStatsSVADataFormatType::ExamineAndDifference)
+    if (type == RStatsDataFormatType::Difference ||
+        type == RStatsDataFormatType::AuditAndDifference ||
+        type == RStatsDataFormatType::ExamineAndDifference)
     {
         RStatsSVAOutputData difference;
         copyOutputData(difference,inputData,type,2);
@@ -275,7 +275,7 @@ void RStatsSVA::buildOutputData(RStatsSVAOutputDataList& outputDataList,
 
 void RStatsSVA::copyOutputData(RStatsSVAOutputData& outputData,
                                const RStatsSVAInputData& inputData,
-                               RStatsSVADataFormatType type,
+                               RStatsDataFormatType type,
                                RStatsInteger dataFormatIndex)
 {
     outputData.type = type;
@@ -469,10 +469,10 @@ void RStatsSVA::onUpdateSums(const RStatsFloatList &auditValues,
 }
 
 
-void RStatsSVA::initializeDataTypeFormat(RStatsSVADataFormatType dataTypeFormat,
+void RStatsSVA::initializeDataTypeFormat(RStatsDataFormatType dataTypeFormat,
                                          const RStatsSVAInputData &inputData)
 {
-    if (dataTypeFormat == RStatsSVADataFormatType::Examine)
+    if (dataTypeFormat == RStatsDataFormatType::Examine)
     {
         m_examineZeroCount = RStatsUtils::getNumItemsThatMatchCondition(RStatsConditionalOperatorType::NotEqual,
                                                                         inputData.samples,
@@ -486,7 +486,7 @@ void RStatsSVA::initializeDataTypeFormat(RStatsSVADataFormatType dataTypeFormat,
         m_outputSumQdrt(0) += RStatsUtils::getSumRaisedTo<RStatsFloat>(inputData.samples,4);
         m_outputNonZero(0) += m_examineZeroCount;
     }
-    else if (dataTypeFormat == RStatsSVADataFormatType::Audit)
+    else if (dataTypeFormat == RStatsDataFormatType::Audit)
     {
         m_auditZeroCount = RStatsUtils::getNumItemsThatMatchCondition(RStatsConditionalOperatorType::NotEqual,
                                                                       inputData.samples,
@@ -501,7 +501,7 @@ void RStatsSVA::initializeDataTypeFormat(RStatsSVADataFormatType dataTypeFormat,
         m_outputNonZero(1) += m_auditZeroCount;
 
     }
-    else if (dataTypeFormat == RStatsSVADataFormatType::Difference)
+    else if (dataTypeFormat == RStatsDataFormatType::Difference)
     {
         m_differenceZeroCount = RStatsUtils::getNumItemsThatMatchCondition(RStatsConditionalOperatorType::NotEqual,
                                                                            inputData.samples,
@@ -516,7 +516,7 @@ void RStatsSVA::initializeDataTypeFormat(RStatsSVADataFormatType dataTypeFormat,
         m_outputNonZero(2) += m_differenceZeroCount;
 
     }
-    else if (dataTypeFormat == RStatsSVADataFormatType::ExamineAndAudit)
+    else if (dataTypeFormat == RStatsDataFormatType::ExamineAndAudit)
     {
         if (inputData.samples.getNumDimensions() > 1)
         {
@@ -536,7 +536,7 @@ void RStatsSVA::initializeDataTypeFormat(RStatsSVADataFormatType dataTypeFormat,
         }
     }
 
-    else if (dataTypeFormat == RStatsSVADataFormatType::ExamineAndDifference)
+    else if (dataTypeFormat == RStatsDataFormatType::ExamineAndDifference)
     {
         if (inputData.samples.getNumDimensions() > 1)
         {
@@ -558,7 +558,7 @@ void RStatsSVA::initializeDataTypeFormat(RStatsSVADataFormatType dataTypeFormat,
         }
     }
 
-    else if (dataTypeFormat == RStatsSVADataFormatType::AuditAndDifference)
+    else if (dataTypeFormat == RStatsDataFormatType::AuditAndDifference)
     {
         if (inputData.samples.getNumDimensions() > 1)
         {

@@ -1,5 +1,5 @@
 #==============================================================================
-# CMakeLists file for module_rstats_sva
+# CMakeLists file for module_aa_unrestricted
 #==============================================================================
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CURR_TARGET module_aa_unrestricted)

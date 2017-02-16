@@ -40,7 +40,7 @@ int main(int argc, char ** argv)
     inputDataList.push_back(data1);
     inputDataList.push_back(data2);
     RStatsSVAOutputDataList outputDataList;
-    outputDataList = RStatsSVA::inst().execute(RStatsSVADataFormatType::Audit, inputDataList);
+    outputDataList = RStatsSVA::inst().execute(RStatsDataFormatType::Audit, inputDataList);
     RStatsWorkbook workbook;
     RStatsSVA::inst().populateWorkbookFromOutputList(outputDataList,workbook);
     UIRStatsWorkbook * workbookWidget = new UIRStatsWorkbook(workbook);

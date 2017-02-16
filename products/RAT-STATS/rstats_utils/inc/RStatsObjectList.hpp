@@ -117,6 +117,14 @@ public:
     void appendDimension(const RStatsObjectList<T> & values,
                          size_t dimensionForValues = 0);
 
+
+    /**
+     * @brief getValues
+     * @param dimension
+     * @return
+     */
+    RStatsObjectList<T> getValues(size_t dimension = 0) const;
+
     /**
      * @brief clear
      */
@@ -267,6 +275,23 @@ template<typename T>
 void RStatsObjectList<T>::clear()
 {
     m_values.clear();
+}
+
+
+template<typename T>
+RStatsObjectList<T> RStatsObjectList<T>::getValues(size_t dimension) const
+{
+    if (dimension < this->getNumDimensions())
+    {
+        RStatsObjectList<T> values;
+        size_t count = this->size(dimension);
+        for (size_t a1 = 0; a1 < count; ++a1)
+        {
+            values(a1) = this->operator ()(a1,dimension);
+        }
+        return values;
+    }
+    throw cbtek::common::utility::IndexOutOfRangeException(EXCEPTION_TAG_LINE+"Dimension index is out of range!");
 }
 
 typedef RStatsObjectList<std::int64_t> RStatsInt64List;

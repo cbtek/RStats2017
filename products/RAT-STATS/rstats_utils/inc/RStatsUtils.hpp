@@ -55,6 +55,21 @@ enum class RStatsCalculationType
     Divide
 };
 
+
+/**
+ * @brief The RStatsDataFormatType enum
+ */
+enum class RStatsDataFormatType
+{
+    Examine,
+    Audit,
+    Difference,
+    ExamineAndAudit,
+    ExamineAndDifference,
+    AuditAndDifference
+};
+
+
 enum class RStatsConditionalOperatorType
 {
     Equal,

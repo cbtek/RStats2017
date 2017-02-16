@@ -17,19 +17,6 @@ namespace ratstats {
 namespace sva {
 
 /**
- * @brief The RStatsDataFormatType enum
- */
-enum class RStatsSVADataFormatType
-{
-    Examine,
-    Audit,
-    Difference,
-    ExamineAndAudit,
-    ExamineAndDifference,
-    AuditAndDifference
-};
-
-/**
  * @brief The RStatsSVAInputData struct
  */
 struct RStatsSVAInputData
@@ -43,7 +30,7 @@ struct RStatsSVAInputData
 
 struct RStatsSVAOutputData
 {
-    RStatsSVADataFormatType type;
+    oig::ratstats::utils::RStatsDataFormatType type;
     bool isDisplaySummary;
     oig::ratstats::utils::RStatsInteger populationSize;
     oig::ratstats::utils::RStatsInteger sampleSize;
@@ -98,7 +85,7 @@ public:
      * @param strataDataList
      * @return
      */
-    RStatsSVAOutputDataList execute(RStatsSVADataFormatType dataFormatType,
+    RStatsSVAOutputDataList execute(oig::ratstats::utils::RStatsDataFormatType dataFormatType,
                                     const RStatsSVAInputDataList& strataDataList);
     
 
@@ -136,7 +123,7 @@ private:
      * @brief initializeDataTypeFormat
      * @param data
      */
-    void initializeDataTypeFormat(RStatsSVADataFormatType dataTypeFormat,
+    void initializeDataTypeFormat(oig::ratstats::utils::RStatsDataFormatType dataTypeFormat,
                                   const RStatsSVAInputData &data);
 
     /**
@@ -252,11 +239,11 @@ private:
 
     void buildOutputData(RStatsSVAOutputDataList &outputDataList,
                          const RStatsSVAInputData& inputData,
-                         RStatsSVADataFormatType type);
+                         oig::ratstats::utils::RStatsDataFormatType type);
 
     void copyOutputData(RStatsSVAOutputData& outputData,
                         const RStatsSVAInputData& inputData,
-                        RStatsSVADataFormatType type,
+                        oig::ratstats::utils::RStatsDataFormatType type,
                         oig::ratstats::utils::RStatsInteger dataFormatIndex);
 
     static RStatsSVA m_instance;        
