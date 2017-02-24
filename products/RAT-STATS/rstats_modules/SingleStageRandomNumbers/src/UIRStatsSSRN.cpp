@@ -177,14 +177,14 @@ void UIRStatsSSRN::onLoadSessions()
         QMenu * recentMenu = new QMenu(m_ui->menuFile);
         for(const std::string& file : sessionUrls)
         {
-            QAction * action = new QAction(QString::fromStdString(file));
+            QAction * action = new QAction(QString::fromStdString(file), recentMenu);
             m_recentSessionActionGroup->addAction(action);
             recentMenu->addAction(action);
         }
 
         recentMenu->addSeparator();
 
-        QAction * clearRecentSessionsAction = new QAction;
+        QAction * clearRecentSessionsAction = new QAction(recentMenu);
         clearRecentSessionsAction->setText("Clear History");
         connect(clearRecentSessionsAction,SIGNAL(triggered(bool)),this,SLOT(onClearRecentSessions()));
         recentMenu->addAction(clearRecentSessionsAction);
@@ -199,7 +199,25 @@ void UIRStatsSSRN::onLoadSessions()
 
 void UIRStatsSSRN::onLoadSession(const std::string &sessionUrl)
 {
-
+    std::string contents = FileUtils::getFileContents(sessionUrl);
+    std::vector<std::string> items = StringUtils::split(contents,"\n");
+    for(const std::string& item : items)
+    {
+        std::pair<std::string,std::string> keyValue=StringUtils::splitKeyValue(item,"=");
+        std::string key = StringUtils::toUpper(keyValue.first);
+        if (key == "NAME")
+        {
+            m_ui->m_txtAuditName->setText(QString::fromStdString(keyValue.second));
+        }
+    }
+//    std::ostringstream out;
+//    out << "name="<<m_ui->m_txtAuditName->text().toStdString()<<std::endl;
+//    out << "seed="<<m_ui->m_spnSeed->value()<<std::endl;
+//    out << "order="<<m_ui->m_spnOrder->value()<<std::endl;
+//    out << "spares="<<m_ui->m_spnSpares->value()<<std::endl;
+//    out << "low="<<m_ui->m_spnLowNumber->value()<<std::endl;
+//    out << "high="<<m_ui->m_spnLowNumber->value()<<std::endl;
+    FileUtils::writeFileContents(sessionUrl,out.str());
 }
 
 void UIRStatsSSRN::onClearRecentSessions()
@@ -318,6 +336,7 @@ void UIRStatsSSRN::onUpdateClock()
 void UIRStatsSSRN::onGenerate()
 {
 
+    onUpdateClock();
     RStatsIntegerList items = RStatsSSRN::inst().generateRandomNumbers(m_ui->m_txtAuditName->text().toStdString(),
                                                                      m_ui->m_spnSeed->value(),
                                                                      m_ui->m_spnOrder->value(),
@@ -350,6 +369,7 @@ void UIRStatsSSRN::onGenerate()
     }
     onSaveSession(FileUtils::buildFilePath(sessionFolder,text.toStdString()+".ssrn_session"));
     onLoadSessions();
+    m_clock.stop();
 }
 
 void UIRStatsSSRN::onHelp()

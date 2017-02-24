@@ -1535,5 +1535,16 @@ static inline std::string removeNonAlphaNumeric(const std::string & srcStr)
     removeNonAlphaNumericInPlace(str);
     return str;
 }
+
+static inline std::pair<std::string,std::string> splitKeyValue(const std::string& itemToSplit,
+                                                               const std::string& delimiter)
+{
+    std::vector<std::string> itemPair = StringUtils::split(itemToSplit,delimiter);
+    if (itemPair.size() > 1)
+    {
+        return std::make_pair(itemPair[0],itemPair[1]);
+    }
+    throw InvalidOperationException(EXCEPTION_TAG+"Could not split item=\""+itemToSplit+"\" into 2 parts with delimiter=\""+delimiter+"\"");
+}
 }}}} //namespace
 #endif //_CBTEK_COMMON_UTILITY_STRING_UTILS_HPP_

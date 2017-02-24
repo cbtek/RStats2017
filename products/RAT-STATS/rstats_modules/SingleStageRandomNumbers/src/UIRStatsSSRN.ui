@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1024</width>
-    <height>768</height>
+    <height>661</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -399,13 +399,25 @@ QListWidget::item
   </widget>
   <widget class="QDockWidget" name="dockWidget_2">
    <property name="windowTitle">
-    <string>Options Panel</string>
+    <string/>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_2">
     <layout class="QVBoxLayout" name="verticalLayout_4">
+     <property name="leftMargin">
+      <number>4</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>4</number>
+     </property>
+     <property name="bottomMargin">
+      <number>4</number>
+     </property>
      <item>
       <widget class="QFrame" name="m_frmOptions">
        <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -463,7 +475,7 @@ QListWidget::item
            </sizepolicy>
           </property>
           <property name="title">
-           <string>Custom Seed Number:</string>
+           <string>Custom Seed &amp;Number:</string>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -617,19 +629,6 @@ QListWidget::item
          </widget>
         </item>
         <item>
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
          <widget class="QPushButton" name="m_btnGenerate">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -730,7 +729,7 @@ QListWidget::item
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>Fi&amp;le</string>
     </property>
     <addaction name="actionRecent"/>
     <addaction name="separator"/>
@@ -748,22 +747,22 @@ QListWidget::item
   </widget>
   <action name="actionRecent">
    <property name="text">
-    <string>Recent</string>
+    <string>&amp;Recent</string>
    </property>
   </action>
   <action name="actionExit">
    <property name="text">
-    <string>Exit</string>
+    <string>&amp;Exit</string>
    </property>
   </action>
   <action name="actionSingle_Stage_Random_Numbers_Help_Guide">
    <property name="text">
-    <string>Help Topics</string>
+    <string>&amp;Help Topics</string>
    </property>
   </action>
   <action name="actionAbout">
    <property name="text">
-    <string>About</string>
+    <string>&amp;About</string>
    </property>
   </action>
  </widget>
