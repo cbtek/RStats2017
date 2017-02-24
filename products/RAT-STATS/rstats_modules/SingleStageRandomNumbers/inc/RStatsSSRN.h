@@ -36,6 +36,7 @@ using namespace oig::ratstats::utils;
 
 namespace oig {
 namespace ratstats {
+namespace modules {
 namespace ssrn {
 
 class RStatsSSRN
@@ -116,5 +117,5 @@ private:
      */
     ~RStatsSSRN();
 };
-}}}//end namespace
+}}}}//end namespace
 

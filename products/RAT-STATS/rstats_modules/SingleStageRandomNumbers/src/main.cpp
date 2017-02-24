@@ -5,14 +5,15 @@
 #include <map>
 
 #include "RStatsSSRN.h"
-#include "UISSRN.h"
+#include "UIRStatsSSRN.h"
 
 using namespace oig::ratstats::utils;
-using namespace oig::ratstats::ssrn;
+using namespace oig::ratstats::modules::ssrn;
 
 int main(int argc, char ** argv)
 {           
     QApplication a(argc,argv);
-    UISSRN form;
-    return form.exec();
+    UIRStatsSSRN form;
+    form.show();
+    return a.exec();
 }

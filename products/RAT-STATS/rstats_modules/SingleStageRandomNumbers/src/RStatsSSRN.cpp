@@ -42,6 +42,7 @@ SOFTWARE.
 
 namespace oig {
 namespace ratstats {
+namespace modules {
 namespace ssrn {
 
 CREATE_EXCEPTION_NO_MSG(RStatsWarningException)
@@ -236,5 +237,5 @@ RStatsSSRN::~RStatsSSRN()
 }
 
 
-}}}//end namespace
+}}}}//end namespace
 

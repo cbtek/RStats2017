@@ -103,15 +103,37 @@ public:
      */
     void setInformationQSS(const std::string& qss);
 
+    /**
+     * @brief isError
+     * @param index
+     * @return
+     */
+    bool isError(size_t index) const;
+
+    /**
+     * @brief isWarning
+     * @param index
+     * @return
+     */
+    bool isWarning(size_t index) const;
+
+    /**
+     * @brief isInformation
+     * @param index
+     * @return
+     */
+    bool isInformation(size_t index) const;
+
 	//! Destructor
 	~RStatsConditionLogger();	
 
 private:    
     std::vector<std::string> m_messages;
-    std::set<ConditionType> m_conditionSet;
+    std::vector<ConditionType> m_conditionSet;
     std::string m_warningQSS;
     std::string m_errorQSS;
     std::string m_informationQSS;
+
     
 };
 }}}//end namespace

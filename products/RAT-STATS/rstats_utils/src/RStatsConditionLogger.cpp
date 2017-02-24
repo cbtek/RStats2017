@@ -18,9 +18,13 @@ namespace utils {
 
 RStatsConditionLogger::RStatsConditionLogger()
 {
-    m_informationQSS = "<font style='padding:2px; border-bottom:1px solid gray;color:black;background:77FF77;font-weight: true;'>INFORMATION: %MESSAGE%</font>";
-    m_warningQSS = "<font style='padding:2px; border-bottom:1px solid gray;color:black;background:#ffff77;font-weight: true;'>WARNING: %MESSAGE%</font>";
-    m_errorQSS = "<font style='padding:2px; border-bottom:1px solid gray;color:black;background:#ff7777;font-weight: true;'>ERROR: %MESSAGE%</font>";
+//    m_informationQSS = "<font style='padding:2px; border-bottom:1px solid gray;color:black;background:77FF77;font-weight: true;'>INFORMATION: %MESSAGE%</font>";
+//    m_warningQSS = "<font style='padding:2px; border-bottom:1px solid gray;color:black;background:#ffff77;font-weight: true;'>WARNING: %MESSAGE%</font>";
+//    m_errorQSS = "<font style='padding:2px; border-bottom:1px solid gray;color:black;background:#ff7777;font-weight: true;'>ERROR: %MESSAGE%</font>";
+
+    m_informationQSS = "INFORMATION: %MESSAGE%";
+    m_warningQSS = "WARNING: %MESSAGE%";
+    m_errorQSS = "ERROR: %MESSAGE%";
 }
 
 void RStatsConditionLogger::addWarning(bool condition,
@@ -29,7 +33,7 @@ void RStatsConditionLogger::addWarning(bool condition,
     if (condition)
     {        
         m_messages.push_back(StringUtils::replace(m_warningQSS,"%MESSAGE%",message));
-        m_conditionSet.insert(ConditionType::WARNING);
+        m_conditionSet.push_back(ConditionType::WARNING);
     }
 }
 
@@ -39,7 +43,7 @@ void RStatsConditionLogger::addInformation(bool condition,
     if (condition)
     {
         m_messages.push_back(StringUtils::replace(m_informationQSS,"%MESSAGE%",message));
-        m_conditionSet.insert(ConditionType::INFORMATION);
+        m_conditionSet.push_back(ConditionType::INFORMATION);
     }
 }
 
@@ -49,7 +53,7 @@ void RStatsConditionLogger::addError(bool condition,
     if (condition)
     {
         m_messages.push_back(StringUtils::replace(m_errorQSS,"%MESSAGE%",message));
-        m_conditionSet.insert(ConditionType::ERROR);
+        m_conditionSet.push_back(ConditionType::ERROR);
     }
 }
 
@@ -65,17 +69,39 @@ bool RStatsConditionLogger::hasMessages() const
 
 bool RStatsConditionLogger::hasError() const
 {
-    return m_conditionSet.count(ConditionType::ERROR) > 0;
+    for (size_t a1 = 0; a1 < m_conditionSet.size(); ++a1)
+    {
+        if (m_conditionSet[a1] == ConditionType::ERROR)
+        {
+            return true;
+        }
+    }
+    return false;
+
 }
 
 bool RStatsConditionLogger::hasWarning() const
 {
-    return m_conditionSet.count(ConditionType::WARNING) > 0;
+    for (size_t a1 = 0; a1 < m_conditionSet.size(); ++a1)
+    {
+        if (m_conditionSet[a1] == ConditionType::WARNING)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool RStatsConditionLogger::hasInformation() const
 {
-    return m_conditionSet.count(ConditionType::INFORMATION) > 0;
+    for (size_t a1 = 0; a1 < m_conditionSet.size(); ++a1)
+    {
+        if (m_conditionSet[a1] == ConditionType::INFORMATION)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 void RStatsConditionLogger::clear()
@@ -97,6 +123,21 @@ void RStatsConditionLogger::setErrorQSS(const std::string &qss)
 void RStatsConditionLogger::setInformationQSS(const std::string &qss)
 {
     m_informationQSS = qss;
+}
+
+bool RStatsConditionLogger::isError(size_t index) const
+{
+    return index < m_conditionSet.size() && m_conditionSet[index] == ConditionType::ERROR;
+}
+
+bool RStatsConditionLogger::isWarning(size_t index) const
+{
+    return index < m_conditionSet.size() && m_conditionSet[index] == ConditionType::WARNING;
+}
+
+bool RStatsConditionLogger::isInformation(size_t index) const
+{
+    return index < m_conditionSet.size() && m_conditionSet[index] == ConditionType::INFORMATION;
 }
 
 RStatsConditionLogger::~RStatsConditionLogger()

@@ -69,7 +69,6 @@ target_link_libraries(${CURR_TARGET}
 
 # Copy templates folder to build directory
 # so that the exe can see them
-Message(${PROJECT_SOURCE_DIR})
 
 add_custom_command(TARGET ${CURR_TARGET} POST_BUILD
                COMMAND ${CMAKE_COMMAND} -E copy_directory
