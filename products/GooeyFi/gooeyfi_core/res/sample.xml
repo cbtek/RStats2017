@@ -1,0 +1,9 @@
+
+<GooeyFiApp title="SampleApp" icon="">
+    <GooeyFiPage label="" layout="Vertical" icon="" >
+        <GooeyFiWidget id="TextInput" label="Text" value="" type="Multi" />
+        <GooeyFiWidget id="PathBrowser" label="Browse" value="" type="File" />
+        <GooeyFiWidget id="Numeric" label="Value" value="" min="0" max="10" increment="1" type="Integer"/>
+        <GooeyFiWidget id="Button" label="Launch" value="notepad" type="Action"/>
+    </GooeyFiPage>
+</GooeyFiApp>

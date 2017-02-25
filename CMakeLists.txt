@@ -9,7 +9,7 @@ set(LIBRARY_TYPE STATIC)
 get_filename_component(PROJECT_ROOT ${CMAKE_CURRENT_BINARY_DIR} PATH)
 
 set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
-
+add_definitions(-DUSE_QT_PLATFORM)
 include(${CMAKE_MODULE_PATH}/flags.cmake)
 include(${CMAKE_MODULE_PATH}/build.cmake)
 
@@ -19,12 +19,15 @@ endif()
 
 include_directories("${PROJECT_SOURCE_DIR}/common")
 include_directories("${PROJECT_SOURCE_DIR}/products/RAT-STATS")
+include_directories("${PROJECT_SOURCE_DIR}/products/GooeyFi")
 
 add_subdirectory("${PROJECT_SOURCE_DIR}/common/utility")
 #add_subdirectory("${PROJECT_SOURCE_DIR}/common/contrib/xlsxwriter")
 #add_subdirectory("${PROJECT_SOURCE_DIR}/common/contrib/minizip")
 #add_subdirectory("${PROJECT_SOURCE_DIR}/common/contrib/zlib")
 add_subdirectory("${PROJECT_SOURCE_DIR}/products/RAT-STATS")
+add_subdirectory("${PROJECT_SOURCE_DIR}/products/GooeyFi/gooeyfi_core")
+add_subdirectory("${PROJECT_SOURCE_DIR}/products/GooeyFi/gooeyfi_launcher")
 
 #Added simple testbed project.  
 add_subdirectory("${PROJECT_SOURCE_DIR}/products/test_TeamCBTek")

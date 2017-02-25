@@ -52,6 +52,8 @@ qt5_use_modules(${CURR_TARGET}
 
 add_dependencies(${CURR_TARGET}
                 rstats_ui
+                gooeyfi_launcher
+                gooeyfi_core
                 Qt5::Widgets
                 rstats_utils
                 common_utils)
@@ -62,6 +64,8 @@ add_dependencies(${CURR_TARGET}
 #==============================================================================
 target_link_libraries(${CURR_TARGET}
                       rstats_ui
+                      gooeyfi_launcher
+                      gooeyfi_core
                       Qt5::Widgets
                       rstats_utils
                       common_utils

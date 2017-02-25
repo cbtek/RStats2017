@@ -77,8 +77,25 @@ class XMLStreamWriter
      * @param attributeName
      * @param attributeValue
      */
-    void writeAttribute(const std::string & attributeName, const std::string & attributeValue);    
-	//! Destructor
+    void writeAttribute(const std::string & attributeName, const std::string & attributeValue);       
+
+    /**
+     * @brief writeLastAttribute
+     * @param attributeName
+     * @param attributeValue
+     */
+    void writeLastAttribute(const std::string & attributeName, const std::string & attributeValue);
+
+    /**
+     * @brief writeLastAttribute
+     * @param attributeName
+     * @param attributeValue
+     */
+    void writeLastAttributeAndCloseTag(const std::string & attributeName, const std::string & attributeValue);
+
+
+
+    //! Destructor
 	~XMLStreamWriter();	
 
 private:

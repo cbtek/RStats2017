@@ -217,7 +217,7 @@ void UIRStatsSSRN::onLoadSession(const std::string &sessionUrl)
 //    out << "spares="<<m_ui->m_spnSpares->value()<<std::endl;
 //    out << "low="<<m_ui->m_spnLowNumber->value()<<std::endl;
 //    out << "high="<<m_ui->m_spnLowNumber->value()<<std::endl;
-    FileUtils::writeFileContents(sessionUrl,out.str());
+    //FileUtils::writeFileContents(sessionUrl,out.str());
 }
 
 void UIRStatsSSRN::onClearRecentSessions()

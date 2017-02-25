@@ -94,6 +94,25 @@ XMLStreamWriter::~XMLStreamWriter()
 
 }
 
+
+void XMLStreamWriter::writeLastAttribute(const std::string &attributeName,
+                                         const std::string &attributeValue)
+{
+    writeAttribute(attributeName,attributeValue);
+    m_out<<">"<<std::endl;
+}
+
+void XMLStreamWriter::writeLastAttributeAndCloseTag(const std::string &attributeName, const std::string &attributeValue)
+{
+    writeAttribute(attributeName,attributeValue);
+    m_out<<"/>"<<std::endl;
+    if (m_currentTab > 0 )
+    {
+        m_currentTab--;
+    }
+}
+
+
 void XMLStreamWriter::writeTabs()
 {
     for (size_t a1 = 0;a1<m_currentTab;++a1)
