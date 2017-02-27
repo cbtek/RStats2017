@@ -1,6 +1,6 @@
 /*
- UIGooeyFiAppQt.h
- 
+    UIGooeyFiAppBuilder.h
+    
 MIT License
 
 Copyright (c) 2016 cbtek
@@ -25,50 +25,49 @@ SOFTWARE.
 
 */
 
-#pragma once
+#ifndef _CBTEK_PRODUCTS_GOOEYFI_BUILDER_UIGOOEYFIAPPBUILDER_H
+#define _CBTEK_PRODUCTS_GOOEYFI_BUILDER_UIGOOEYFIAPPBUILDER_H
 
-#include "UIGooeyFiApp.hpp"
-#include "UIGooeyFiAppQtWidget.h"
+#include <QDialog>
+#include <QAbstractButton>
+
+class Ui_UIGooeyFiAppBuilder;
 
 namespace cbtek {
 namespace products {
 namespace gooeyfi {
-namespace launcher {
-namespace platform {
-namespace qt {
+namespace builder {
 
-class UIGooeyFiAppQt : public UIGooeyFiApp
-{    
+
+class UIGooeyFiAppBuilder : public QDialog
+{
+    Q_OBJECT
+
 public:
-    //! Constructor for UIGooeyFiAppQt
-    /*!
-        Detailed description for UIGooeyFiAppQt
-    */
-    UIGooeyFiAppQt(const core::GooeyFiApp &appPayload);
+	//! Constructor for UIGooeyFiAppBuilder
+	/*!
+		Detailed description for UIGooeyFiAppBuilder
+        @param      parent points to embedding super widget. Defaults to null.
+	*/
+    explicit UIGooeyFiAppBuilder(QWidget *parent = 0);
     
-    /**
-     * @brief start
-     */
-    void start();
+    
+    //! Destructor for UIGooeyFiAppBuilder
+    ~UIGooeyFiAppBuilder();
+private:
+    /** 
+    * MOC generated ui class for this widget
+    */
+     Ui_UIGooeyFiAppBuilder *m_ui;
 
-    /**
-     * @brief initialize
-     */
-    void initialize();
-
-    /**
-     * @brief create
-     * @return
-     */
-     UIGooeyFiAppQtWidget* getWidget() const;
-
-    //! Destructor
-    ~UIGooeyFiAppQt();	
-
-private:    
-    UIGooeyFiAppQtWidget * m_appWidget;
-    const core::GooeyFiApp &m_app;
+private slots:
+     void onAdd();
+     void onPreview();
+     void onOk();
+     void onEdit(QAbstractButton * button);
+     void onRemove(QAbstractButton * button);
 };
-}}}}}}//end namespace
 
+}}}}//end namespace
 
+#endif // _CBTEK_PRODUCTS_GOOEYFI_BUILDER_UIGOOEYFIAPPBUILDER_H

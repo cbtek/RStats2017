@@ -1,6 +1,6 @@
 /*
- UIGooeyFiAppQt.h
- 
+    UIGooeyFiWidgetDefaults.h
+    
 MIT License
 
 Copyright (c) 2016 cbtek
@@ -25,50 +25,49 @@ SOFTWARE.
 
 */
 
-#pragma once
+#ifndef _CBTEK_PRODUCTS_GOOEYFI_BUILDER_UIGOOEYFIWIDGETDEFAULTS_H
+#define _CBTEK_PRODUCTS_GOOEYFI_BUILDER_UIGOOEYFIWIDGETDEFAULTS_H
 
-#include "UIGooeyFiApp.hpp"
-#include "UIGooeyFiAppQtWidget.h"
+#include <QDialog>
+#include <gooeyfi_core/inc/GooeyFiWidget.hpp>
+
+class Ui_UIGooeyFiWidgetDefaults;
 
 namespace cbtek {
 namespace products {
 namespace gooeyfi {
-namespace launcher {
-namespace platform {
-namespace qt {
+namespace builder {
 
-class UIGooeyFiAppQt : public UIGooeyFiApp
-{    
+
+class UIGooeyFiWidgetDefaults : public QDialog
+{
+    Q_OBJECT
+
 public:
-    //! Constructor for UIGooeyFiAppQt
-    /*!
-        Detailed description for UIGooeyFiAppQt
-    */
-    UIGooeyFiAppQt(const core::GooeyFiApp &appPayload);
+	//! Constructor for UIGooeyFiWidgetDefaults
+	/*!
+		Detailed description for UIGooeyFiWidgetDefaults
+        @param      parent points to embedding super widget. Defaults to null.
+	*/
+    explicit UIGooeyFiWidgetDefaults(const core::GooeyFiWidgetPtr& widget,
+                                     QWidget *parent = 0);
     
-    /**
-     * @brief start
-     */
-    void start();
+    
+    //! Destructor for UIGooeyFiWidgetDefaults
+    ~UIGooeyFiWidgetDefaults();
+private:
+    /** 
+    * MOC generated ui class for this widget
+    */
+     Ui_UIGooeyFiWidgetDefaults *m_ui;
+     core::GooeyFiWidgetPtr m_widget;
 
-    /**
-     * @brief initialize
-     */
-    void initialize();
+     void onInit();
+signals:
+     void widgetUpdated(const core::GooeyFiWidgetPtr& widget);
 
-    /**
-     * @brief create
-     * @return
-     */
-     UIGooeyFiAppQtWidget* getWidget() const;
-
-    //! Destructor
-    ~UIGooeyFiAppQt();	
-
-private:    
-    UIGooeyFiAppQtWidget * m_appWidget;
-    const core::GooeyFiApp &m_app;
 };
-}}}}}}//end namespace
 
+}}}}//end namespace
 
+#endif // _CBTEK_PRODUCTS_GOOEYFI_BUILDER_UIGOOEYFIWIDGETDEFAULTS_H

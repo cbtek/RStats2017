@@ -27,6 +27,7 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/common/utility")
 #add_subdirectory("${PROJECT_SOURCE_DIR}/common/contrib/zlib")
 add_subdirectory("${PROJECT_SOURCE_DIR}/products/RAT-STATS")
 add_subdirectory("${PROJECT_SOURCE_DIR}/products/GooeyFi/gooeyfi_core")
+add_subdirectory("${PROJECT_SOURCE_DIR}/products/GooeyFi/gooeyfi_builder")
 add_subdirectory("${PROJECT_SOURCE_DIR}/products/GooeyFi/gooeyfi_launcher")
 
 #Added simple testbed project.  

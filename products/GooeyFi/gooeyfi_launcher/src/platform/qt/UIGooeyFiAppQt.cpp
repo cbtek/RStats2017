@@ -59,6 +59,11 @@ UIGooeyFiAppQt::~UIGooeyFiAppQt()
 
 }
 
+cbtek::products::gooeyfi::launcher::platform::qt::UIGooeyFiAppQtWidget *cbtek::products::gooeyfi::launcher::platform::qt::UIGooeyFiAppQt::getWidget() const
+{
+    return m_appWidget;
+}
+
 }}}}}}//end namespace
 
 

@@ -1,6 +1,6 @@
 /*
- UIGooeyFiAppQt.h
- 
+    GooeyFiUtils.h
+    
 MIT License
 
 Copyright (c) 2016 cbtek
@@ -25,50 +25,39 @@ SOFTWARE.
 
 */
 
-#pragma once
+#ifndef _CBTEK_PRODUCTS_GOOEYFI_CORE_GOOEYFIUTILS_H
+#define _CBTEK_PRODUCTS_GOOEYFI_CORE_GOOEYFIUTILS_H
 
-#include "UIGooeyFiApp.hpp"
-#include "UIGooeyFiAppQtWidget.h"
+#include "GooeyFiNumeric.h"
+#include "GooeyFiButton.h"
+#include "GooeyFiTextInput.h"
+#include "GooeyFiPathBrowser.h"
 
 namespace cbtek {
 namespace products {
 namespace gooeyfi {
-namespace launcher {
-namespace platform {
-namespace qt {
+namespace core {
 
-class UIGooeyFiAppQt : public UIGooeyFiApp
-{    
+
+class GooeyFiUtils 
+{
 public:
-    //! Constructor for UIGooeyFiAppQt
-    /*!
-        Detailed description for UIGooeyFiAppQt
-    */
-    UIGooeyFiAppQt(const core::GooeyFiApp &appPayload);
-    
-    /**
-     * @brief start
-     */
-    void start();
+    static const GooeyFiNumeric * getNumeric(const GooeyFiWidgetPtr& widget);
+    static const GooeyFiTextInput * getTextInput(const GooeyFiWidgetPtr& widget);
+    static const GooeyFiPathBrowser * getPathBrowser(const GooeyFiWidgetPtr& widget);
+    static const GooeyFiButton * getButton(const GooeyFiWidgetPtr& widget);
 
-    /**
-     * @brief initialize
-     */
-    void initialize();
+private:
+    //! Private constructor for GooeyFiUtils
+	GooeyFiUtils();
 
-    /**
-     * @brief create
-     * @return
-     */
-     UIGooeyFiAppQtWidget* getWidget() const;
+    //! Private copy constructor for GooeyFiUtils
+	GooeyFiUtils(const GooeyFiUtils &);
 
-    //! Destructor
-    ~UIGooeyFiAppQt();	
-
-private:    
-    UIGooeyFiAppQtWidget * m_appWidget;
-    const core::GooeyFiApp &m_app;
+	//! Private destructor for GooeyFiUtils
+	~GooeyFiUtils();	
 };
-}}}}}}//end namespace
+}}}}//end namespace
 
+#endif
 
