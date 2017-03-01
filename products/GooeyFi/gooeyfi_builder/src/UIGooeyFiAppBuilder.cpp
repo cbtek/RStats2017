@@ -38,6 +38,11 @@ SOFTWARE.
 #include <QLabel>
 #include <QPlainTextEdit>
 
+#include "gooeyfi_core/inc/GooeyFiUtils.h"
+
+#include "UIGooeyFiWidgetDefaults.h"
+
+using namespace cbtek::products::gooeyfi::core;
 namespace cbtek {
 namespace products {
 namespace gooeyfi {
@@ -48,7 +53,31 @@ UIGooeyFiAppBuilder::UIGooeyFiAppBuilder(QWidget *parent) :
     QDialog(parent),
     m_ui(new Ui_UIGooeyFiAppBuilder)
 {
+    m_ui->setupUi(this);    
+    onInitialize();
+    m_app =new GooeyFiApp("test.xml");
+    m_app->addPage(core::GooeyFiWidgetPage());
+
+}
+
+UIGooeyFiAppBuilder::UIGooeyFiAppBuilder(const GooeyFiApp &app, QWidget *parent) :
+                                         QDialog(parent),
+                                         m_ui(new Ui_UIGooeyFiAppBuilder)
+{
     m_ui->setupUi(this);
+    onInitialize();
+    m_app=app;
+    onPopulate();
+
+}
+
+UIGooeyFiAppBuilder::~UIGooeyFiAppBuilder()
+{
+    delete m_ui;
+}
+
+void UIGooeyFiAppBuilder::onInitialize()
+{
     m_ui->m_lstSourceWidgets->addItem("Text Input Field");
     m_ui->m_lstSourceWidgets->addItem("Password Input Field");
     m_ui->m_lstSourceWidgets->addItem("Multiline Text Input Field");
@@ -66,11 +95,23 @@ UIGooeyFiAppBuilder::UIGooeyFiAppBuilder(QWidget *parent) :
     m_ui->m_tblDestinationWidgets->setSelectionMode(QAbstractItemView::NoSelection);
 
     connect(m_ui->m_btnAdd,SIGNAL(clicked(bool)), this,SLOT(onAdd()));
+    connect(&m_editButtonGroup,SIGNAL(buttonClicked(QAbstractButton*)),this,SLOT(onEdit(QAbstractButton*)));
+    connect(&m_deleteButtonGroup,SIGNAL(buttonClicked(QAbstractButton*)),this,SLOT(onDelete(QAbstractButton*)));
 }
 
-UIGooeyFiAppBuilder::~UIGooeyFiAppBuilder()
+void UIGooeyFiAppBuilder::onPopulate()
 {
-    delete m_ui;
+    for (const GooeyFiWidgetPage& page : m_app->getPages())
+    {
+        QTableWidget * table = new QTableWidget;
+
+        for(const GooeyFiWidgetPtr& widget : page.getWidgets())
+        {
+            onAddWidget(widget,table);
+
+        }
+        //m_ui->m_twPages->addPage();
+    }
 }
 
 void UIGooeyFiAppBuilder::onAdd()
@@ -82,64 +123,89 @@ void UIGooeyFiAppBuilder::onAdd()
         int row = m_ui->m_tblDestinationWidgets->rowCount();
         m_ui->m_tblDestinationWidgets->setRowCount(row+1);
         QTableWidget * table = m_ui->m_tblDestinationWidgets;
-        QGridLayout * layout = new QGridLayout;
+        QHBoxLayout * layout = new QHBoxLayout;
         QLineEdit * widgetNameInput = new QLineEdit;
         QLabel * widgetNameLabel = new QLabel("Widget Name");
         QFrame * widgetFrame = new QFrame;
         layout->addWidget(widgetNameLabel,0,0);
         layout->addWidget(widgetNameInput,1,0);
-
+        core::GooeyFiWidgetPage * page = &m_app->getPage(0);
+        size_t index = 0;
         if (key.contains("TEXT INPUT"))
         {
-            QLineEdit * input = new QLineEdit;
-            QLabel * inputLabel = new QLabel("Default Text");
-            layout->addWidget(inputLabel,0,1);
-            layout->addWidget(input,1,1);
+            GooeyFiTextInput * input = new GooeyFiTextInput();
+            input->setType(GooeyFiTextInputType::SingleLine);
+            index = page->addWidget(GooeyFiWidgetPtr(input));
         }
         else if (key.contains("PASSWORD INPUT"))
         {
-            QLineEdit * input1 = new QLineEdit;
-            QLineEdit * input2 = new QLineEdit;
-            QLabel * inputLabel1 = new QLabel("Default Password");
-            QLabel * inputLabel2 = new QLabel("Default Password (Verify)");
-            input1->setEchoMode(QLineEdit::Password);
-            input2->setEchoMode(QLineEdit::Password);
-            layout->addWidget(inputLabel1,0,1);
-            layout->addWidget(inputLabel2,0,2);
-            layout->addWidget(input1,1,1);
-            layout->addWidget(input2,1,2);
+            GooeyFiTextInput * input = new GooeyFiTextInput();
+            input->setType(GooeyFiTextInputType::Password);
+            index = page->addWidget(GooeyFiWidgetPtr(input));
         }
         else if (key.contains("MULTILINE TEXT INPUT"))
         {
-            QPlainTextEdit * input = new QPlainTextEdit;
-            QLabel * inputLabel = new QLabel("Default Multiline Text");
-            layout->addWidget(inputLabel,0,1);
-            layout->addWidget(input,1,1);
+            GooeyFiTextInput * input = new GooeyFiTextInput();
+            input->setType(GooeyFiTextInputType::MultiLine);
+            index = page->addWidget(GooeyFiWidgetPtr(input));
         }
         else if (key.contains("FILE SELECT"))
         {
-            QLabel * fileLabel = new QLabel("Current File Path");
-            QLineEdit * fileInput =  new QLineEdit;
-            QPushButton * browse = new QPushButton("Browse");
-            layout->addWidget(fileLabel,0,1);
-            layout->addWidget(fileInput,1,1);
-            layout->addWidget(browse,1,2);
+
 
         }
         else if (key.contains("FOLDER SELECT"))
         {
-            QLabel * fileLabel = new QLabel("Current File Path");
-            QLineEdit * fileInput =  new QLineEdit;
-            QPushButton * browse = new QPushButton("Browse");
-            layout->addWidget(fileLabel,0,1);
-            layout->addWidget(fileInput,1,1);
-            layout->addWidget(browse,1,2);
+
         }
-        widgetFrame->setLayout(layout);
-        table->setCellWidget(row,0,widgetFrame);
-        table->setRowHeight(row,64);
-        table->horizontalHeader()->setSectionResizeMode(0,QHeaderView::Stretch);
+
+
     }
+}
+
+void UIGooeyFiAppBuilder::onAddWidget(const GooeyFiWidgetPtr &widget,
+                                      QTableWidget * table)
+{
+    size_t row = m_ui->m_tblDestinationWidgets->rowCount();
+    m_ui->m_tblDestinationWidgets->setRowCount(row+1);
+
+    QHBoxLayout * layout = new QHBoxLayout;
+    QLineEdit * label = new QLineEdit;
+
+    if (m_widget->getId() == core::GooeyFiWidgetIdType::Button)
+    {
+        const GooeyFiButton * button = GooeyFiUtils::getButton(widget);
+        label->setText(QString::fromStdString(button->getLabel()));
+    }
+    else if  (m_widget->getId() == core::GooeyFiWidgetIdType::Numeric)
+    {
+        const GooeyFiNumeric * numeric = GooeyFiUtils::getNumeric(widget);
+        label->setText(QString::fromStdString(numeric->getLabel()));
+    }
+    else if  (m_widget->getId() == core::GooeyFiWidgetIdType::PathBrowser)
+    {
+        const GooeyFiPathBrowser * pathBrowser = GooeyFiUtils::getPathBrowser(widget);
+        label->setText(QString::fromStdString(pathBrowser->getLabel()));
+    }
+    else if  (m_widget->getId() == core::GooeyFiWidgetIdType::TextInput)
+    {
+        const GooeyFiTextInput * input = GooeyFiUtils::getTextInput(widget);
+        label->setText(QString::fromStdString(input->getLabel()));
+    }
+
+    QPushButton *deleteButton = new QPushButton("X");
+    QPushButton *editButton = new QPushButton("E");
+    editButton->setProperty("buttonId", index);
+    deleteButton->setProperty("buttonId", index);
+    m_editButtonGroup.addButton(editButton);
+    m_deleteButtonGroup.addButton(deleteButton);
+    QFrame * widgetFrame = new QFrame;
+    layout->addWidget(label);
+    layout->addWidget(configButton);
+    layout->addWidget(exitButton);
+    widgetFrame->setLayout(layout);
+    table->setCellWidget(row,0,widgetFrame);
+
 }
 
 void UIGooeyFiAppBuilder::onPreview()
@@ -155,9 +221,13 @@ void UIGooeyFiAppBuilder::onOk()
 void UIGooeyFiAppBuilder::onEdit(QAbstractButton *button)
 {
 
+    if (m_currentAppPage)
+    {
+        m_currentAppPage->get
+    }
 }
 
-void UIGooeyFiAppBuilder::onRemove(QAbstractButton *button)
+void UIGooeyFiAppBuilder::onDelete(QAbstractButton *button)
 {
 
 }

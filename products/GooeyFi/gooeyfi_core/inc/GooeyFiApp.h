@@ -56,6 +56,14 @@ public:
      */
     const GooeyFiWidgetPage& getPage(size_t index) const;
 
+
+    /**
+     * @brief getPage
+     * @param index
+     * @return
+     */
+    GooeyFiWidgetPage& getPage(size_t index);
+
     /**
      * @brief getPageCount
      * @return

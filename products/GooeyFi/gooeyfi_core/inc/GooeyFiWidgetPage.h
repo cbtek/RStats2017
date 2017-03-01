@@ -28,7 +28,6 @@ SOFTWARE.
 #pragma once
 
 #include "GooeyFiWidget.hpp"
-#include "GooeyFiLayoutManager.hpp"
 
 #include <vector>
 
@@ -52,6 +51,11 @@ public:
     */
     void setTitle(const std::string & value);
 
+    /**
+     * @brief getWidgets
+     * @return
+     */
+    const std::vector<GooeyFiWidgetPtr> &getWidgets() const;
 
         /**
     * @brief Getter for m_title
@@ -59,31 +63,19 @@ public:
     */
     const std::string & getTitle() const;
 
-
     /**
      * @brief addWidget
      * @param widget
      */
-    void addWidget(const GooeyFiWidgetPtr& widget);
+    size_t addWidget(const GooeyFiWidgetPtr& widget);
 
-    /**
-     * @brief setLayout
-     * @param layout
-     */
-    void setLayout(const GooeyFiLayoutManagerPtr& layout);
-
-    /**
-     * @brief getLayout
-     * @return
-     */
-    const GooeyFiLayoutManager * getLayout() const;
 
     //! Destructor
     ~GooeyFiWidgetPage();	
 
 private:
         std::string m_title;
-        GooeyFiLayoutManagerPtr m_layout;
+        std::vector<GooeyFiWidgetPtr> m_widgets;
 };
 }}}}//end namespace
 

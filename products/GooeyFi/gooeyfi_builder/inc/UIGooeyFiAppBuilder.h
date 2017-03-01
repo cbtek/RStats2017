@@ -30,6 +30,10 @@ SOFTWARE.
 
 #include <QDialog>
 #include <QAbstractButton>
+#include <QTableWidget>
+#include <QButtonGroup>
+
+#include "gooeyfi_core/inc/GooeyFiApp.h"
 
 class Ui_UIGooeyFiAppBuilder;
 
@@ -50,7 +54,14 @@ public:
         @param      parent points to embedding super widget. Defaults to null.
 	*/
     explicit UIGooeyFiAppBuilder(QWidget *parent = 0);
-    
+
+
+    /**
+     * @brief UIGooeyFiAppBuilder
+     * @param parent
+     */
+    explicit UIGooeyFiAppBuilder(const core::GooeyFiApp& app,
+                                 QWidget *parent = 0);
     
     //! Destructor for UIGooeyFiAppBuilder
     ~UIGooeyFiAppBuilder();
@@ -59,13 +70,22 @@ private:
     * MOC generated ui class for this widget
     */
      Ui_UIGooeyFiAppBuilder *m_ui;
+    core::GooeyFiApp * m_app;
+    core::GooeyFiWidgetPage * m_currentAppPage;
+    QMap<core::GooeyFiWidgetPage*, core::GooeyFiWidgetPtr> m_widgetMap;
+    QButtonGroup m_editButtonGroup,m_deleteButtonGroup;
+    QTableWidget * m_currentTable;
+
+    void onInitialize();
+    void onPopulate();
 
 private slots:
      void onAdd();
+     void onAddWidget(const core::GooeyFiWidgetPtr& widget, QTableWidget *table);
      void onPreview();
      void onOk();
      void onEdit(QAbstractButton * button);
-     void onRemove(QAbstractButton * button);
+     void onDelete(QAbstractButton * button);
 };
 
 }}}}//end namespace

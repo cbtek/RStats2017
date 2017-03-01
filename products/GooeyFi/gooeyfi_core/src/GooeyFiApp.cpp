@@ -29,10 +29,6 @@ SOFTWARE.
 //----------------------------------------
 #include "GooeyFiApp.h"
 #include "GooeyFiWidgetFactory.h"
-#include "GooeyFiLayoutManager.hpp"
-#include "GooeyFiGridLayoutManager.h"
-#include "GooeyFiVerticalLayoutManager.h"
-#include "GooeyFiHorizontalLayoutManager.h"
 #include "GooeyFiWidgetImpl.h"
 
 #include "utility/inc/Exception.hpp"
@@ -124,6 +120,7 @@ void GooeyFiApp::read()
     }
 }
 
+
 void GooeyFiApp::write()
 {
     std::ofstream out(m_currentFilePath.c_str());
@@ -167,6 +164,17 @@ std::string GooeyFiApp::getTitle() const
 {
     return m_title;
 }
+
+cbtek::products::gooeyfi::core::GooeyFiWidgetPage &cbtek::products::gooeyfi::core::GooeyFiApp::getPage(size_t index)
+{
+    if (index < m_pages.size())
+    {
+        return m_pages[index];
+    }
+    throw IndexOutOfRangeException(EXCEPTION_TAG_LINE+"Index out of range for Widget Page");
+
+}
+
 }}}}//end namespace
 
 

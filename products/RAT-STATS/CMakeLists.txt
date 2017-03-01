@@ -6,6 +6,7 @@ project(RAT-STATS)
 add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_utils")
 add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_ui")
 add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_main")
+add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_launcher")
 
 #Built in Modules
 add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_modules/SingleStageRandomNumbers")

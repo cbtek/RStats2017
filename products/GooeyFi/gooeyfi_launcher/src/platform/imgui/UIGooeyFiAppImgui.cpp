@@ -121,84 +121,79 @@ void UIGooeyFiAppImgui::start()
         {
             if (ImGui::CollapsingHeader(page.getTitle().c_str(),NULL,true,true))
             {
-                switch(page.getLayout()->getType())
+
+                for (const gooeyfi::core::GooeyFiWidgetPtr& widget : page.getWidgets())
                 {
-                    case gooeyfi::core::GooeyFiLayoutManagerType::Vertical:
+                    switch(widget->getId())
                     {
-                        for (const gooeyfi::core::GooeyFiWidgetPtr& widget : page.getLayout()->getWidgets())
+                        case gooeyfi::core::GooeyFiWidgetIdType::Button:
                         {
-                            switch(widget->getId())
+                            const gooeyfi::core::GooeyFiButton* button = dynamic_cast<const gooeyfi::core::GooeyFiButton*>(widget.get());
+                            ImGui::Button(button->getLabel().c_str());
+                        }
+                        break;
+                        case gooeyfi::core::GooeyFiWidgetIdType::TextInput:
+                        {
+                            const gooeyfi::core::GooeyFiTextInput* text = dynamic_cast<const gooeyfi::core::GooeyFiTextInput*>(widget.get());
+                            if (!charArrayInputMap.count(text))
                             {
-                                case gooeyfi::core::GooeyFiWidgetIdType::Button:
+                                size_t count = text->getText().size()+1;
+                                char * charBuffer = new char[count];
+                                for (size_t a1 = 0; a1 < text->getText().size(); ++a1)
                                 {
-                                    const gooeyfi::core::GooeyFiButton* button = dynamic_cast<const gooeyfi::core::GooeyFiButton*>(widget.get());
-                                    ImGui::Button(button->getLabel().c_str());
+                                    charBuffer[a1] = text->getText()[a1];
                                 }
-                                break;
-                                case gooeyfi::core::GooeyFiWidgetIdType::TextInput:
+                                charBuffer[text->getText().size()] = '\0';
+                                charArrayInputMap[text] = charBuffer;
+                            }
+
+                            ImGui::InputText(text->getLabel().c_str(),
+                                             charArrayInputMap[text],
+                                             text->getText().size());
+                        }
+                        break;
+                        case gooeyfi::core::GooeyFiWidgetIdType::Numeric:
+                        {
+
+                            const gooeyfi::core::GooeyFiNumeric* numeric = dynamic_cast<const gooeyfi::core::GooeyFiNumeric*>(widget.get());
+                            if (!floatInputMap.count(numeric))
+                            {
+                                floatInputMap[numeric] = numeric->getValue();
+                            }
+                            float value = floatInputMap[numeric];
+                            ImGui::SliderFloat(numeric->getLabel().c_str(),
+                                               &value,
+                                               numeric->getMin(),numeric->getMax());
+                            floatInputMap[numeric] = value;
+                        }
+                        break;
+                        case gooeyfi::core::GooeyFiWidgetIdType::PathBrowser:
+                        {
+                            const gooeyfi::core::GooeyFiPathBrowser* path = dynamic_cast<const gooeyfi::core::GooeyFiPathBrowser*>(widget.get());
+                            std::string file = "<no path selected>";
+                            if (stringInputMap.count(path))
+                            {
+                                file = stringInputMap[path];
+                            }
+
+                            ImGui::Text(file.c_str());
+                            ImGui::SameLine();
+                            if (ImGui::Button("Browse"))
+                            {
+                                file = FileUtils::getOpenFileDialog("Open File","",
+                                                    StringBuilder()<<"All Files"<<"*.*"<<"Text Files"<<"*.TXT");
+
+                                if (!stringInputMap.count(path))
                                 {
-                                    const gooeyfi::core::GooeyFiTextInput* text = dynamic_cast<const gooeyfi::core::GooeyFiTextInput*>(widget.get());
-                                    if (!charArrayInputMap.count(text))
-                                    {
-                                        size_t count = text->getText().size()+1;
-                                        char * charBuffer = new char[count];
-                                        for (size_t a1 = 0; a1 < text->getText().size(); ++a1)
-                                        {
-                                            charBuffer[a1] = text->getText()[a1];
-                                        }
-                                        charBuffer[text->getText().size()] = '\0';
-                                        charArrayInputMap[text] = charBuffer;
-                                    }
-
-                                    ImGui::InputText(text->getLabel().c_str(),
-                                                     charArrayInputMap[text],
-                                                     text->getText().size());
+                                    stringInputMap[path] = file;
                                 }
-                                break;
-                                case gooeyfi::core::GooeyFiWidgetIdType::Numeric:
-                                {
 
-                                    const gooeyfi::core::GooeyFiNumeric* numeric = dynamic_cast<const gooeyfi::core::GooeyFiNumeric*>(widget.get());
-                                    if (!floatInputMap.count(numeric))
-                                    {
-                                        floatInputMap[numeric] = numeric->getValue();
-                                    }
-                                    float value = floatInputMap[numeric];
-                                    ImGui::SliderFloat(numeric->getLabel().c_str(),
-                                                       &value,
-                                                       numeric->getMin(),numeric->getMax());
-                                    floatInputMap[numeric] = value;
-                                }
-                                break;
-                                case gooeyfi::core::GooeyFiWidgetIdType::PathBrowser:
-                                {
-                                    const gooeyfi::core::GooeyFiPathBrowser* path = dynamic_cast<const gooeyfi::core::GooeyFiPathBrowser*>(widget.get());
-                                    std::string file = "<no path selected>";
-                                    if (stringInputMap.count(path))
-                                    {
-                                        file = stringInputMap[path];
-                                    }
-
-                                    ImGui::Text(file.c_str());
-                                    ImGui::SameLine();
-                                    if (ImGui::Button("Browse"))
-                                    {                                        
-                                        file = FileUtils::getOpenFileDialog("Open File","",
-                                                            StringBuilder()<<"All Files"<<"*.*"<<"Text Files"<<"*.TXT");
-
-                                        if (!stringInputMap.count(path))
-                                        {
-                                            stringInputMap[path] = file;
-                                        }
-
-                                    }                                    
-                                }
-                                break;
-                                default:break;
                             }
                         }
+                        break;
+                        default:break;
                     }
-                    default:break;
+                }
                 }
             }
         }

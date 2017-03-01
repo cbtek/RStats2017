@@ -1,10 +1,10 @@
 
 #==============================================================================
-# CMakeLists file for CMake rstats_main
+# CMakeLists file for CMake rstats_launcher
 #==============================================================================
 cmake_minimum_required(VERSION 3.0)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CURR_TARGET rstats)
+set(CURR_TARGET rstats_launcher)
 
 set(CURR_TARGET_SOURCES "${CURR_TARGET}_SOURCES")
 set(CURR_TARGET_FORMS "${CURR_TARGET}_FORMS")
@@ -36,7 +36,7 @@ file(GLOB CURR_TARGET_RESOURCES "resx/*.qrc")
 # Add Executable
 #==============================================================================
 add_executable(${CURR_TARGET}
-			   ${PLATFORM}
+               ${PLATFORM}
                ${CURR_TARGET_SOURCES}
                ${CURR_TARGET_HEADERS}
                ${CURR_TARGET_FORMS}
@@ -51,34 +51,16 @@ qt5_use_modules(${CURR_TARGET}
                  Widgets)
 
 add_dependencies(${CURR_TARGET}
-                rstats_ui                
-                Qt5::Widgets
                 rstats_utils
                 common_utils)
-
 
 #==============================================================================
 # Target Link Libraries
 #==============================================================================
 target_link_libraries(${CURR_TARGET}
-                      rstats_ui                      
-                      Qt5::Widgets
-                      rstats_utils
-                      common_utils
-                      )
-
-# Copy templates folder to build directory
-# so that the exe can see them
-
-add_custom_command(TARGET ${CURR_TARGET} POST_BUILD
-               COMMAND ${CMAKE_COMMAND} -E copy_directory
-               ${PROJECT_SOURCE_DIR}/rstats_resx $<TARGET_FILE_DIR:${CURR_TARGET}>/resx)
-
-
-add_custom_command(TARGET ${CURR_TARGET} POST_BUILD
-              COMMAND ${CMAKE_COMMAND} -E copy_directory
-              ${PROJECT_SOURCE_DIR}/rstats_config $<TARGET_FILE_DIR:${CURR_TARGET}>/config)
-
+                     rstats_utils
+                     common_utils
+                     Qt5::Widgets)
 
 
 

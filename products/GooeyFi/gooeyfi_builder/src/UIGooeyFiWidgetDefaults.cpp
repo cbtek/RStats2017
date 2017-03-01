@@ -55,6 +55,7 @@ UIGooeyFiWidgetDefaults::UIGooeyFiWidgetDefaults(const core::GooeyFiWidgetPtr &w
 {
     m_ui->setupUi(this);
     m_widget = widget;
+    onInit();
 }
 
 
@@ -70,8 +71,6 @@ void UIGooeyFiWidgetDefaults::onInit()
         if (m_widget->getId() == core::GooeyFiWidgetIdType::Button)
         {
             const GooeyFiButton * button = GooeyFiUtils::getButton(m_widget);
-            m_ui->m_lytMain->addWidget(inputLabel,0,0);
-            m_ui->m_lytMain->addWidget(inputLabel,0,0);
             switch(button->getType())
             {
                 case GooeyFiButtonType::Action:
@@ -81,43 +80,70 @@ void UIGooeyFiWidgetDefaults::onInit()
                 break;
             }
 
-            QLineEdit * input = new QLineEdit;
-            QLabel * inputLabel = new QLabel("Default Text");
-            layout->addWidget(inputLabel,0,1);
-            layout->addWidget(input,1,1);
+            QLineEdit * labelInput = new QLineEdit(QString::fromStdString(button->getLabel()));
+            QLineEdit * dataInput = new QLineEdit(QString::fromStdString(button->getData()));
+            QLabel * buttonTextLabel = new QLabel("Button Text");
+            QLabel * dataTextLabel = new QLabel("Data");
+            m_ui->m_lytMain->addWidget(buttonTextLabel,0,0);
+            m_ui->m_lytMain->addWidget(dataTextLabel,1,0);
+            m_ui->m_lytMain->addWidget(labelInput,0,1);
+            m_ui->m_lytMain->addWidget(dataInput,1,1);
         }
         else if (m_widget->getId() == core::GooeyFiWidgetIdType::TextInput)
         {
             const GooeyFiTextInput * text = GooeyFiUtils::getTextInput(m_widget);
 
-            QLineEdit * input1 = new QLineEdit;
-            QLineEdit * input2 = new QLineEdit;
-            QLabel * inputLabel1 = new QLabel("Default Password");
-            QLabel * inputLabel2 = new QLabel("Default Password (Verify)");
-            input1->setEchoMode(QLineEdit::Password);
-            input2->setEchoMode(QLineEdit::Password);
-            layout->addWidget(inputLabel1,0,1);
-            layout->addWidget(inputLabel2,0,2);
-            layout->addWidget(input1,1,1);
-            layout->addWidget(input2,1,2);
+            if (text->getType() == GooeyFiTextInputType::Password)
+            {
+                QLineEdit * input1 = new QLineEdit;
+                QLineEdit * input2 = new QLineEdit;
+                QLabel * inputLabel1 = new QLabel("Default Password");
+                QLabel * inputLabel2 = new QLabel("Default Password (Verify)");
+                input1->setEchoMode(QLineEdit::Password);
+                input2->setEchoMode(QLineEdit::Password);
+                m_ui->m_lytMain->addWidget(inputLabel1,0,1);
+                m_ui->m_lytMain->addWidget(inputLabel2,0,2);
+                m_ui->m_lytMain->addWidget(input1,1,1);
+                m_ui->m_lytMain->addWidget(input2,1,2);
+            }
+            else if (text->getType() == GooeyFiTextInputType::SingleLine)
+            {
+                QLineEdit * input = new QLineEdit;
+                QLabel * inputLabel = new QLabel("Default Text");
+                input->setText(QString::fromStdString(text->getText()));
+                m_ui->m_lytMain->addWidget(inputLabel,0,0);
+                m_ui->m_lytMain->addWidget(input,0,1);
+            }
+            else if (text->getType() == GooeyFiTextInputType::MultiLine)
+            {
+                QPlainTextEdit * input = new QPlainTextEdit;
+                QLabel * inputLabel = new QLabel("Default Text");
+                input->setPlainText(QString::fromStdString(text->getText()));
+                m_ui->m_lytMain->addWidget(inputLabel,0,0);
+                m_ui->m_lytMain->addWidget(input,0,1);
+            }
+
         }
         else if (m_widget->getId() == core::GooeyFiWidgetIdType::PathBrowser)
         {
             const GooeyFiPathBrowser * path = GooeyFiUtils::getPathBrowser(m_widget);
 
-            QPlainTextEdit * input = new QPlainTextEdit;
-            QLabel * inputLabel = new QLabel("Default Multiline Text");
-            layout->addWidget(inputLabel,0,1);
-            layout->addWidget(input,1,1);
+            QLineEdit * input = new QLineEdit;
+            QLabel * inputLabel = new QLabel("Default File Location");
+            QPushButton * button = new QPushButton("Browse");
+            m_ui->m_lytMain->addWidget(inputLabel,0,1);
+            m_ui->m_lytMain->addWidget(input,1,1);
+            m_ui->m_lytMain->addWidget(button,1,2);
+            input->setText(QString::fromStdString(path->getPathValue()));
         }
 //        else if (key.contains("FILE SELECT"))
 //        {
 //            QLabel * fileLabel = new QLabel("Current File Path");
 //            QLineEdit * fileInput =  new QLineEdit;
 //            QPushButton * browse = new QPushButton("Browse");
-//            layout->addWidget(fileLabel,0,1);
-//            layout->addWidget(fileInput,1,1);
-//            layout->addWidget(browse,1,2);
+//            m_ui->m_lytMain->addWidget(fileLabel,0,1);
+//            m_ui->m_lytMain->addWidget(fileInput,1,1);
+//            m_ui->m_lytMain->addWidget(browse,1,2);
 
 //        }
 //        else if (key.contains("FOLDER SELECT"))
@@ -125,9 +151,9 @@ void UIGooeyFiWidgetDefaults::onInit()
 //            QLabel * fileLabel = new QLabel("Current File Path");
 //            QLineEdit * fileInput =  new QLineEdit;
 //            QPushButton * browse = new QPushButton("Browse");
-//            layout->addWidget(fileLabel,0,1);
-//            layout->addWidget(fileInput,1,1);
-//            layout->addWidget(browse,1,2);
+//            m_ui->m_lytMain->addWidget(fileLabel,0,1);
+//            m_ui->m_lytMain->addWidget(fileInput,1,1);
+//            m_ui->m_lytMain->addWidget(browse,1,2);
 //        }
     }
 }
