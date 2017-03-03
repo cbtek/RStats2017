@@ -38,6 +38,7 @@ SOFTWARE.
 
 #include "utility/inc/FileUtils.hpp"
 #include "utility/inc/SystemUtils.hpp"
+#include "utility/inc/StringUtils.hpp"
 
 namespace oig {
 namespace ratstats {
@@ -255,6 +256,8 @@ namespace RStatsUtils
         }
     }
 
+
+
     template<typename Number>
     static RStatsObjectList<Number> getNumbersAdded(const RStatsObjectList<Number>& input1,
                                                     const RStatsObjectList<Number>& input2,
@@ -295,9 +298,8 @@ namespace RStatsUtils
         return values;
     }
 
-    static std::vector<RStatsModuleProperties> getModulePropertiesList()
+    static std::string getModulePropertiesPath()
     {
-        std::vector<RStatsModuleProperties>propsList;
         std::string path1,path2,path3,path;
         path1 = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getApplicationDirectory(), "config/module_definitions");
         if (cbtek::common::utility::FileUtils::isDirectory(path1))
@@ -317,28 +319,67 @@ namespace RStatsUtils
             path=path3;
         }
 
-        if (path.size())
+        if (!path.empty())
         {
-            std::vector<std::string> filters,entries;
-            filters.push_back("xml");
-            cbtek::common::utility::FileUtils::getFileEntries(path,true,filters,entries);
-            for (const std::string& file : entries)
-            {
-                try
-                {
-                    RStatsModuleProperties props;
-                    props.loadApplicationConfig(file);
-                    propsList.push_back(props);
-                }
-                catch(...)
-                {
-                    continue;
-                }
-            }
-            return propsList;
+            return path;
         }
         throw cbtek::common::utility::FileAccessException(EXCEPTION_TAG_LINE+"Could not locate directory for module definitions! Valid locations: "+path1+"\n"+path2+"\n"+path3);
     }
+
+    static std::vector<RStatsModuleProperties> getModulePropertiesList()
+    {
+        std::vector<RStatsModuleProperties>propsList;
+        std::string path = getModulePropertiesPath();
+
+        std::vector<std::string> filters,entries;
+        filters.push_back("xml");
+        cbtek::common::utility::FileUtils::getFileEntries(path,true,filters,entries);
+        for (const std::string& file : entries)
+        {
+            try
+            {
+                RStatsModuleProperties props;
+                props.loadApplicationConfig(file);
+                propsList.push_back(props);
+            }
+            catch(...)
+            {
+                continue;
+            }
+        }
+        return propsList;
+    }
+
+    static std::vector<std::string> getModuleCategories()
+    {
+        std::set<std::string> categorySet;
+        std::string path = getModulePropertiesPath();
+        std::vector<std::string> filters,entries;
+        filters.push_back("xml");
+        cbtek::common::utility::FileUtils::getFileEntries(path,true,filters,entries);
+
+        for (const std::string& file : entries)
+        {
+            try
+            {
+                RStatsModuleProperties props;
+                props.loadApplicationConfig(file);
+                std::string category = cbtek::common::utility::StringUtils::trimmed(props.getCategory());
+                if(category.empty())
+                {
+                    category = "Uncategorized";
+                }
+                categorySet.insert(category);
+            }
+            catch(...)
+            {
+                continue;
+            }
+        }
+        return std::vector<std::string>(categorySet.begin(),categorySet.end());
+    }
 }
+
+
 }}}//end namespace
 

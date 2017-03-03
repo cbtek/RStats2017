@@ -12,6 +12,7 @@
 #include <QFontMetrics>
 #include <QLabel>
 #include <QProcess>
+#include <QMessageBox>
 
 #include "UIRStatsMain.h"
 #include "ui_UIRStatsMain.h"
@@ -28,6 +29,8 @@
 #include "UIRStatsAbout.h"
 #include "UIRStatsModuleEditor.h"
 #include "UIRStatsModuleManager.h"
+#include "UIRStatsLaunchConfigDialog.h"
+
 
 using namespace cbtek::common::utility;
 
@@ -116,17 +119,10 @@ void UIRStatsMain::onInitialize()
 
     for(const RStatsModuleProperties& props : propsList)
     {
-        std::string category;
-        if (StringUtils::trimmed(props.getApplicationCategory()).size()==0)
+        std::string category = props.getCategory();
+        if (StringUtils::trimmed(category).size()==0)
         {
             category = "Uncategorized";
-        }
-
-        if (groupedModules.count(props.getApplicationCategory()) == 0)
-        {
-            QListWidgetItem * categoryItem = new QListWidgetItem(iconFolder,
-                                                                 QString::fromStdString(category));
-            m_ui->m_lstModules->addItem(categoryItem);
         }
         groupedModules[category].push_back(props);
     }
@@ -143,13 +139,20 @@ void UIRStatsMain::onInitialize()
         {
             RStatsModuleProperties props = it.second[a2];
             if (m_groupModuleMap.contains(index))
-            {
-                QGridLayout * groupLayout = m_groupModuleMap[index];
-                QPair<int,int> position = m_groupModuleRowColumnMap[index];
-                bool isDisabled=false,isHidden=false;
+            {                
+                bool isDisabled=false;
+#ifdef __WIN32
+                isDisabled = !FileUtils::fileExists(props.getPath()+".exe");
+#else
+                isDisabled = !FileUtils::fileExists(props.getPath());
+#endif
+
+                QPair<int,int> position = m_groupModuleRowColumnMap[index];                
 
                 //Setup edit button
                 QPushButton * moduleEditButton = new QPushButton;
+                moduleEditButton->setDisabled(isDisabled);
+                moduleEditButton->setProperty("path",QString::fromStdString(props.getDefinitionPath()));
                 setupButton(moduleEditButton,font,iconEdit,buttonHeight,true);
                 moduleEditButton->setProperty("index",m_allLaunchButtons.size());
                 m_editButtons.addButton(moduleEditButton);
@@ -157,6 +160,8 @@ void UIRStatsMain::onInitialize()
 
                 //Setup remove button
                 QPushButton * moduleRemoveButton = new QPushButton;
+                moduleRemoveButton->setDisabled(isDisabled);
+                moduleRemoveButton->setProperty("path",QString::fromStdString(props.getDefinitionPath()));
                 setupButton(moduleRemoveButton,font,iconRemove,buttonHeight,true);
                 moduleRemoveButton->setProperty("index",m_allLaunchButtons.size());
                 m_removeButtons.addButton(moduleRemoveButton);
@@ -164,18 +169,13 @@ void UIRStatsMain::onInitialize()
 
                 //Setup launch button
                 QToolButton * moduleLaunchButton = new QToolButton;
+                moduleLaunchButton->setProperty("path",QString::fromStdString(props.getDefinitionPath()));
                 moduleLaunchButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-                moduleLaunchButton->setText(QString::fromStdString(props.getApplicationName()));
+                moduleLaunchButton->setText(QString::fromStdString(props.getName()));
                 moduleLaunchButton->setProperty("id",index);
-
-#ifdef __WIN32
-                isDisabled = !FileUtils::fileExists(props.getApplicationPath()+".exe");
-#else
-                isDisabled = !FileUtils::fileExists(props.getApplicationPath());
-#endif
                 moduleLaunchButton->setIconSize(QSize(buttonHeight-8,buttonHeight-8));
 
-                std::string iconFile = props.getApplicationIcon();
+                std::string iconFile = props.getIcon();
                 std::string iconPath = FileUtils::buildFilePath(SystemUtils::getApplicationDirectory(),
                                                                 iconFile);
 
@@ -189,15 +189,17 @@ void UIRStatsMain::onInitialize()
                     moduleLaunchButton->setIcon(iconModule);
                 }
 
+                moduleLaunchButton->setDisabled(isDisabled);
                 moduleLaunchButton->setMinimumHeight(buttonHeight);
                 moduleLaunchButton->setMaximumHeight(buttonHeight);
-                moduleLaunchButton->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+                moduleLaunchButton->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);                
                 m_allLaunchButtons.push_back(moduleLaunchButton);
                 m_launchButtons.addButton(moduleLaunchButton);
                 groupLayout->addWidget(moduleLaunchButton,position.first,position.second);
                 position.first++;
                 m_groupModuleRowColumnMap[index] = position;
                 m_groupEmpty[index] = false;
+                m_indexPropsMap[index]=props;
             }
         }
         ++index;
@@ -216,7 +218,7 @@ void UIRStatsMain::onInitialize()
         groupFrame->setLayout(layout);
         scrollArea->setWidget(groupFrame);
         QString name = layout->property("name").toString();
-        m_ui->m_lstModules->addItem(new QListWidgetItem(m_groupIcons[it.first],name));
+        m_ui->m_lstModules->addItem(new QListWidgetItem(iconFolder,name));
         m_ui->m_stackModules->addWidget(scrollArea);
         int currentWidth = metrics.width(name);
         if (currentWidth > maxWidth)
@@ -336,8 +338,7 @@ void UIRStatsMain::onTabChanged(int tab)
 }
 
 void UIRStatsMain::onEditCategory()
-{
-
+{    
 }
 
 void UIRStatsMain::onNewCategory()
@@ -352,17 +353,31 @@ void UIRStatsMain::onRemoveCategory()
 
 void UIRStatsMain::onLaunchModule(QAbstractButton *button)
 {
-    QString command = button->property("exe").toString() +" "+button->property("args").toString();
-    if (!command.trimmed().isEmpty())
+    std::string launcherPath = FileUtils::buildFilePath(SystemUtils::getApplicationDirectory(),"rstats_launcher");
+    if (!FileUtils::fileExists(launcherPath))
     {
-        command = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getApplicationDirectory(),command.toStdString()));
-        QProcess::startDetached(command);
+        QMessageBox::critical(this,"Module Launch Error", "Can not launch this module.  Ensure that the module launcher (rstats_launcher) is installed.");
+        return;
     }
+
+    QString command = QString::fromStdString(launcherPath)+" --module-path \""+button->property("path").toString()+"\"";
+    std::cerr << "Starting..."<<command.toStdString()<<std::endl;
+    QProcess::startDetached(command);
 }
 
 void UIRStatsMain::onEditModule(QAbstractButton *button)
 {
-
+    try
+    {
+        std::string path = button->property("path").toString().toStdString();
+        utils::RStatsModuleProperties props;
+        props.loadApplicationConfig(path);
+        UIRStatsLaunchConfigDialog(props).exec();
+    }
+    catch(std::exception& e)
+    {
+        QMessageBox::critical(this,"Module Edit Error",QString(e.what()));
+    }
 }
 
 void UIRStatsMain::onRemoveModule(QAbstractButton *button)

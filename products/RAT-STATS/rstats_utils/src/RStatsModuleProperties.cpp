@@ -65,11 +65,17 @@ void RStatsModuleProperties::loadApplicationConfig(const std::string &filePath)
                 addApplicationArg(flag,arg);
             }
         }
+        m_appDefPath = filePath;
     }
     else
     {
         throw FileNotFoundException(EXCEPTION_TAG_LINE+"Could not parse file at \""+filePath+"\"");
     }
+}
+
+void RStatsModuleProperties::saveApplicationConfig()
+{
+    saveApplicationConfig(m_appDefPath);
 }
 
 void RStatsModuleProperties::saveApplicationConfig(const std::string &filePath)
@@ -94,35 +100,36 @@ void RStatsModuleProperties::saveApplicationConfig(const std::string &filePath)
             argStr+=arg.first+"%%%"+arg.second+";;;";
         }
         xml.writeLastAttributeAndCloseTag("args",argStr);
+        m_appDefPath = filePath;
     }
 }
 
-void RStatsModuleProperties::setApplicationType(const std::string &value)
+void RStatsModuleProperties::setType(const std::string &value)
 {
     m_appType=value;
 }
 
-void RStatsModuleProperties::setApplicationName(const std::string & value)
+void RStatsModuleProperties::setName(const std::string & value)
 {
     m_appName=value;
 }
 
-void RStatsModuleProperties::setApplicationWorkingDir(const std::string & value)
+void RStatsModuleProperties::setWorkingDir(const std::string & value)
 {
     m_appWorkingDir=value;
 }
 
-void RStatsModuleProperties::setApplicationPath(const std::string & value)
+void RStatsModuleProperties::setPath(const std::string & value)
 {
     m_appPath=value;
 }
 
-void RStatsModuleProperties::setApplicationCategory(const std::string & value)
+void RStatsModuleProperties::setCategory(const std::string & value)
 {
     m_appCategory=value;
 }
 
-void RStatsModuleProperties::setApplicationArgs(const std::vector<std::pair<std::string,std::string> > & value)
+void RStatsModuleProperties::setArgs(const std::vector<std::pair<std::string,std::string> > & value)
 {
     m_args=value;
 }
@@ -145,34 +152,44 @@ void RStatsModuleProperties::generateApplicationCommand(std::string& commandOut)
     commandOut = command.str();
 }
 
-const std::string &RStatsModuleProperties::getApplicationType() const
+const std::string &RStatsModuleProperties::getType() const
 {
     return m_appType;
 }
 
-const std::string &RStatsModuleProperties::getApplicationName() const
+const std::string &RStatsModuleProperties::getName() const
 {
     return m_appName;
 }
 
-const std::string &RStatsModuleProperties::getApplicationWorkingDir() const
+const std::string &RStatsModuleProperties::getWorkingDir() const
 {
     return m_appWorkingDir;
 }
 
-const std::string &RStatsModuleProperties::getApplicationPath() const
+const std::string &RStatsModuleProperties::getPath() const
 {
     return m_appPath;
 }
 
-const std::string &RStatsModuleProperties::getApplicationCategory() const
+const std::string &RStatsModuleProperties::getCategory() const
 {
     return m_appCategory;
 }
 
-const std::vector<std::pair<std::string,std::string> > &RStatsModuleProperties::getApplicationArgs() const
+const std::string &RStatsModuleProperties::getDefinitionPath() const
+{
+    return m_appDefPath;
+}
+
+const std::vector<std::pair<std::string,std::string> > &RStatsModuleProperties::getArgs() const
 {
     return m_args;
+}
+
+void RStatsModuleProperties::setDefinitionPath(const std::string &path)
+{
+    m_appDefPath = path;
 }
 
 void RStatsModuleProperties::addApplicationArg(const std::string &flag,
@@ -186,12 +203,12 @@ void RStatsModuleProperties::clearApplicationArgs()
     m_args.clear();
 }
 
-void RStatsModuleProperties::setApplicationScriptPath(const std::string &scriptFilePath)
+void RStatsModuleProperties::setScriptPath(const std::string &scriptFilePath)
 {
     m_appScriptPath = scriptFilePath;
 }
 
-const std::string &RStatsModuleProperties::getApplicationScriptPath() const
+const std::string &RStatsModuleProperties::getScriptPath() const
 {
     return m_appScriptPath;
 }
@@ -201,12 +218,12 @@ void RStatsModuleProperties::addApplicationFlag(const std::string &flag)
     m_args.push_back(std::make_pair(flag,""));
 }
 
-void RStatsModuleProperties::setApplicationIcon(const std::string &appIcon)
+void RStatsModuleProperties::setIcon(const std::string &appIcon)
 {
     m_appIcon = appIcon;
 }
 
-std::string RStatsModuleProperties::getApplicationIcon() const
+std::string RStatsModuleProperties::getIcon() const
 {
     return m_appIcon;
 }

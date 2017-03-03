@@ -45,6 +45,8 @@ private slots:
      void onSave();
      void onCancel();
      void onLaunch();
+     void onBrowseModulePath();
+     void onBrowseModuleWorkingDir();
 
 signals:
     void propertiesSaved(const utils::RStatsModuleProperties& props);

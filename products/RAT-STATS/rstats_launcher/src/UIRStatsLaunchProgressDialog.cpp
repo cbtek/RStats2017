@@ -26,7 +26,7 @@ UIRStatsLaunchProgressDialog::UIRStatsLaunchProgressDialog(const utils::RStatsMo
     //m_launchThread = new LaunchProgressThread(command);
     m_process.setEnvironment( QProcess::systemEnvironment() );
     m_process.setProcessChannelMode( QProcess::MergedChannels );
-    m_ui->m_grpOutput->setTitle(QString::fromStdString(props.getApplicationName()+" Output"));
+    m_ui->m_grpOutput->setTitle(QString::fromStdString(props.getName()+" Output"));
     connect(m_ui->m_btnCancel,SIGNAL(clicked(bool)),this,SLOT(onCancel()));
     //connect(m_launchThread,SIGNAL(finished()),this,SLOT(onFinished()));
     //connect(m_launchThread,SIGNAL(consoleOutput(QString)),this,SLOT(onConsoleUpdated(QString)));
@@ -36,7 +36,7 @@ UIRStatsLaunchProgressDialog::UIRStatsLaunchProgressDialog(const utils::RStatsMo
     connect(&m_process,SIGNAL(errorOccurred(QProcess::ProcessError)),this,SLOT(onErrorOccured(QProcess::ProcessError)));
     connect(&m_process,SIGNAL(finished(int)),this,SLOT(onFinished()));
 
-    setWindowTitle("Running - "+QString::fromStdString(props.getApplicationName()));
+    setWindowTitle("Running - "+QString::fromStdString(props.getName()));
     m_isRunning = true;
     m_ui->m_btnCancel->setText("STOP Process");
     //m_launchThread->start();
@@ -65,7 +65,7 @@ void UIRStatsLaunchProgressDialog::onFinished()
     {
         return;
     }
-    setWindowTitle("Finished - "+QString::fromStdString(m_props.getApplicationName()));
+    setWindowTitle("Finished - "+QString::fromStdString(m_props.getName()));
     if (!m_wasAlreadyCompleted)
     {
         m_ui->m_txtOutput->append("<font style='color:#ffffaa;'>Command Completed.</font>\n");
@@ -83,7 +83,7 @@ void UIRStatsLaunchProgressDialog::onCancel()
     {
         m_wasManuallyClosed = true;
         m_process.close();
-        setWindowTitle("Finished - "+QString::fromStdString(m_props.getApplicationName()));
+        setWindowTitle("Finished - "+QString::fromStdString(m_props.getName()));
 
         if (!m_wasAlreadyCompleted)
         {

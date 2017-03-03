@@ -34,37 +34,37 @@ public:
     * @brief Setter for m_type
     * @param Value to replace m_type
     */
-    void setApplicationType(const std::string & value);
+    void setType(const std::string & value);
 
     /**
     * @brief Setter for m_name
     * @param Value to replace m_name
     */
-    void setApplicationName(const std::string & value);
+    void setName(const std::string & value);
 
     /**
     * @brief Setter for m_workingDir
     * @param Value to replace m_workingDir
     */
-    void setApplicationWorkingDir(const std::string & value);
+    void setWorkingDir(const std::string & value);
 
     /**
     * @brief Setter for m_location
     * @param Value to replace m_location
     */
-    void setApplicationPath(const std::string & value);
+    void setPath(const std::string & value);
 
     /**
     * @brief Setter for m_group
     * @param Value to replace m_group
     */
-    void setApplicationCategory(const std::string & value);
+    void setCategory(const std::string & value);
 
     /**
     * @brief Setter for m_args
     * @param Value to replace m_args
     */
-    void setApplicationArgs(const std::vector<std::pair<std::string,std::string> > & value);
+    void setArgs(const std::vector<std::pair<std::string,std::string> > & value);
 
     /**
      * @brief getCommand
@@ -77,47 +77,54 @@ public:
      * @param type
      * @param scriptFilePath
      */
-    void setApplicationScriptPath(const std::string& scriptFilePath);
+    void setScriptPath(const std::string& scriptFilePath);
 
-    const std::string & getApplicationScriptPath() const;
+    const std::string & getScriptPath() const;
 
     /**
     * @brief Getter for m_type
     * @return Return copy of m_type
     */
-    const std::string & getApplicationType() const;
+    const std::string & getType() const;
 
     /**
     * @brief Getter for m_name
     * @return Return copy of m_name
     */
-    const std::string & getApplicationName() const;
+    const std::string & getName() const;
 
     /**
     * @brief Getter for m_workingDir
     * @return Return copy of m_workingDir
     */
-    const std::string & getApplicationWorkingDir() const;
+    const std::string & getWorkingDir() const;
 
     /**
     * @brief Getter for m_location
     * @return Return copy of m_location
     */
-    const std::string & getApplicationPath() const;
+    const std::string & getPath() const;
 
     /**
     * @brief Getter for m_group
     * @return Return copy of m_group
     */
-    const std::string & getApplicationCategory() const;
+    const std::string & getCategory() const;
+
+    /**
+     * @brief getDefinitionPath
+     * @return
+     */
+    const std::string & getDefinitionPath() const;
 
     /**
     * @brief Getter for m_args
     * @return Return copy of m_args
     */
-    const std::vector<std::pair<std::string,std::string> > & getApplicationArgs() const;
+    const std::vector<std::pair<std::string,std::string> > & getArgs() const;
 
 
+    void setDefinitionPath(const std::string & path);
     /**
      * @brief addArg
      * @param flag
@@ -149,9 +156,11 @@ public:
      */
     void saveApplicationConfig(const std::string& filePath);
 
-    void setApplicationIcon(const std::string& appIcon);
+    void saveApplicationConfig();
 
-    std::string getApplicationIcon() const;
+    void setIcon(const std::string& appIcon);
+
+    std::string getIcon() const;
 
     bool isApplicationConsoleShown() const;
 
@@ -166,6 +175,7 @@ private:
     std::string m_appCategory;
     std::string m_appIcon;
     std::string m_appScriptPath;
+    std::string m_appDefPath;
     bool m_showAppConsole;
     std::vector<std::pair<std::string,std::string> > m_args;
 

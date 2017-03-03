@@ -15,6 +15,7 @@
 #include <QToolButton>
 #include <QButtonGroup>
 #include <QSet>
+#include "rstats_utils/inc/RStatsModuleProperties.h"
 
 class Ui_UIRStatsMain;
 
@@ -57,6 +58,7 @@ private:
      QMap<int,bool> m_groupEmpty;
      QSet<int> m_groupProtected;
      QMap<int,QIcon> m_groupIcons;
+     QMap<int,utils::RStatsModuleProperties> m_indexPropsMap;
      QVector<QToolButton*> m_allLaunchButtons;
      QButtonGroup m_launchButtons;
      QButtonGroup m_editButtons;
