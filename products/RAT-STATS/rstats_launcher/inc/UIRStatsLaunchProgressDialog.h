@@ -9,7 +9,9 @@
 
 #include <QDialog>
 #include <QProcess>
+#include <QTimer>
 
+#include "LaunchProgressThread.h"
 #include "rstats_utils/inc/RStatsModuleProperties.h"
 
 class Ui_UIRStatsLaunchProgressDialog;
@@ -40,11 +42,26 @@ private:
     * MOC generated ui class for this widget
     */
     Ui_UIRStatsLaunchProgressDialog *m_ui;
-
     utils::RStatsModuleProperties m_props;
     QProcess m_process;
+    LaunchProgressThread * m_launchThread;
+    bool m_isRunning;
+    bool m_wasManuallyClosed;
+    bool m_wasAlreadyCompleted;
+    QTimer m_timer;
+    std::vector<QString> m_outputBuffer;
+
+protected:
+    void closeEvent(QCloseEvent *);
 private slots:
-     void onCancel();
+
+    void onFinished();
+    void onCancel();
+    void onReadBuffer();
+    void readyReadStandardError();
+    void readyReadStandardOutput();
+    void onErrorOccured(QProcess::ProcessError err);
+
     
 };
 

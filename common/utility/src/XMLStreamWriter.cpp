@@ -83,35 +83,10 @@ void XMLStreamWriter::writeTextElement(const std::string &tag, const std::string
 
 }
 
-
-void XMLStreamWriter::writeAttribute(const std::string &attributeName, const std::string &attributeValue)
-{
-    m_out<<" "<<attributeName<<"=\""<<attributeValue<<"\"";
-}
-
 XMLStreamWriter::~XMLStreamWriter()
 {
 
 }
-
-
-void XMLStreamWriter::writeLastAttribute(const std::string &attributeName,
-                                         const std::string &attributeValue)
-{
-    writeAttribute(attributeName,attributeValue);
-    m_out<<">"<<std::endl;
-}
-
-void XMLStreamWriter::writeLastAttributeAndCloseTag(const std::string &attributeName, const std::string &attributeValue)
-{
-    writeAttribute(attributeName,attributeValue);
-    m_out<<"/>"<<std::endl;
-    if (m_currentTab > 0 )
-    {
-        m_currentTab--;
-    }
-}
-
 
 void XMLStreamWriter::writeTabs()
 {

@@ -8,6 +8,7 @@
 #include "UIRStatsLaunchProgressDialog.h"
 #include "ui_UIRStatsLaunchProgressDialog.h"
 
+
 namespace oig {
 namespace ratstats {
 namespace launcher {
@@ -18,16 +19,125 @@ UIRStatsLaunchProgressDialog::UIRStatsLaunchProgressDialog(const utils::RStatsMo
 {
     m_ui->setupUi(this);
     m_props = props;
-    QString command = QString::fromStdString(m_props.getCommand());
+    std::string commandStr;
+    m_props.generateApplicationCommand(commandStr);
+    QString command = QString::fromStdString(commandStr);
+    m_ui->m_txtOutput->append("Running: <font style='color:#ffffaa;'>"+command+"</font>\n");
+    //m_launchThread = new LaunchProgressThread(command);
+    m_process.setEnvironment( QProcess::systemEnvironment() );
+    m_process.setProcessChannelMode( QProcess::MergedChannels );
+    m_ui->m_grpOutput->setTitle(QString::fromStdString(props.getApplicationName()+" Output"));
+    connect(m_ui->m_btnCancel,SIGNAL(clicked(bool)),this,SLOT(onCancel()));
+    //connect(m_launchThread,SIGNAL(finished()),this,SLOT(onFinished()));
+    //connect(m_launchThread,SIGNAL(consoleOutput(QString)),this,SLOT(onConsoleUpdated(QString)));
+
+    connect(&m_process,SIGNAL(readyReadStandardOutput()),this,SLOT(readyReadStandardOutput()));
+    connect(&m_process,SIGNAL(readyReadStandardError()),this,SLOT(readyReadStandardError()));
+    connect(&m_process,SIGNAL(errorOccurred(QProcess::ProcessError)),this,SLOT(onErrorOccured(QProcess::ProcessError)));
+    connect(&m_process,SIGNAL(finished(int)),this,SLOT(onFinished()));
+
+    setWindowTitle("Running - "+QString::fromStdString(props.getApplicationName()));
+    m_isRunning = true;
+    m_ui->m_btnCancel->setText("STOP Process");
+    //m_launchThread->start();
+    connect(&m_timer,SIGNAL(timeout()),this,SLOT(onReadBuffer()));
+    m_timer.start(100);
+    m_process.start(command);
+    m_wasManuallyClosed = false;
+    m_wasAlreadyCompleted = false;
+
 }
+
 UIRStatsLaunchProgressDialog::~UIRStatsLaunchProgressDialog()
 {
     delete m_ui;
 }
 
+void UIRStatsLaunchProgressDialog::closeEvent(QCloseEvent *)
+{
+    m_process.close();
+    onFinished();
+}
+
+void UIRStatsLaunchProgressDialog::onFinished()
+{
+    if (m_outputBuffer.size() > 0)
+    {
+        return;
+    }
+    setWindowTitle("Finished - "+QString::fromStdString(m_props.getApplicationName()));
+    if (!m_wasAlreadyCompleted)
+    {
+        m_ui->m_txtOutput->append("<font style='color:#ffffaa;'>Command Completed.</font>\n");
+        m_wasAlreadyCompleted = true;
+    }
+
+    m_isRunning = false;
+    m_ui->m_btnCancel->setText("Close");
+    m_ui->m_prgProgress->hide();
+}
+
 void UIRStatsLaunchProgressDialog::onCancel()
 {
-    this->close();
+    if (m_isRunning)
+    {
+        m_wasManuallyClosed = true;
+        m_process.close();
+        setWindowTitle("Finished - "+QString::fromStdString(m_props.getApplicationName()));
+
+        if (!m_wasAlreadyCompleted)
+        {
+            m_ui->m_txtOutput->append("<font style='color:#ffffaa;'>Command Completed.</font>\n");
+            m_wasAlreadyCompleted = true;
+        }
+
+        m_isRunning = false;
+        m_ui->m_btnCancel->setText("Close");
+        m_ui->m_prgProgress->hide();
+        return;
+    }
+    else
+    {
+        this->close();
+    }
 }
+
+void UIRStatsLaunchProgressDialog::onReadBuffer()
+{
+    if (m_outputBuffer.size() > 0)
+    {
+        m_ui->m_txtOutput->append((m_outputBuffer.back()));
+        m_outputBuffer.pop_back();
+        if (m_outputBuffer.size() == 0)
+        {
+            m_isRunning = false;
+        }
+    }
+    else if (!m_isRunning && m_outputBuffer.size() == 0)
+    {
+        onFinished();
+        m_timer.stop();
+    }
+}
+
+void UIRStatsLaunchProgressDialog::readyReadStandardOutput()
+{
+    m_outputBuffer.push_back(m_process.readAllStandardOutput());
+}
+
+void UIRStatsLaunchProgressDialog::onErrorOccured(QProcess::ProcessError err)
+{
+    if (m_wasManuallyClosed == true)
+    {
+        return;
+    }
+    m_outputBuffer.push_back("<font style='color:#ffaaaa;'>"+m_process.errorString()+"\nPlease ensure the command is correct.</font>");
+}
+
+void UIRStatsLaunchProgressDialog::readyReadStandardError()
+{
+    m_outputBuffer.push_back("<font style='color:#ffaaaa;'>"+m_process.readAllStandardError()+"</font>");
+}
+
 }}}//end namespace
 

@@ -15,6 +15,7 @@
 /// TO REPRODUCE, DISCLOSE OR DISTRIBUTE ITS CONTENTS, OR TO MANUFACTURE, USE, OR SELL ANYTHING THAT IT  MAY DESCRIBE, IN WHOLE OR IN PART.
 ///
 
+#pragma once
 
 #include "utility/inc/StringUtils.hpp"
 #include "utility/inc/FileUtils.hpp"

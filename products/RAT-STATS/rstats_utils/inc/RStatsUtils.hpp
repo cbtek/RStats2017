@@ -32,7 +32,12 @@ SOFTWARE.
 #include <cfloat>
 #include <cmath>
 
+#include "rstats_utils/inc/RStatsModuleProperties.h"
+
 #include "RStatsObjectList.hpp"
+
+#include "utility/inc/FileUtils.hpp"
+#include "utility/inc/SystemUtils.hpp"
 
 namespace oig {
 namespace ratstats {
@@ -290,7 +295,50 @@ namespace RStatsUtils
         return values;
     }
 
+    static std::vector<RStatsModuleProperties> getModulePropertiesList()
+    {
+        std::vector<RStatsModuleProperties>propsList;
+        std::string path1,path2,path3,path;
+        path1 = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getApplicationDirectory(), "config/module_definitions");
+        if (cbtek::common::utility::FileUtils::isDirectory(path1))
+        {
+            path = path1;
+        }
 
+        path2 = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserAppDirectory(), "config/module_definitions");
+        if (cbtek::common::utility::FileUtils::isDirectory(path2))
+        {
+            path = path2;
+        }
+
+        path3 = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserHomeDirectory(), "config/module_definitions");
+        if (cbtek::common::utility::FileUtils::isDirectory(path3))
+        {
+            path=path3;
+        }
+
+        if (path.size())
+        {
+            std::vector<std::string> filters,entries;
+            filters.push_back("xml");
+            cbtek::common::utility::FileUtils::getFileEntries(path,true,filters,entries);
+            for (const std::string& file : entries)
+            {
+                try
+                {
+                    RStatsModuleProperties props;
+                    props.loadApplicationConfig(file);
+                    propsList.push_back(props);
+                }
+                catch(...)
+                {
+                    continue;
+                }
+            }
+            return propsList;
+        }
+        throw cbtek::common::utility::FileAccessException(EXCEPTION_TAG_LINE+"Could not locate directory for module definitions! Valid locations: "+path1+"\n"+path2+"\n"+path3);
+    }
 }
 }}}//end namespace
 

@@ -10,6 +10,11 @@
 
 #include <sstream>
 
+#include "utility/inc/XMLReader.h"
+#include "utility/inc/XMLStreamWriter.h"
+
+using namespace cbtek::common::utility;
+
 namespace oig {
 namespace ratstats {
 namespace utils {
@@ -17,7 +22,7 @@ namespace utils {
 
 RStatsModuleProperties::RStatsModuleProperties()
 {
-
+    m_showAppConsole = false;
 }
 
 RStatsModuleProperties::~RStatsModuleProperties()
@@ -25,40 +30,107 @@ RStatsModuleProperties::~RStatsModuleProperties()
 
 }
 
-void RStatsModuleProperties::setType(const std::string &value)
+void RStatsModuleProperties::loadApplicationConfig(const std::string &filePath)
 {
-    m_type=value;
+    XMLReader reader;
+    reader.load(filePath);
+    XMLDataElement * module = reader.getElement("module");
+    if (module)
+    {
+        m_appName = module->getAttributeValue("name");
+        m_appPath = module->getAttributeValue("path");
+        m_appType = module->getAttributeValue("type");
+        m_appWorkingDir = module->getAttributeValue("working_dir");
+        m_appCategory = module->getAttributeValue("category");
+
+        m_appIcon = module->getAttributeValue("icon");
+        m_showAppConsole = module->getAttributeValueAsBool("show_console");
+        std::string args = module->getAttributeValue("args");
+        std::vector<std::string> argPairs = StringUtils::split(args,";;;");
+        for(const std::string& argPair : argPairs)
+        {
+            std::vector<std::string> argValues = StringUtils::split(argPair,"%%%");
+            if (argValues.size()>1)
+            {
+                std::string flag,arg;
+                if (StringUtils::trimmed(argValues[0]).size()>0)
+                {
+                    flag = (argValues[0]);
+                }
+
+                if (StringUtils::trimmed(argValues[1]).size()>0)
+                {
+                    arg = (argValues[1]);
+                }
+                addApplicationArg(flag,arg);
+            }
+        }
+    }
+    else
+    {
+        throw FileNotFoundException(EXCEPTION_TAG_LINE+"Could not parse file at \""+filePath+"\"");
+    }
 }
 
-void RStatsModuleProperties::setName(const std::string & value)
+void RStatsModuleProperties::saveApplicationConfig(const std::string &filePath)
 {
-    m_name=value;
+    std::ofstream out(filePath.c_str());
+    if (out.is_open())
+    {
+        XMLStreamWriter xml(out);
+        xml.writeStartDocument();
+        xml.writeStartElement("module");
+        xml.writeAttribute("name",m_appName);
+        xml.writeAttribute("category",m_appCategory);
+        xml.writeAttribute("path",m_appPath);
+        xml.writeAttribute("script_path",m_appScriptPath);
+        xml.writeAttribute("type",m_appType);
+        xml.writeAttribute("working_dir",m_appType);
+        xml.writeAttribute("icon",m_appIcon);
+        xml.writeAttribute("show_console", (m_showAppConsole ? "TRUE" : "FALSE"));
+        std::string argStr;
+        for (const std::pair<std::string,std::string>& arg : m_args)
+        {
+            argStr+=arg.first+"%%%"+arg.second+";;;";
+        }
+        xml.writeLastAttributeAndCloseTag("args",argStr);
+    }
 }
 
-void RStatsModuleProperties::setWorkingDir(const std::string & value)
+void RStatsModuleProperties::setApplicationType(const std::string &value)
 {
-    m_workingDir=value;
+    m_appType=value;
 }
 
-void RStatsModuleProperties::setLocation(const std::string & value)
+void RStatsModuleProperties::setApplicationName(const std::string & value)
 {
-    m_location=value;
+    m_appName=value;
 }
 
-void RStatsModuleProperties::setGroup(const std::string & value)
+void RStatsModuleProperties::setApplicationWorkingDir(const std::string & value)
 {
-    m_group=value;
+    m_appWorkingDir=value;
 }
 
-void RStatsModuleProperties::setArgs(const std::vector<std::pair<std::string,std::string> > & value)
+void RStatsModuleProperties::setApplicationPath(const std::string & value)
+{
+    m_appPath=value;
+}
+
+void RStatsModuleProperties::setApplicationCategory(const std::string & value)
+{
+    m_appCategory=value;
+}
+
+void RStatsModuleProperties::setApplicationArgs(const std::vector<std::pair<std::string,std::string> > & value)
 {
     m_args=value;
 }
 
-void RStatsModuleProperties::buildCommand(std::string& commandOut)
+void RStatsModuleProperties::generateApplicationCommand(std::string& commandOut)
 {
     std::ostringstream command;
-    command << m_scriptPathMap[m_type]<<" "<<m_location<<" ";
+    command << m_appScriptPath<<" "<<m_appPath<<" ";
     for (const auto& it : m_args)
     {
         if (it.first.size())
@@ -73,52 +145,76 @@ void RStatsModuleProperties::buildCommand(std::string& commandOut)
     commandOut = command.str();
 }
 
-const std::string &RStatsModuleProperties::getType() const
+const std::string &RStatsModuleProperties::getApplicationType() const
 {
-    return m_type;
+    return m_appType;
 }
 
-const std::string &RStatsModuleProperties::getName() const
+const std::string &RStatsModuleProperties::getApplicationName() const
 {
-    return m_name;
+    return m_appName;
 }
 
-const std::string &RStatsModuleProperties::getWorkingDir() const
+const std::string &RStatsModuleProperties::getApplicationWorkingDir() const
 {
-    return m_workingDir;
+    return m_appWorkingDir;
 }
 
-const std::string &RStatsModuleProperties::getLocation() const
+const std::string &RStatsModuleProperties::getApplicationPath() const
 {
-    return m_location;
+    return m_appPath;
 }
 
-const std::string &RStatsModuleProperties::getGroup() const
+const std::string &RStatsModuleProperties::getApplicationCategory() const
 {
-    return m_group;
+    return m_appCategory;
 }
 
-const std::vector<std::pair<std::string,std::string> > &RStatsModuleProperties::getArgs() const
+const std::vector<std::pair<std::string,std::string> > &RStatsModuleProperties::getApplicationArgs() const
 {
     return m_args;
 }
 
-void RStatsModuleProperties::addArg(const std::string &flag, const std::string &argument)
+void RStatsModuleProperties::addApplicationArg(const std::string &flag,
+                                               const std::string &argument)
 {
     m_args.push_back(std::make_pair(flag,argument));
 }
 
-void RStatsModuleProperties::clearArgs()
+void RStatsModuleProperties::clearApplicationArgs()
 {
     m_args.clear();
 }
 
-void oig::ratstats::utils::RStatsModuleProperties::setScriptPath(const std::string &type, const std::string &scriptFilePath)
+void RStatsModuleProperties::setApplicationScriptPath(const std::string &scriptFilePath)
 {
-    m_scriptPathMap[type] = scriptFilePath;
+    m_appScriptPath = scriptFilePath;
 }
 
+const std::string &RStatsModuleProperties::getApplicationScriptPath() const
+{
+    return m_appScriptPath;
+}
 
+void RStatsModuleProperties::addApplicationFlag(const std::string &flag)
+{
+    m_args.push_back(std::make_pair(flag,""));
+}
+
+void RStatsModuleProperties::setApplicationIcon(const std::string &appIcon)
+{
+    m_appIcon = appIcon;
+}
+
+std::string RStatsModuleProperties::getApplicationIcon() const
+{
+    return m_appIcon;
+}
+
+bool RStatsModuleProperties::isApplicationConsoleShown() const
+{
+    return m_showAppConsole;
+}
 }}}//end namespace
 
 

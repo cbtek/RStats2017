@@ -73,27 +73,42 @@ class XMLStreamWriter
     void writeTextElement(const std::string & tag, const std::string & text);    
 
     /**
-     * @brief writeAttribute
+     * @brief writeLastAttribute
      * @param attributeName
      * @param attributeValue
      */
-    void writeAttribute(const std::string & attributeName, const std::string & attributeValue);       
+    template<typename ValueType>
+    void writeLastAttribute(const std::string & attributeName,
+                            const ValueType& attributeValue)
+    {
+
+        writeAttribute(attributeName,attributeValue);
+        m_out<<">"<<std::endl;
+    }
 
     /**
      * @brief writeLastAttribute
      * @param attributeName
      * @param attributeValue
      */
-    void writeLastAttribute(const std::string & attributeName, const std::string & attributeValue);
+    template<typename ValueType>
+    void writeLastAttributeAndCloseTag(const std::string & attributeName,
+                                       const ValueType & attributeValue)
+    {
+        writeAttribute(attributeName,attributeValue);
+        m_out<<"/>"<<std::endl;
+        if (m_currentTab > 0 )
+        {
+            m_currentTab--;
+        }
+    }
 
-    /**
-     * @brief writeLastAttribute
-     * @param attributeName
-     * @param attributeValue
-     */
-    void writeLastAttributeAndCloseTag(const std::string & attributeName, const std::string & attributeValue);
-
-
+    template<typename ValueType>
+    void writeAttribute(const std::string &attributeName,
+                        const ValueType &attributeValue)
+    {
+        m_out<<" "<<attributeName<<"=\""<<attributeValue<<"\"";
+    }
 
     //! Destructor
 	~XMLStreamWriter();	

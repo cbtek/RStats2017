@@ -29,13 +29,13 @@ UIRStatsLaunchConfigDialog::~UIRStatsLaunchConfigDialog()
 
 void UIRStatsLaunchConfigDialog::onInit()
 {
-    m_ui->m_txtName->setText(QString::fromStdString(m_props.getName()));
-    m_ui->m_cmbTypes->setCurrentText(QString::fromStdString(m_props.getType()));
-    m_ui->m_txtLocation->setText(QString::fromStdString(m_props.getLocation()));
-    m_ui->m_txtWorkingDir->setText(QString::fromStdString(m_props.getWorkingDir()));
+    m_ui->m_txtName->setText(QString::fromStdString(m_props.getApplicationName()));
+    m_ui->m_cmbTypes->setCurrentText(QString::fromStdString(m_props.getApplicationType()));
+    m_ui->m_txtLocation->setText(QString::fromStdString(m_props.getApplicationPath()));
+    m_ui->m_txtWorkingDir->setText(QString::fromStdString(m_props.getApplicationWorkingDir()));
     m_ui->m_tblArgs->clear();
     size_t row = 0;
-    for(const auto& it : m_props.getArgs())
+    for(const auto& it : m_props.getApplicationArgs())
     {
         m_ui->m_tblArgs->setItem(row,0,new QTableWidgetItem(QString::fromStdString(it.first)));
         m_ui->m_tblArgs->setItem(row,1,new QTableWidgetItem(QString::fromStdString(it.second)));
@@ -49,11 +49,11 @@ void UIRStatsLaunchConfigDialog::onInit()
 
 void UIRStatsLaunchConfigDialog::onSave()
 {
-    m_props.setName(m_ui->m_txtName->text().toStdString());
-    m_props.setLocation(m_ui->m_txtLocation->text().toStdString());
-    m_props.setWorkingDir(m_ui->m_txtWorkingDir->text().toStdString());
-    m_props.setType(m_ui->m_cmbTypes->currentText().toStdString());
-    m_props.clearArgs();
+    m_props.setApplicationName(m_ui->m_txtName->text().toStdString());
+    m_props.setApplicationPath(m_ui->m_txtLocation->text().toStdString());
+    m_props.setApplicationWorkingDir(m_ui->m_txtWorkingDir->text().toStdString());
+    m_props.setApplicationType(m_ui->m_cmbTypes->currentText().toStdString());
+    m_props.clearApplicationArgs();
     for (size_t a1 = 0;a1<m_ui->m_tblArgs->rowCount();++a1)
     {
         QString flag = m_ui->m_tblArgs->item(a1,0)->text();
@@ -62,7 +62,7 @@ void UIRStatsLaunchConfigDialog::onSave()
         {
             break;
         }
-        m_props.addArg(flag.toStdString(),argument.toStdString());
+        m_props.addApplicationArg(flag.toStdString(),argument.toStdString());
     }
     emit propertiesSaved(m_props);
     this->close();

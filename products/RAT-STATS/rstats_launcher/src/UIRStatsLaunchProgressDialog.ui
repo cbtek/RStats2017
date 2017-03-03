@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>440</width>
-    <height>454</height>
+    <width>668</width>
+    <height>480</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,18 +15,10 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <widget class="QLabel" name="m_lblName">
-       <property name="text">
-        <string>TextLabel</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    <layout class="QVBoxLayout" name="verticalLayout"/>
    </item>
    <item>
-    <widget class="QGroupBox" name="verticalGroupBox_2">
+    <widget class="QGroupBox" name="m_grpOutput">
      <property name="title">
       <string>Module Output:</string>
      </property>
@@ -44,7 +36,31 @@
        <number>4</number>
       </property>
       <item>
-       <widget class="QPlainTextEdit" name="m_txtOutput"/>
+       <widget class="QTextBrowser" name="m_txtOutput">
+        <property name="styleSheet">
+         <string notr="true">QTextEdit
+{
+	background:#332;
+	color:white;
+}</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QProgressBar" name="m_prgProgress">
+        <property name="maximum">
+         <number>0</number>
+        </property>
+        <property name="value">
+         <number>-1</number>
+        </property>
+        <property name="textVisible">
+         <bool>false</bool>
+        </property>
+        <property name="format">
+         <string/>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

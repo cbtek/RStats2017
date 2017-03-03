@@ -85,6 +85,7 @@ namespace utility{
     };\
 
 CREATE_EXCEPTION(FileNotFoundException,"FileNotFoundException")
+CREATE_EXCEPTION(FileParseException,"FileParseException")
 CREATE_EXCEPTION(FileAccessException,"FileAccessException")
 CREATE_EXCEPTION(IndexOutOfRangeException,"Index is out of range")
 CREATE_EXCEPTION(InvalidOperationException,"Invalid operation occured")

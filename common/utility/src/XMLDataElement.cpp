@@ -280,6 +280,16 @@ void XMLDataElement::addAttribute(const std::string &attributeName,
     m_Attributes.push_back(std::make_pair(attributeName,StringUtils::toString(attributeValue)));
 }
 
+bool XMLDataElement::getAttributeValueAsBool(const std::string &attributeName) const
+{
+    std::string value = getAttributeValue(attributeName);
+    if (StringUtils::toUpperTrimmed(value) == "TRUE")
+    {
+        return true;
+    }
+    else return false;
+}
+
 XMLDataElement *XMLDataElement::findInSubTree(const std::string & name,
                                               const XMLDataElement * element,
                                               const bool &caseSensitive)

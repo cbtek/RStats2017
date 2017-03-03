@@ -106,6 +106,8 @@ public:
         return valueNumber;
     }
 
+    bool getAttributeValueAsBool(const std::string& attributeName) const;
+
 protected:
 
     XMLDataElement *findInSubTree(const std::string & name,

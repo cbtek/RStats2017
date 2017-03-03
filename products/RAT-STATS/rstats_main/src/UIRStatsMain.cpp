@@ -22,6 +22,8 @@
 
 #include "rstats_ui/inc/UIRStatsSettingsManager.h"
 #include "rstats_utils/inc/RStatsSettingsManager.h"
+#include "rstats_utils/inc/RStatsModuleProperties.h"
+#include "rstats_utils/inc/RStatsUtils.hpp"
 
 #include "UIRStatsAbout.h"
 #include "UIRStatsModuleEditor.h"
@@ -63,10 +65,6 @@ UIRStatsMain::~UIRStatsMain()
 
 void UIRStatsMain::onInitialize()
 {
-    XMLReader reader;
-    std::string filePath = FileUtils::buildFilePath(SystemUtils::getApplicationDirectory(),"config/config_main.xml");
-    reader.load(filePath);
-    XMLDataElement * parent = reader.getElement("xml");
     int buttonHeight = 32;
     int fontSize = 10;
 
@@ -109,123 +107,100 @@ void UIRStatsMain::onInitialize()
     m_ui->m_actionModule_Manager->setIcon(QIcon(iconModule));
     m_ui->m_actionSettings_Manager->setIcon(QIcon(iconSettings));
     m_ui->m_menuBar->setFont(font);
-
-
     m_ui->m_lstModules->setFont(font);
     m_ui->m_stackModules->setFont(font);
     m_ui->m_lstModules->setIconSize(QSize(buttonHeight-8,buttonHeight-8));
-    for (size_t a1 = 0; a1 < parent->getNumChildren(); ++a1)
-    {
-        const XMLDataElement * child = parent->getChildAt(a1);
-        if (child && StringUtils::equals(child->getElementName(),"group"))
-        {
-            QGridLayout * groupLayout = new QGridLayout;
-            groupLayout->setProperty("id",a1);
-            groupLayout->setProperty("name",QString::fromStdString(child->getAttributeValue("name")));
-            std::string protectStr = child->getAttributeValue("protected");
-            if (StringUtils::toUpperTrimmed(protectStr) == "TRUE")
-            {
-                m_groupProtected.insert(a1);
-            }
-            m_groupModuleMap[a1] = groupLayout;
-            m_groupModuleRowColumnMap[a1] = QPair<int,int>(0,0);
 
-            if (!m_groupIcons.count(a1))
+    std::vector<RStatsModuleProperties> propsList = RStatsUtils::getModulePropertiesList();
+    std::map<std::string, std::vector<RStatsModuleProperties> > groupedModules;
+
+    for(const RStatsModuleProperties& props : propsList)
+    {
+        std::string category;
+        if (StringUtils::trimmed(props.getApplicationCategory()).size()==0)
+        {
+            category = "Uncategorized";
+        }
+
+        if (groupedModules.count(props.getApplicationCategory()) == 0)
+        {
+            QListWidgetItem * categoryItem = new QListWidgetItem(iconFolder,
+                                                                 QString::fromStdString(category));
+            m_ui->m_lstModules->addItem(categoryItem);
+        }
+        groupedModules[category].push_back(props);
+    }
+
+    size_t index = 0;
+    for (const auto& it : groupedModules)
+    {
+        QGridLayout * groupLayout = new QGridLayout;
+        groupLayout->setProperty("index",index);
+        groupLayout->setProperty("name",QString::fromStdString(it.first));
+        m_groupModuleMap[index] = groupLayout;
+        m_groupModuleRowColumnMap[index] = QPair<int,int>(0,0);
+        for(size_t a2 = 0 ;a2 < it.second.size();++a2)
+        {
+            RStatsModuleProperties props = it.second[a2];
+            if (m_groupModuleMap.contains(index))
             {
-                std::string iconStr = FileUtils::buildFilePath(SystemUtils::getApplicationDirectory(),
-                                                               child->getAttributeValue("icon"));
-                if (StringUtils::trimmed(iconStr).size() > 0 && FileUtils::fileExists(iconStr))
+                QGridLayout * groupLayout = m_groupModuleMap[index];
+                QPair<int,int> position = m_groupModuleRowColumnMap[index];
+                bool isDisabled=false,isHidden=false;
+
+                //Setup edit button
+                QPushButton * moduleEditButton = new QPushButton;
+                setupButton(moduleEditButton,font,iconEdit,buttonHeight,true);
+                moduleEditButton->setProperty("index",m_allLaunchButtons.size());
+                m_editButtons.addButton(moduleEditButton);
+                groupLayout->addWidget(moduleEditButton,position.first,position.second+1);
+
+                //Setup remove button
+                QPushButton * moduleRemoveButton = new QPushButton;
+                setupButton(moduleRemoveButton,font,iconRemove,buttonHeight,true);
+                moduleRemoveButton->setProperty("index",m_allLaunchButtons.size());
+                m_removeButtons.addButton(moduleRemoveButton);
+                groupLayout->addWidget(moduleRemoveButton,position.first,position.second+2);
+
+                //Setup launch button
+                QToolButton * moduleLaunchButton = new QToolButton;
+                moduleLaunchButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+                moduleLaunchButton->setText(QString::fromStdString(props.getApplicationName()));
+                moduleLaunchButton->setProperty("id",index);
+
+#ifdef __WIN32
+                isDisabled = !FileUtils::fileExists(props.getApplicationPath()+".exe");
+#else
+                isDisabled = !FileUtils::fileExists(props.getApplicationPath());
+#endif
+                moduleLaunchButton->setIconSize(QSize(buttonHeight-8,buttonHeight-8));
+
+                std::string iconFile = props.getApplicationIcon();
+                std::string iconPath = FileUtils::buildFilePath(SystemUtils::getApplicationDirectory(),
+                                                                iconFile);
+
+                if (StringUtils::trimmed(iconFile).size() > 0 &&
+                    FileUtils::fileExists(iconPath))
                 {
-                    m_groupIcons[a1]=QIcon(QString::fromStdString(iconStr));
+                    moduleLaunchButton->setIcon(QIcon(QString::fromStdString(iconPath)));
                 }
                 else
                 {
-                    m_groupIcons[a1]=iconFolder;
+                    moduleLaunchButton->setIcon(iconModule);
                 }
-            }
 
-            //If current group has no modules then create label indicating that
-            size_t subChildCount = child->getNumChildren();
-            if (subChildCount == 0)
-            {
-                QLabel * emptyLabel = new QLabel;
-                emptyLabel->setText("No modules available");
-                emptyLabel->setFont(QFont("arial",24));
-                emptyLabel->setDisabled(true);
-                emptyLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-                emptyLabel->setProperty("type","empty");
-                groupLayout->addWidget(emptyLabel);
-                m_groupEmpty[a1] = true;
-            }
-            else
-            {
-                //Loop over all modules and populate UI
-                for(size_t a2 = 0 ;a2 < subChildCount;++a2)
-                {
-                    const XMLDataElement * subChild = child->getChildAt(a2);
-                    if (subChild && StringUtils::equals(subChild->getElementName(),"module"))
-                    {
-                        if (m_groupModuleMap.contains(a1))
-                        {
-                            QGridLayout * groupLayout = m_groupModuleMap[a1];
-                            QPair<int,int> position = m_groupModuleRowColumnMap[a1];
-                            bool isDisabled=false,isHidden=false;
-
-                            //Setup edit button
-                            QPushButton * moduleEditButton = new QPushButton;
-                            setupButton(moduleEditButton,font,iconEdit,buttonHeight,true);
-                            moduleEditButton->setProperty("index",m_allLaunchButtons.size());
-                            m_editButtons.addButton(moduleEditButton);
-                            groupLayout->addWidget(moduleEditButton,position.first,position.second+1);
-
-                            //Setup remove button
-                            QPushButton * moduleRemoveButton = new QPushButton;
-                            setupButton(moduleRemoveButton,font,iconRemove,buttonHeight,true);
-                            moduleRemoveButton->setProperty("index",m_allLaunchButtons.size());
-                            m_removeButtons.addButton(moduleRemoveButton);
-                            groupLayout->addWidget(moduleRemoveButton,position.first,position.second+2);
-
-                            //Setup launch button
-                            QToolButton * moduleLaunchButton = new QToolButton;
-                            moduleLaunchButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-                            moduleLaunchButton->setProperty("name",QString::fromStdString(subChild->getAttributeValue("exe")));
-                            moduleLaunchButton->setProperty("exe",QString::fromStdString(subChild->getAttributeValue("exe")));
-                            moduleLaunchButton->setText(QString::fromStdString(subChild->getAttributeValue("name")));
-                            moduleLaunchButton->setProperty("id",a1);
-                            isDisabled = StringUtils::equals("true",subChild->getAttributeValue("isDisabled"));
-                            isHidden = StringUtils::equals("true",subChild->getAttributeValue("isHidden"));
-                            moduleLaunchButton->setProperty("isDisabled",isDisabled);
-                            moduleLaunchButton->setProperty("isHidden",isHidden);
-                            moduleLaunchButton->setIconSize(QSize(buttonHeight-8,buttonHeight-8));
-
-                            std::string iconFile = subChild->getAttributeValue("icon");
-                            std::string iconPath = FileUtils::buildFilePath(SystemUtils::getApplicationDirectory(),
-                                                                            iconFile);
-
-                            if (StringUtils::trimmed(iconFile).size() > 0 &&
-                                FileUtils::fileExists(iconPath))
-                            {
-                                moduleLaunchButton->setIcon(QIcon(QString::fromStdString(iconPath)));
-                            }
-                            else
-                            {
-                                moduleLaunchButton->setIcon(iconModule);
-                            }
-
-                            moduleLaunchButton->setMinimumHeight(buttonHeight);
-                            moduleLaunchButton->setMaximumHeight(buttonHeight);
-                            moduleLaunchButton->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-                            m_allLaunchButtons.push_back(moduleLaunchButton);
-                            m_launchButtons.addButton(moduleLaunchButton);
-                            groupLayout->addWidget(moduleLaunchButton,position.first,position.second);
-                            position.first++;
-                            m_groupModuleRowColumnMap[a1] = position;
-                            m_groupEmpty[a1] = false;
-                        }
-                    }
-                }
+                moduleLaunchButton->setMinimumHeight(buttonHeight);
+                moduleLaunchButton->setMaximumHeight(buttonHeight);
+                moduleLaunchButton->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+                m_allLaunchButtons.push_back(moduleLaunchButton);
+                m_launchButtons.addButton(moduleLaunchButton);
+                groupLayout->addWidget(moduleLaunchButton,position.first,position.second);
+                position.first++;
+                m_groupModuleRowColumnMap[index] = position;
+                m_groupEmpty[index] = false;
             }
         }
+        ++index;
     }
 
     m_ui->m_stackModules->removeWidget(m_ui->m_stackModules->widget(0));
