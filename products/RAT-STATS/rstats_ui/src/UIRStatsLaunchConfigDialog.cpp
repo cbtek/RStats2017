@@ -17,7 +17,9 @@
 #include "rstats_utils/inc/RStatsUtils.hpp"
 #include "utility/inc/FileUtils.hpp"
 #include "utility/inc/SystemUtils.hpp"
+
 #include "rstats_ui/inc/UIRStatsErrorMessage.h"
+#include "rstats_ui/inc/UIRStatsUtils.hpp"
 
 
 using namespace cbtek::common::utility;
@@ -26,7 +28,7 @@ using namespace oig::ratstats::ui;
 
 namespace oig {
 namespace ratstats {
-namespace main {
+namespace ui {
 
 
 UIRStatsLaunchConfigDialog::UIRStatsLaunchConfigDialog(const utils::RStatsModuleProperties &props, QWidget *parent) :
@@ -48,53 +50,60 @@ void UIRStatsLaunchConfigDialog::onInit()
 {
     m_ui->m_txtName->setText(QString::fromStdString(m_props.getName()));
     m_ui->m_cmbTypes->setCurrentText(QString::fromStdString(m_props.getType()));
-    m_ui->m_txtLocation->setText(QString::fromStdString(m_props.getPath()));
-    m_ui->m_txtWorkingDir->setText(QString::fromStdString(m_props.getWorkingDir()));
-    m_ui->m_tblArgs->clear();
-    m_ui->m_tblArgs->setHorizontalHeaderLabels(QStringList()<<"Flag"<<"Argument");
+    m_ui->m_txtLocation->setText(QString::fromStdString(m_props.getPath()));    
+    m_ui->m_txtArgs->setText(QString::fromStdString(m_props.getArgs()));
+    m_ui->m_chkShowConsole->setChecked(m_props.isConsoleShown());
+    this->setWindowTitle("Module Properties Dialog");
 
+    //Populate combobox with available categories
     std::vector<std::string> categories = RStatsUtils::getModuleCategories();
-    m_ui->m_cmbTypes->clear();
+    m_ui->m_cmbCategories->clear();
     for (const auto& category : categories)
     {
-        m_ui->m_cmbTypes->addItem(QString::fromStdString(category));
+        m_ui->m_cmbCategories->addItem(QString::fromStdString(category));
     }
+    m_ui->m_cmbCategories->setCurrentText(QString::fromStdString(m_props.getCategory()));
 
-    m_ui->m_cmbTypes->setCurrentText(QString::fromStdString(m_props.getCategory()));
-    size_t row = 0;
-    for(const auto& it : m_props.getArgs())
+    //Grab icon for this module
+    QIcon icon = UIRStatsUtils::getIcon(m_props.getIcon());
+    if (!icon.isNull())
     {
-        m_ui->m_tblArgs->setItem(row,0,new QTableWidgetItem(QString::fromStdString(it.first)));
-        m_ui->m_tblArgs->setItem(row,1,new QTableWidgetItem(QString::fromStdString(it.second)));
-        ++row;
+        QPixmap pixmapIcon = icon.pixmap(icon.actualSize(QSize(64, 64)));
+         m_ui->m_lblIcon->setPixmap(pixmapIcon);
+         m_ui->m_lblNoIcon->hide();
+    }
+    else
+    {
+        m_ui->m_lblIcon->hide();
     }
 
+    //Setup signal/slot connections
     connect(m_ui->m_btnSave,SIGNAL(clicked(bool)),this,SLOT(onSave()));
     connect(m_ui->m_btnCancel,SIGNAL(clicked(bool)),this,SLOT(onCancel()));
     connect(m_ui->m_btnLaunch,SIGNAL(clicked(bool)),this,SLOT(onLaunch()));
-    connect(m_ui->m_btnBrowseLocation,SIGNAL(clicked(bool)),this,SLOT(onBrowseLocation()));
-    connect(m_ui->m_btnBrowseWorkingDir,SIGNAL(clicked(bool)),this,SLOT(onBrowseWorkingDir()));
+    connect(m_ui->m_btnBrowseLocation,SIGNAL(clicked(bool)),this,SLOT(onBrowseModulePath()));
+    connect(m_ui->m_btnSetIcon,SIGNAL(clicked(bool)),this,SLOT(onBrowseModuleIcon()));
 }
 
 void UIRStatsLaunchConfigDialog::onSave()
 {
-    m_props.setName(m_ui->m_txtName->text().toStdString());
-    m_props.setPath(m_ui->m_txtLocation->text().toStdString());
-    m_props.setWorkingDir(m_ui->m_txtWorkingDir->text().toStdString());
-    m_props.setType(m_ui->m_cmbTypes->currentText().toStdString());
-    m_props.clearApplicationArgs();
-    m_props.setCategory(m_ui->m_cmbTypes->currentText().toStdString());
-    for (size_t a1 = 0;a1<m_ui->m_tblArgs->rowCount();++a1)
+    QString name = m_ui->m_txtName->text();
+    if (name.isEmpty())
     {
-        QString flag = m_ui->m_tblArgs->item(a1,0)->text();
-        QString argument = m_ui->m_tblArgs->item(a1,1)->text();
-        if (flag.isEmpty() && argument.isEmpty())
-        {
-            break;
-        }
-        m_props.addApplicationArg(flag.toStdString(),argument.toStdString());
-    }    
-    m_props.saveApplicationConfig();
+        QMessageBox::information(this,"Empty field...","You must give this module a name.");
+        m_ui->m_txtName->setFocus();
+        return;
+    }
+
+    //Save property values and close
+    m_props.setName(m_ui->m_txtName->text().toStdString());
+    m_props.setPath(m_ui->m_txtLocation->text().toStdString());    
+    //m_props.setWorkingDir(m_ui->m_txtWorkingDir->text().toStdString());
+    m_props.setType(m_ui->m_cmbTypes->currentText().toStdString());    
+    m_props.setCategory(m_ui->m_cmbTypes->currentText().toStdString());
+    m_props.setArgs(m_ui->m_txtArgs->text().toStdString());
+    m_props.saveConfig();
+    m_props.setConsoleShown(m_ui->m_chkShowConsole->isChecked());
     this->close();
 }
 
@@ -105,7 +114,7 @@ void UIRStatsLaunchConfigDialog::onCancel()
 
 void UIRStatsLaunchConfigDialog::onLaunch()
 {
-    std::string launcherPath = FileUtils::buildFilePath(SystemUtils::getApplicationDirectory(),"rstats_launcher");
+    std::string launcherPath = FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_launcher");
     if (!FileUtils::fileExists(launcherPath))
     {        
         UIRStatsErrorMessage("Module Launch Error", "Can not launch this module.  Ensure that the module launcher (rstats_launcher) is installed.").exec();
@@ -132,6 +141,20 @@ void UIRStatsLaunchConfigDialog::onBrowseModuleWorkingDir()
     if (QDir(dir).exists())
     {
         m_props.setWorkingDir(dir.toStdString());
+    }
+}
+
+void UIRStatsLaunchConfigDialog::onBrowseModuleIcon()
+{
+    QString file = QFileDialog::getOpenFileName(this,"Search for module icon...","","Images (*.jpg *.png *.ico)");
+    if (QFile::exists(file))
+    {
+        m_props.setIcon(file.toStdString());
+        QIcon icon(file);
+        QPixmap pixmapIcon = icon.pixmap(icon.actualSize(QSize(64, 64)));
+        m_ui->m_lblIcon->show();
+        m_ui->m_lblIcon->setPixmap(pixmapIcon);
+        m_ui->m_lblNoIcon->hide();
     }
 }
 }}}//end namespace

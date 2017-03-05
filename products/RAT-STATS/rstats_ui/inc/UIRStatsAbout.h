@@ -12,7 +12,7 @@ class Ui_UIRStatsAbout;
 
 namespace oig {
 namespace ratstats {
-namespace main {
+namespace ui {
 
 
 class UIRStatsAbout : public QDialog

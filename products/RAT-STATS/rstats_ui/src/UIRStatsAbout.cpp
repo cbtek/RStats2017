@@ -15,7 +15,7 @@ using namespace cbtek::common::utility;
 
 namespace oig {
 namespace ratstats {
-namespace main {
+namespace ui {
 
 
 UIRStatsAbout::UIRStatsAbout(QWidget *parent) :
@@ -24,7 +24,7 @@ UIRStatsAbout::UIRStatsAbout(QWidget *parent) :
 {
     m_ui->setupUi(this);
     connect(m_ui->m_btnOK,SIGNAL(clicked(bool)),this,SLOT(onOK()));
-    QString logoPath = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getApplicationDirectory(),"resx/img_logo_desktop.png"));
+    QString logoPath = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"resx/img_logo_desktop.png"));
     if (FileUtils::fileExists(logoPath.toStdString()))
     {
         m_ui->m_lblCreditsBackup->hide();

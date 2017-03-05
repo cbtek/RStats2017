@@ -14,7 +14,7 @@ class Ui_UIRStatsLaunchConfigDialog;
 
 namespace oig {
 namespace ratstats {
-namespace main {
+namespace ui {
 
 
 class UIRStatsLaunchConfigDialog : public QDialog
@@ -47,6 +47,7 @@ private slots:
      void onLaunch();
      void onBrowseModulePath();
      void onBrowseModuleWorkingDir();
+     void onBrowseModuleIcon();
 
 signals:
     void propertiesSaved(const utils::RStatsModuleProperties& props);

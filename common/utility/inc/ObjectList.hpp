@@ -67,6 +67,8 @@ class CBTEK_UTILS_DLL ObjectList  : public std::vector<T>
 
         size_t add(const T & value);
 
+        void addValues(const ObjectList<T> & values);
+
         size_t indexOf(const T & value);
 
         bool insertAfterValue(const T & insertAfterThisValue, const T & valueToBeInserted);
@@ -256,11 +258,11 @@ size_t ObjectList<T>::add(const T & value)
 }
 
 template<typename T>
-void add(const ObjectList<T> & items)
+void ObjectList<T>::addValues(const ObjectList<T> & values)
 {
-    for (size_t a1 = 0;a1<items.size();++a1)
+    for (size_t a1 = 0;a1<values.size();++a1)
     {
-        push_back(items[a1]);
+        push_back(values[a1]);
     }
 }
 

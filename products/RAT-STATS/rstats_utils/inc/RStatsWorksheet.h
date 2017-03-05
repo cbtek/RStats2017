@@ -158,19 +158,6 @@ public:
      */
     void resetDefaults();
 
-    /**
-     * @brief getColumnIndexFromLabel
-     * @param columnLabel
-     * @return
-     */
-    static size_t getColumnIndexFromLabel(const std::string& columnLabel);
-
-    /**
-     * @brief getColumnLabelFromIndex
-     * @param columnIndex
-     * @return
-     */
-    static std::string getColumnLabelFromIndex(size_t columnIndex);
 
     //! Destructor
 	~RStatsWorksheet();	

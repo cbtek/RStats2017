@@ -58,7 +58,7 @@ void UIRStatsWorkbook::onPopulateTable(const RStatsWorksheet &sheet)
     for (size_t a1 = 0; a1 < sheet.getNumColumns();++a1)
     {
         QTableWidgetItem * header = new QTableWidgetItem;
-        header->setText(QString::fromStdString(RStatsWorksheet::getColumnLabelFromIndex(a1)));
+        header->setText(QString::fromStdString(RStatsUtils::getColumnLabelFromIndex(a1)));
         m_ui->m_tblCurrentSheet->setHorizontalHeaderItem(a1,header);
     }
 

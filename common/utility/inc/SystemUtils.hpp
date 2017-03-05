@@ -136,7 +136,7 @@ static inline std::string getCurrentDirectory()
     return std::string(dir);
 }
 
-static inline std::string getApplicationDirectory()
+static inline std::string getCurrentExecutableDirectory()
 {
     std::string appPath;
     char buffer[PATH_MAX];

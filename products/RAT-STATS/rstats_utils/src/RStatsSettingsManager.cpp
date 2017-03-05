@@ -125,7 +125,7 @@ SettingPtr RStatsSettingsManager::getSettingById(const std::string &id) const
 
 RStatsSettingsManager::RStatsSettingsManager()
 {
-   m_settingsFilePath = FileUtils::buildFilePath(SystemUtils::getApplicationDirectory(),"config/config_settings.xml");
+   m_settingsFilePath = FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"config/config_settings.xml");
    if (FileUtils::fileExists(m_settingsFilePath))
    {
        readSettings();

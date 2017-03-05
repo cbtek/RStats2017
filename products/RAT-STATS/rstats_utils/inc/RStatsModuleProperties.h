@@ -121,48 +121,65 @@ public:
     * @brief Getter for m_args
     * @return Return copy of m_args
     */
-    const std::vector<std::pair<std::string,std::string> > & getArgs() const;
+    const std::string & getArgs() const;
 
-
-    void setDefinitionPath(const std::string & path);
     /**
-     * @brief addArg
-     * @param flag
-     * @param argument
+     * @brief setArgs
+     * @param value
      */
-    void addApplicationArg(const std::string& flag = "",
-                            const std::string& argument = "");
+    void setArgs(const std::string &value);
 
 
     /**
-     * @brief addFlag
-     * @param flag
+     * @brief setDefinitionPath
+     * @param path
      */
-    void addApplicationFlag(const std::string& flag);
-
-    /**
-     * @brief clearArgs
-     */
-    void clearApplicationArgs();
+    void setDefinitionPath(const std::string & path);   
 
     /**
      * @brief load
      * @param filePath
      */
-    void loadApplicationConfig(const std::string& filePath);
+    void loadConfig(const std::string& filePath);
 
     /**
      * @brief save
      */
-    void saveApplicationConfig(const std::string& filePath);
+    void saveConfig(const std::string& filePath);
 
-    void saveApplicationConfig();
+    /**
+     * @brief saveConfig
+     */
+    void saveConfig();
 
+    /**
+     * @brief removeConfig
+     */
+    void removeConfig();
+
+    /**
+     * @brief setIcon
+     * @param appIcon
+     */
     void setIcon(const std::string& appIcon);
 
+    /**
+     * @brief getIcon
+     * @return
+     */
     std::string getIcon() const;
 
-    bool isApplicationConsoleShown() const;
+    /**
+     * @brief isApplicationConsoleShown
+     * @return
+     */
+    bool isConsoleShown() const;
+
+    /**
+     * @brief setConsoleShown
+     * @param flag
+     */
+    void setConsoleShown(bool flag);
 
     //! Destructor
     ~RStatsModuleProperties();
@@ -175,9 +192,9 @@ private:
     std::string m_appCategory;
     std::string m_appIcon;
     std::string m_appScriptPath;
-    std::string m_appDefPath;
-    bool m_showAppConsole;
-    std::vector<std::pair<std::string,std::string> > m_args;
+    std::string m_configPath;
+    std::string m_appArgs;
+    bool m_showAppConsole;    
 
 };
 }}}//end namespace

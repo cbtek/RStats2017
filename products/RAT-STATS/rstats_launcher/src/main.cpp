@@ -22,7 +22,7 @@ int main(int argc, char ** argv)
         if (FileUtils::fileExists(modulePath))
         {
             props.loadApplicationConfig(modulePath);
-            props.saveApplicationConfig(modulePath+".saved.xml");
+            props.saveApplicationConfig(modulePath+".saved.xml");            
             if (!props.isApplicationConsoleShown())
             {
                 std::string command;

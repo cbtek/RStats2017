@@ -33,6 +33,7 @@ SOFTWARE.
 #include <cmath>
 
 #include "rstats_utils/inc/RStatsModuleProperties.h"
+#include "rstats_utils/inc/RStatsScriptProviderProperties.h"
 
 #include "RStatsObjectList.hpp"
 
@@ -301,20 +302,20 @@ namespace RStatsUtils
     static std::string getModulePropertiesPath()
     {
         std::string path1,path2,path3,path;
-        path1 = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getApplicationDirectory(), "config/module_definitions");
-        if (cbtek::common::utility::FileUtils::isDirectory(path1))
+        path1 = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getCurrentExecutableDirectory(), "config/.rstats_module_properties");
+        if (cbtek::common::utility::FileUtils::isDirectory(path1) && cbtek::common::utility::FileUtils::isDirectoryWritable(path1))
         {
             path = path1;
         }
 
-        path2 = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserAppDirectory(), "config/module_definitions");
-        if (cbtek::common::utility::FileUtils::isDirectory(path2))
+        path2 = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserAppDirectory(), "config/.rstats_module_properties");
+        if (cbtek::common::utility::FileUtils::isDirectory(path2) && cbtek::common::utility::FileUtils::isDirectoryWritable(path2))
         {
             path = path2;
         }
 
-        path3 = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserHomeDirectory(), "config/module_definitions");
-        if (cbtek::common::utility::FileUtils::isDirectory(path3))
+        path3 = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserHomeDirectory(), "config/.rstats_module_properties");
+        if (cbtek::common::utility::FileUtils::isDirectory(path3) && cbtek::common::utility::FileUtils::isDirectoryWritable(path3))
         {
             path=path3;
         }
@@ -324,6 +325,38 @@ namespace RStatsUtils
             return path;
         }
         throw cbtek::common::utility::FileAccessException(EXCEPTION_TAG_LINE+"Could not locate directory for module definitions! Valid locations: "+path1+"\n"+path2+"\n"+path3);
+    }
+
+    /**
+     * @brief getScriptProviderPropertiesPath
+     * @return
+     */
+    static std::string getScriptProviderPropertiesPath()
+    {
+        std::string path1,path2,path3,path;
+        path1 = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getCurrentExecutableDirectory(), "config/.rstats_script_provider_properties");
+        if (cbtek::common::utility::FileUtils::isDirectory(path1) && cbtek::common::utility::FileUtils::isDirectoryWritable(path1))
+        {
+            path = path1;
+        }
+
+        path2 = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserAppDirectory(), "config/.rstats_script_provider_properties");
+        if (cbtek::common::utility::FileUtils::isDirectory(path2) && cbtek::common::utility::FileUtils::isDirectoryWritable(path2))
+        {
+            path = path2;
+        }
+
+        path3 = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserHomeDirectory(), "config/.rstats_script_provider_properties");
+        if (cbtek::common::utility::FileUtils::isDirectory(path3) && cbtek::common::utility::FileUtils::isDirectoryWritable(path3))
+        {
+            path=path3;
+        }
+
+        if (!path.empty())
+        {
+            return path;
+        }
+        throw cbtek::common::utility::FileAccessException(EXCEPTION_TAG_LINE+"Could not locate directory for script providers! Valid locations: "+path1+"\n"+path2+"\n"+path3);
     }
 
     static std::vector<RStatsModuleProperties> getModulePropertiesList()
@@ -339,7 +372,7 @@ namespace RStatsUtils
             try
             {
                 RStatsModuleProperties props;
-                props.loadApplicationConfig(file);
+                props.loadConfig(file);
                 propsList.push_back(props);
             }
             catch(...)
@@ -349,6 +382,8 @@ namespace RStatsUtils
         }
         return propsList;
     }
+
+
 
     static std::vector<std::string> getModuleCategories()
     {
@@ -363,7 +398,7 @@ namespace RStatsUtils
             try
             {
                 RStatsModuleProperties props;
-                props.loadApplicationConfig(file);
+                props.loadConfig(file);
                 std::string category = cbtek::common::utility::StringUtils::trimmed(props.getCategory());
                 if(category.empty())
                 {
@@ -378,8 +413,68 @@ namespace RStatsUtils
         }
         return std::vector<std::string>(categorySet.begin(),categorySet.end());
     }
-}
 
+
+    static std::vector<RStatsScriptProviderProperties> getScriptProviderPropertiesList()
+    {
+        std::vector<RStatsScriptProviderProperties>propsList;
+        std::string path = getScriptProviderPropertiesPath();
+
+        std::vector<std::string> filters,entries;
+        filters.push_back("xml");
+        cbtek::common::utility::FileUtils::getFileEntries(path,true,filters,entries);
+        for (const std::string& file : entries)
+        {
+            try
+            {
+                RStatsScriptProviderProperties props;
+                props.loadConfig(file);
+                propsList.push_back(props);
+            }
+            catch(...)
+            {
+                continue;
+            }
+        }
+        return propsList;
+    }
+
+
+    /**
+     * @brief RStatsWorksheet::getColumnIndexFromLabel
+     * @param columnLabel
+     * @return
+     */
+    static size_t getColumnIndexFromLabel(const std::string &columnLabel)
+    {
+        int sum = 0;
+        for (int i = 0; i < columnLabel.size(); i++)
+        {
+            sum *= 26;
+            sum += (std::toupper(columnLabel[i]) - 'A');
+        }
+        return sum;
+    }
+
+    /**
+     * @brief RStatsWorksheet::getColumnLabelFromIndex
+     * @param columnIndex
+     * @return
+     */
+    static std::string getColumnLabelFromIndex(size_t columnIndex)
+    {
+        int div = (int)columnIndex+1;
+        std::string colLetter;
+        int mod = 0;
+        while (div > 0)
+        {
+            mod = (div - 1) % 26;
+            colLetter = (char)(65 + mod) + colLetter;
+            div = (int)((div - mod) / 26);
+        }
+        return colLetter;
+    }
+}
 
 }}}//end namespace
 

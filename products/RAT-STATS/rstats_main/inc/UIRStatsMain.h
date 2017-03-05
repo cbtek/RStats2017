@@ -15,6 +15,10 @@
 #include <QToolButton>
 #include <QButtonGroup>
 #include <QSet>
+#include <QTableWidget>
+#include <QKeySequence>
+
+#include "rstats_ui/inc/UIRStatsShortcut.h"
 #include "rstats_utils/inc/RStatsModuleProperties.h"
 
 class Ui_UIRStatsMain;
@@ -45,42 +49,52 @@ private:
     */
      Ui_UIRStatsMain *m_ui;
 
-     void onInitialize();
+     void onInitialize(int defaultCategoryIndex = 0);
      void setupButton(QAbstractButton * button,
                       const QFont& font,
                       const QIcon& icon,
                       size_t buttonHeight,
-                      bool squareButton = false);
-
-     QMap<int, QGridLayout*> m_groupModuleMap;
-     QMap<int, QPair<int,int> > m_groupModuleRowColumnMap;
-     QMap<int, QGroupBox*> m_groupBoxMap;
-     QMap<int,bool> m_groupEmpty;
-     QSet<int> m_groupProtected;
-     QMap<int,QIcon> m_groupIcons;
-     QMap<int,utils::RStatsModuleProperties> m_indexPropsMap;
+                      bool squareButton = false);    
      QVector<QToolButton*> m_allLaunchButtons;
-     QButtonGroup m_launchButtons;
-     QButtonGroup m_editButtons;
-     QButtonGroup m_removeButtons;
+     QMap<int, QTableWidget *> m_tableMap;
+     QButtonGroup * m_launchButtons;
+     QButtonGroup * m_editButtons;
+     QButtonGroup * m_removeButtons;
+     QIcon m_iconEdit;
+     QIcon m_iconHelp;
+     QIcon m_iconModule;
+     QIcon m_iconFolder;
+     QIcon m_iconRemove;
+     QIcon m_iconExit;
+     QIcon m_iconSettings;
+     QIcon m_iconObject;
+     QIcon m_iconAbout;
+     QIcon m_iconAdd;
+     QString getKeyAssignment(int count) const;
+     QKeySequence getKeyLaunchSequence(int count, QString & keyString) const;
+     QKeySequence getKeyEditSequence(int count, QString & keyString) const;
+     QKeySequence getKeyRemoveSequence(int count, QString & keyString) const;
+     int m_buttonHeight;
 
 protected:
     void showEvent(QShowEvent *event);
     void resizeEvent(QResizeEvent *event);
-
+    void editModule(const QString &propsPath);
+    void removeModule(const QString &propsPath);
+    void launchModule(const QString &propsPath);
 protected slots:
-    void onExit();
-    void onLaunchModuleManager();
+    void onExit();    
     void onLaunchSettingsManager();
     void onLaunchAbout();
     void onLaunchHelp();
     void onTabChanged(int tab);
+    void onAddNewModule();
+    void onLaunchModuleShortcut(QShortcut* button);
+    void onEditModuleShortcut(QShortcut* button);
+    void onRemoveModuleShortcut(QShortcut* button);
     void onLaunchModule(QAbstractButton* button);
     void onEditModule(QAbstractButton* button);
-    void onRemoveModule(QAbstractButton* button);
-    void onEditCategory();
-    void onNewCategory();
-    void onRemoveCategory();
+    void onRemoveModule(QAbstractButton* button);    
 };
 
 }}}//end namespace

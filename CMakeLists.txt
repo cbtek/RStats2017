@@ -17,6 +17,8 @@ if (WIN32)
     set (PLATFORM WIN32)
 endif()
 
+set (ENABLE_COMMON_UTILS_STATIC_LIB ON)
+
 include_directories("${PROJECT_SOURCE_DIR}/common")
 include_directories("${PROJECT_SOURCE_DIR}/products/RAT-STATS")
 include_directories("${PROJECT_SOURCE_DIR}/products/GooeyFi")

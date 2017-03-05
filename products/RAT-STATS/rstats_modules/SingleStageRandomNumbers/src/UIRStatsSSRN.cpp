@@ -96,7 +96,7 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     font.setPointSize(fontSize);
 
     //initialize default icons
-    std::string appDir = SystemUtils::getApplicationDirectory();
+    std::string appDir = SystemUtils::getCurrentExecutableDirectory();
     m_iconFolder = QIcon(QString::fromStdString(FileUtils::buildFilePath(appDir,"resx/img_folder.png")));
     m_iconModule = QIcon(QString::fromStdString(FileUtils::buildFilePath(appDir,"resx/img_module.png")));
     m_iconEdit = QIcon(QString::fromStdString(FileUtils::buildFilePath(appDir,"resx/img_edit.png")));

@@ -12,6 +12,8 @@
 
 #include "utility/inc/XMLReader.h"
 #include "utility/inc/XMLStreamWriter.h"
+#include "utility/inc/XMLUtils.h"
+#include "utility/inc/FileUtils.hpp"
 
 using namespace cbtek::common::utility;
 
@@ -30,7 +32,7 @@ RStatsModuleProperties::~RStatsModuleProperties()
 
 }
 
-void RStatsModuleProperties::loadApplicationConfig(const std::string &filePath)
+void RStatsModuleProperties::loadConfig(const std::string &filePath)
 {
     XMLReader reader;
     reader.load(filePath);
@@ -42,30 +44,10 @@ void RStatsModuleProperties::loadApplicationConfig(const std::string &filePath)
         m_appType = module->getAttributeValue("type");
         m_appWorkingDir = module->getAttributeValue("working_dir");
         m_appCategory = module->getAttributeValue("category");
-
         m_appIcon = module->getAttributeValue("icon");
         m_showAppConsole = module->getAttributeValueAsBool("show_console");
-        std::string args = module->getAttributeValue("args");
-        std::vector<std::string> argPairs = StringUtils::split(args,";;;");
-        for(const std::string& argPair : argPairs)
-        {
-            std::vector<std::string> argValues = StringUtils::split(argPair,"%%%");
-            if (argValues.size()>1)
-            {
-                std::string flag,arg;
-                if (StringUtils::trimmed(argValues[0]).size()>0)
-                {
-                    flag = (argValues[0]);
-                }
-
-                if (StringUtils::trimmed(argValues[1]).size()>0)
-                {
-                    arg = (argValues[1]);
-                }
-                addApplicationArg(flag,arg);
-            }
-        }
-        m_appDefPath = filePath;
+        m_appArgs = XMLUtils::getDecodedString(module->getAttributeValue("args"));
+        m_configPath = filePath;
     }
     else
     {
@@ -73,12 +55,12 @@ void RStatsModuleProperties::loadApplicationConfig(const std::string &filePath)
     }
 }
 
-void RStatsModuleProperties::saveApplicationConfig()
+void RStatsModuleProperties::saveConfig()
 {
-    saveApplicationConfig(m_appDefPath);
+    saveConfig(m_configPath);
 }
 
-void RStatsModuleProperties::saveApplicationConfig(const std::string &filePath)
+void RStatsModuleProperties::saveConfig(const std::string &filePath)
 {
     std::ofstream out(filePath.c_str());
     if (out.is_open())
@@ -93,14 +75,9 @@ void RStatsModuleProperties::saveApplicationConfig(const std::string &filePath)
         xml.writeAttribute("type",m_appType);
         xml.writeAttribute("working_dir",m_appType);
         xml.writeAttribute("icon",m_appIcon);
-        xml.writeAttribute("show_console", (m_showAppConsole ? "TRUE" : "FALSE"));
-        std::string argStr;
-        for (const std::pair<std::string,std::string>& arg : m_args)
-        {
-            argStr+=arg.first+"%%%"+arg.second+";;;";
-        }
-        xml.writeLastAttributeAndCloseTag("args",argStr);
-        m_appDefPath = filePath;
+        xml.writeAttribute("show_console", (m_showAppConsole ? "TRUE" : "FALSE"));        
+        xml.writeLastAttributeAndCloseTag("args",XMLUtils::getEncodedString(m_appArgs));
+        m_configPath = filePath;
     }
 }
 
@@ -129,26 +106,10 @@ void RStatsModuleProperties::setCategory(const std::string & value)
     m_appCategory=value;
 }
 
-void RStatsModuleProperties::setArgs(const std::vector<std::pair<std::string,std::string> > & value)
-{
-    m_args=value;
-}
-
 void RStatsModuleProperties::generateApplicationCommand(std::string& commandOut)
 {
     std::ostringstream command;
-    command << m_appScriptPath<<" "<<m_appPath<<" ";
-    for (const auto& it : m_args)
-    {
-        if (it.first.size())
-        {
-            command << it.first<<" ";
-        }
-        if (it.second.size())
-        {
-            command <<"\""<<it.second<<"\" ";
-        }
-    }
+    command << m_appScriptPath<<" "<<m_appPath<<" "<<m_appArgs;
     commandOut = command.str();
 }
 
@@ -179,28 +140,27 @@ const std::string &RStatsModuleProperties::getCategory() const
 
 const std::string &RStatsModuleProperties::getDefinitionPath() const
 {
-    return m_appDefPath;
+    return m_configPath;
 }
 
-const std::vector<std::pair<std::string,std::string> > &RStatsModuleProperties::getArgs() const
+const std::string &RStatsModuleProperties::getArgs() const
 {
-    return m_args;
+    return m_appArgs;
+}
+
+void RStatsModuleProperties::setArgs(const std::string &value)
+{
+    m_appArgs = value;
 }
 
 void RStatsModuleProperties::setDefinitionPath(const std::string &path)
 {
-    m_appDefPath = path;
+    m_configPath = path;
 }
 
-void RStatsModuleProperties::addApplicationArg(const std::string &flag,
-                                               const std::string &argument)
+void RStatsModuleProperties::removeConfig()
 {
-    m_args.push_back(std::make_pair(flag,argument));
-}
-
-void RStatsModuleProperties::clearApplicationArgs()
-{
-    m_args.clear();
+    FileUtils::deleteFile(m_configPath);
 }
 
 void RStatsModuleProperties::setScriptPath(const std::string &scriptFilePath)
@@ -213,11 +173,6 @@ const std::string &RStatsModuleProperties::getScriptPath() const
     return m_appScriptPath;
 }
 
-void RStatsModuleProperties::addApplicationFlag(const std::string &flag)
-{
-    m_args.push_back(std::make_pair(flag,""));
-}
-
 void RStatsModuleProperties::setIcon(const std::string &appIcon)
 {
     m_appIcon = appIcon;
@@ -228,7 +183,12 @@ std::string RStatsModuleProperties::getIcon() const
     return m_appIcon;
 }
 
-bool RStatsModuleProperties::isApplicationConsoleShown() const
+void RStatsModuleProperties::setConsoleShown(bool flag)
+{
+    m_showAppConsole = flag;
+}
+
+bool RStatsModuleProperties::isConsoleShown() const
 {
     return m_showAppConsole;
 }

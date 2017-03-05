@@ -103,30 +103,6 @@ RStatsWorksheet::~RStatsWorksheet()
 
 }
 
-size_t RStatsWorksheet::getColumnIndexFromLabel(const std::string &columnLabel)
-{
-    int sum = 0;
-    for (int i = 0; i < columnLabel.size(); i++)
-    {
-        sum *= 26;
-        sum += (std::toupper(columnLabel[i]) - 'A');
-    }
-    return sum;
-}
-
-std::string RStatsWorksheet::getColumnLabelFromIndex(size_t columnIndex)
-{
-    int div = (int)columnIndex+1;
-    std::string colLetter;
-    int mod = 0;
-    while (div > 0)
-    {
-        mod = (div - 1) % 26;
-        colLetter = (char)(65 + mod) + colLetter;
-        div = (int)((div - mod) / 26);
-    }
-    return colLetter;
-}
 
 void RStatsWorksheet::parseCellAddress(const std::string &address, size_t &r, size_t &c)
 {
@@ -144,7 +120,7 @@ void RStatsWorksheet::parseCellAddress(const std::string &address, size_t &r, si
         }
     }
     r = StringUtils::toInt(rowLabel) - 1;
-    c = getColumnIndexFromLabel(colLabel);
+    c = RStatsUtils::getColumnIndexFromLabel(colLabel);
 }
 
 void RStatsWorksheet::setWorksheetTitle(const std::string & value)

@@ -9,8 +9,11 @@
 
 #include <QDialog>
 #include <QMap>
+#include <QIcon>
+#include <QButtonGroup>
 
 #include "rstats_utils/inc/RStatsSettingsManager.h"
+#include "rstats_utils/inc/RStatsUtils.hpp"
 
 class Ui_UIRStatsSettingsManager;
 
@@ -38,10 +41,20 @@ private:
     /** 
     * MOC generated ui class for this widget
     */
-     Ui_UIRStatsSettingsManager *m_ui;
-    QMap<size_t, QPair<oig::ratstats::utils::SettingPtr,QWidget *> > m_settingsMap;
+     Ui_UIRStatsSettingsManager *m_ui;    
+
+     std::vector<utils::RStatsScriptProviderProperties>  m_props;
+     QButtonGroup m_editButtons;
+     QButtonGroup m_deleteButtons;
+     QIcon m_editIcon,m_addIcon,m_exitIcon,m_removeIcon;
 private slots:
      void onClose();
+     void onInitScriptProviders();
+     void onInitThemes();
+     void onInitKeyBindings();
+     void onEditScriptProvider(QAbstractButton * button);
+     void onDeleteScriptProvider(QAbstractButton * button);
+     void onAddScriptProvider();
 };
 
 }}}//end namespace
