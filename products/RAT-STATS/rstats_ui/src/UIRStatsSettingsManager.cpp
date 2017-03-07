@@ -33,14 +33,16 @@ UIRStatsSettingsManager::UIRStatsSettingsManager(QWidget *parent) :
     m_ui(new Ui_UIRStatsSettingsManager)
 {
     m_ui->setupUi(this);
-    onInitScriptProviders();
-    onInitThemes();
-    onInitKeyBindings();
-    connect(m_ui->m_btnClose,SIGNAL(clicked(bool)),this,SLOT(onClose()));
     m_removeIcon = UIRStatsUtils::getIcon("img_remove.png");
     m_editIcon = UIRStatsUtils::getIcon("img_edit.png");
     m_exitIcon = UIRStatsUtils::getIcon("img_exit.png");
     m_addIcon = UIRStatsUtils::getIcon("img_add.png");
+    m_editButtons = nullptr;
+    m_deleteButtons = nullptr;
+    onInitScriptProviders();
+    onInitThemes();
+    onInitKeyBindings();
+    connect(m_ui->m_btnClose,SIGNAL(clicked(bool)),this,SLOT(onClose()));    
     m_ui->m_btnClose->setIcon(m_exitIcon);
     m_ui->m_btnNewScriptProvider->setIcon(m_addIcon);
 }
@@ -56,7 +58,18 @@ void UIRStatsSettingsManager::onClose()
 }
 
 void UIRStatsSettingsManager::onInitScriptProviders()
-{
+{    
+    if (m_editButtons)
+    {
+        delete m_editButtons;
+    }
+
+    if (m_deleteButtons)
+    {
+        delete m_deleteButtons;
+    }
+    m_editButtons = new QButtonGroup(this);
+    m_deleteButtons = new QButtonGroup(this);
     m_props = RStatsUtils::getScriptProviderPropertiesList();
     QTableWidget * table = m_ui->m_tblScriptProviders;
     table->clear();
@@ -64,32 +77,55 @@ void UIRStatsSettingsManager::onInitScriptProviders()
     table->setRowCount(m_props.size());
     table->setColumnCount(1);
     int row = 0;
+    table->setIconSize(QSize(48,48));
     for(const RStatsScriptProviderProperties & prop : m_props)
     {
         QHBoxLayout * layout = new QHBoxLayout;
         QFrame * cellFrame = new QFrame;
-        QLabel * label = new QLabel;
+        QLabel * label = new QLabel;        
+        QLabel * icon = new QLabel;
         QPushButton * deleteButton = new QPushButton;
         QPushButton * editButton = new QPushButton;
         deleteButton->setIconSize(QSize(32,32));
-        editButton->setIconSize(QSize(32,32));
+        editButton->setIconSize(QSize(32,32));        
+        editButton->setMinimumSize(32,32);
+        editButton->setMaximumSize(48,48);
+        deleteButton->setMinimumSize(32,32);
+        deleteButton->setMaximumSize(48,48);
+        icon->setMinimumSize(32,32);
+        icon->setMaximumSize(48,48);
+        QPixmap pixmapIcon = UIRStatsUtils::getIcon(prop.getIcon()).pixmap(48,48);
+        if (pixmapIcon.isNull())
+        {
+            pixmapIcon = UIRStatsUtils::getIcon("img_terminal.png").pixmap(48,48);
+        }
+        icon->setPixmap(pixmapIcon);
         deleteButton->setIcon(m_removeIcon);
         editButton->setIcon(m_editIcon);
         label->setText(QString::fromStdString(prop.getName()));
+
+        layout->addWidget(icon);
         layout->addWidget(label);
         layout->addWidget(editButton);
         layout->addWidget(deleteButton);
         editButton->setProperty("index",row);
         deleteButton->setProperty("index",row);
-        m_editButtons.addButton(editButton);
-        m_deleteButtons.addButton(deleteButton);
+        m_editButtons->addButton(editButton);
+        m_deleteButtons->addButton(deleteButton);
         cellFrame->setLayout(layout);
         table->setCellWidget(row,0,cellFrame);
+        table->setRowHeight(row,64);
         ++row;
 
     }
-    connect(&m_editButtons,SIGNAL(buttonClicked(QAbstractButton*)),this,SLOT(onEditScriptProvider(QAbstractButton*)));
-    connect(&m_deleteButtons,SIGNAL(buttonClicked(QAbstractButton*)),this,SLOT(onDeleteScriptProvider(QAbstractButton*)));
+    table->verticalHeader()->hide();
+    table->horizontalHeader()->hide();
+    table->setSelectionMode(QTableWidget::NoSelection);
+    table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+    table->setShowGrid(false);
+    table->setAlternatingRowColors(true);
+    connect(m_editButtons,SIGNAL(buttonClicked(QAbstractButton*)),this,SLOT(onEditScriptProvider(QAbstractButton*)));
+    connect(m_deleteButtons,SIGNAL(buttonClicked(QAbstractButton*)),this,SLOT(onDeleteScriptProvider(QAbstractButton*)));
     connect(m_ui->m_btnNewScriptProvider,SIGNAL(clicked(bool)),this,SLOT(onAddScriptProvider()));
 
 }
@@ -106,9 +142,11 @@ void UIRStatsSettingsManager::onInitKeyBindings()
 
 void UIRStatsSettingsManager::onEditScriptProvider(QAbstractButton *button)
 {
+    std::cerr <<"onEditScriptProvider"<<std::endl;
     int index = button->property("index").toInt();
     RStatsScriptProviderProperties props = m_props[index];
     UIRStatsScriptProviderConfigDialog(props).exec();
+    onInitScriptProviders();
 }
 
 void UIRStatsSettingsManager::onDeleteScriptProvider(QAbstractButton *button)
@@ -128,6 +166,7 @@ void UIRStatsSettingsManager::onAddScriptProvider()
 {
    RStatsScriptProviderProperties props;
    UIRStatsScriptProviderConfigDialog(props).exec();
+   onInitScriptProviders();
 }
 }}}//end namespace
 

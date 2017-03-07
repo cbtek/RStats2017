@@ -44,8 +44,8 @@ private:
      Ui_UIRStatsSettingsManager *m_ui;    
 
      std::vector<utils::RStatsScriptProviderProperties>  m_props;
-     QButtonGroup m_editButtons;
-     QButtonGroup m_deleteButtons;
+     QButtonGroup * m_editButtons;
+     QButtonGroup * m_deleteButtons;
      QIcon m_editIcon,m_addIcon,m_exitIcon,m_removeIcon;
 private slots:
      void onClose();

@@ -9,7 +9,7 @@
 #include "RStatsSSRN.h"
 
 #include "rstats_utils/inc/RStatsSettingsManager.h"
-#include "rstats_ui/inc/UIRStatsUtils.h"
+#include "rstats_ui/inc/UIRStatsUtils.hpp"
 
 #include "utility/inc/DateTimeUtils.hpp"
 #include "utility/inc/TimeUtils.hpp"

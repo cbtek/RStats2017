@@ -21,9 +21,9 @@ int main(int argc, char ** argv)
     {
         if (FileUtils::fileExists(modulePath))
         {
-            props.loadApplicationConfig(modulePath);
-            props.saveApplicationConfig(modulePath+".saved.xml");            
-            if (!props.isApplicationConsoleShown())
+            props.loadConfig(modulePath);
+            props.saveConfig(modulePath+".saved.xml");
+            if (!props.isConsoleShown())
             {
                 std::string command;
                 props.generateApplicationCommand(command);

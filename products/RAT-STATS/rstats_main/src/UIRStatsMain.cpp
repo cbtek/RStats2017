@@ -132,15 +132,15 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
             RStatsModuleProperties props = it.second[a2];           
             QHBoxLayout * layout = new QHBoxLayout;
             QFrame * frame = new QFrame;
-            layout->setProperty("index",tableIndex);
-            layout->setProperty("name",name);
-            if (a2==0)
-            {
-                std::cerr << name.toStdString()<<":"<<props.getName()<<std::endl;
-            }
+            layout->setProperty("index",QVariant::fromValue<size_t>(tableIndex));
+            layout->setProperty("name",name);            
             bool isDisabled=false;
 #ifdef __WIN32
-            isDisabled = !FileUtils::fileExists(props.getPath()+".exe");
+            isDisabled = !FileUtils::fileExists(props.getPath());
+            if (isDisabled)
+            {
+                isDisabled = !FileUtils::fileExists(props.getPath()+".exe");
+            }
 #else
             isDisabled = !FileUtils::fileExists(props.getPath());
 #endif
@@ -170,19 +170,18 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
             moduleLaunchButton->setIconSize(QSize(m_buttonHeight-8,m_buttonHeight-8));
             moduleLaunchButton->setIcon(UIRStatsUtils::getIcon(props.getIcon()));
             moduleLaunchButton->setDisabled(isDisabled);
-            moduleLaunchButton->setMinimumHeight(m_buttonHeight);
-            moduleLaunchButton->setMaximumHeight(m_buttonHeight);
+            moduleLaunchButton->setMinimumHeight(m_buttonHeight);            
             moduleLaunchButton->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
             m_allLaunchButtons.push_back(moduleLaunchButton);
-            m_launchButtons->addButton(moduleLaunchButton);
-            moduleLaunchButton->setShortcut(QKeySequence());
-
+            m_launchButtons->addButton(moduleLaunchButton);            
+            layout->setContentsMargins(4,4,4,4);
             layout->addWidget(moduleLaunchButton);
             layout->addWidget(moduleEditButton);
             layout->addWidget(moduleRemoveButton);
+            frame->resize(frame->width(),m_buttonHeight);
             frame->setLayout(layout);
             table->setCellWidget(row,0,frame);
-            table->setRowHeight(row,m_buttonHeight+8);
+            table->setRowHeight(row,m_buttonHeight+4);
 
             QString removeKeyString,editKeyString,launchKeyString;
             QKeySequence editKey = this->getKeyEditSequence(row, editKeyString);
@@ -235,11 +234,11 @@ void UIRStatsMain::setupButton(QAbstractButton *button,
     button->setFont(font);
     button->setIcon(icon);
     button->setIconSize(QSize(m_buttonHeight-8,m_buttonHeight-8));
-    button->setMaximumHeight(m_buttonHeight);
+    //button->setMaximumHeight(m_buttonHeight);
     button->setMinimumHeight(m_buttonHeight);
     if (squareButton)
     {
-        button->setMaximumWidth(m_buttonHeight);
+        //button->setMaximumWidth(m_buttonHeight);
         button->setMinimumWidth(m_buttonHeight);
     }
 }
@@ -447,8 +446,7 @@ void UIRStatsMain::launchModule(const QString &propsPath)
         return;
     }
 
-    QString command = QString::fromStdString(launcherPath)+" --module-path \""+propsPath+"\"";
-    std::cerr << "Starting..."<<command.toStdString()<<std::endl;
+    QString command = QString::fromStdString(launcherPath)+" --module-path \""+propsPath+"\"";    
     QProcess::startDetached(command);
 }
 

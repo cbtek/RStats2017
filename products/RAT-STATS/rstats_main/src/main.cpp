@@ -1,3 +1,4 @@
+
 #include <QApplication>
 #include "UIRStatsMain.h"
 
@@ -8,3 +9,4 @@ int main(int argc, char ** argv)
     main.show();
     return a.exec();
 }
+

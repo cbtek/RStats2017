@@ -42,10 +42,8 @@ private:
 
 private slots:
      void onInit();
-     void onSave();
-     void onTest();
-     void onCancel();
-     void onBrowseSetIcon();
+     void onOk();
+     void onBrowseProviderIcon();
      void onBrowseProviderPath();
 };
 

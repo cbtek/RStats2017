@@ -25,6 +25,7 @@ namespace utils {
 RStatsModuleProperties::RStatsModuleProperties()
 {
     m_showAppConsole = false;
+    m_appIcon = "img_module.png";
 }
 
 RStatsModuleProperties::~RStatsModuleProperties()

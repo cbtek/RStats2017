@@ -48,6 +48,11 @@ UIRStatsLaunchConfigDialog::~UIRStatsLaunchConfigDialog()
 
 void UIRStatsLaunchConfigDialog::onInit()
 {
+    m_ui->m_btnSave->setIcon(UIRStatsUtils::getIcon("img_ok.png"));
+    m_ui->m_btnLaunch->setIcon(UIRStatsUtils::getIcon("img_run.png"));
+    m_ui->m_btnCancel->setIcon(UIRStatsUtils::getIcon("img_exit.png"));
+    m_ui->m_btnSetIcon->setIcon(UIRStatsUtils::getIcon("img_folder.png"));
+
     m_ui->m_txtName->setText(QString::fromStdString(m_props.getName()));
     m_ui->m_cmbTypes->setCurrentText(QString::fromStdString(m_props.getType()));
     m_ui->m_txtLocation->setText(QString::fromStdString(m_props.getPath()));    
@@ -63,6 +68,14 @@ void UIRStatsLaunchConfigDialog::onInit()
         m_ui->m_cmbCategories->addItem(QString::fromStdString(category));
     }
     m_ui->m_cmbCategories->setCurrentText(QString::fromStdString(m_props.getCategory()));
+
+    std::vector<RStatsScriptProviderProperties> scriptProps = RStatsUtils::getScriptProviderPropertiesList();
+    m_ui->m_cmbTypes->clear();
+    m_ui->m_cmbTypes->addItem(UIRStatsUtils::getIcon("img_terminal.png"),"Executable");
+    for (const RStatsScriptProviderProperties& prop:scriptProps)
+    {
+        m_ui->m_cmbTypes->addItem(UIRStatsUtils::getIcon(prop.getIcon()),QString::fromStdString(prop.getName()));
+    }
 
     //Grab icon for this module
     QIcon icon = UIRStatsUtils::getIcon(m_props.getIcon());

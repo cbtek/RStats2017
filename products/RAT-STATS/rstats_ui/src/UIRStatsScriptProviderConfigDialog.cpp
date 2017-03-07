@@ -52,6 +52,10 @@ UIRStatsScriptProviderConfigDialog::~UIRStatsScriptProviderConfigDialog()
 
 void UIRStatsScriptProviderConfigDialog::onInit()
 {
+    m_ui->m_btnSave->setIcon(UIRStatsUtils::getIcon("img_ok.png"));
+    m_ui->m_btnCancel->setIcon(UIRStatsUtils::getIcon("img_exit.png"));
+    m_ui->m_btnSetIcon->setIcon(UIRStatsUtils::getIcon("img_folder.png"));
+
     m_ui->m_txtName->setText(QString::fromStdString(m_props.getName()));
     m_ui->m_txtLocation->setText(QString::fromStdString(m_props.getPath()));
     m_ui->m_txtArgs->setText(QString::fromStdString(m_props.getArgs()));
@@ -71,21 +75,18 @@ void UIRStatsScriptProviderConfigDialog::onInit()
     }
 
     //Setup signal/slot connections
-    connect(m_ui->m_btnSave,SIGNAL(clicked(bool)),this,SLOT(onSave()));
-    connect(m_ui->m_btnCancel,SIGNAL(clicked(bool)),this,SLOT(onCancel()));
-    connect(m_ui->m_btnTest,SIGNAL(clicked(bool)),this,SLOT(onTest()));
+    connect(m_ui->m_btnSave,SIGNAL(clicked(bool)),this,SLOT(onOk()));
+    connect(m_ui->m_btnCancel,SIGNAL(clicked(bool)),this,SLOT(close()));
     connect(m_ui->m_btnBrowseLocation,SIGNAL(clicked(bool)),this,SLOT(onBrowseProviderPath()));
     connect(m_ui->m_btnSetIcon,SIGNAL(clicked(bool)),this,SLOT(onBrowseProviderIcon()));
 }
 
-void UIRStatsScriptProviderConfigDialog::onSave()
+void UIRStatsScriptProviderConfigDialog::onOk()
 {
     QString name = m_ui->m_txtName->text();
     if (name.isEmpty())
     {
-        QMessageBox::information(this,"Empty field...","You must give this provider a name.");
-        m_ui->m_txtName->setFocus();
-        return;
+        m_props.setName("Unnamed Script Provider_"+DateTimeUtils::getTimeStamp());
     }
 
     //Save property values and close
@@ -99,23 +100,15 @@ void UIRStatsScriptProviderConfigDialog::onSave()
     else
     {
         std::string path = RStatsUtils::getScriptProviderPropertiesPath();
-        path = FileUtils::buildFilePath(path,"provider_"+FileUtils::getSanitizedPathName(m_props.getName()+DateTimeUtils::getTimeStamp()));
+        path = FileUtils::buildFilePath(path,"provider_"+FileUtils::getSanitizedPathName(m_props.getName()+DateTimeUtils::getTimeStamp())+".xml");
         m_props.saveConfig(path);
     }
+
+
     this->close();
 }
 
-void UIRStatsScriptProviderConfigDialog::onTest()
-{
-
-}
-
-void UIRStatsScriptProviderConfigDialog::onCancel()
-{
-    this->close();
-}
-
-void UIRStatsScriptProviderConfigDialog::onBrowseSetIcon()
+void UIRStatsScriptProviderConfigDialog::onBrowseProviderIcon()
 {
     QString file = QFileDialog::getOpenFileName(this,"Search for provider icon...","","Images (*.jpg *.png *.ico)");
     if (QFile::exists(file))

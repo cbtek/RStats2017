@@ -25,7 +25,7 @@ namespace utils {
 
 RStatsScriptProviderProperties::RStatsScriptProviderProperties()
 {
-
+    m_icon = "img_terminal.png";
 }
 
 RStatsScriptProviderProperties::~RStatsScriptProviderProperties()
@@ -119,7 +119,7 @@ void RStatsScriptProviderProperties::saveConfig(const std::string &filePath)
     {
         XMLStreamWriter xml(out);
         xml.writeStartDocument();
-        xml.writeStartElement("provider");
+        xml.writeStartElementNoAttributes("provider");
         xml.writeTextElement("name",m_name);
         xml.writeTextElement("path",m_path);
         xml.writeTextElement("icon",m_icon);
