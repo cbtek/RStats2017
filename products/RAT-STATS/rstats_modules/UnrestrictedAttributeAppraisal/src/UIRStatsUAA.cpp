@@ -10,22 +10,20 @@
 
 namespace oig {
 namespace ratstats {
+namespace modules {
 namespace uaa {
 
 
 UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
-    QDialog(parent),
+    QMainWindow(parent),
     m_ui(new Ui_UIRStatsUAA)
 {
     m_ui->setupUi(this);
 }
 
-
-
-
 UIRStatsUAA::~UIRStatsUAA()
 {
     delete m_ui;
 }
-}}}//end namespace
+}}}}//end namespace
 

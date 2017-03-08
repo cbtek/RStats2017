@@ -4,12 +4,11 @@
 
 */
 
-#ifndef _OIG_RATSTATS_UAA_RSTATSUAA_H
-#define _OIG_RATSTATS_UAA_RSTATSUAA_H
-
+#pragma once
 
 namespace oig {
 namespace ratstats {
+namespace modules {
 namespace uaa {
 
 
@@ -35,7 +34,5 @@ private:
     static RStatsUAA m_instance;
     
 };
-}}}//end namespace
-
-#endif
+}}}}//end namespace
 

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <QDialog>
+#include <QMainWindow>
 
 class Ui_UIRStatsUVA;
 
@@ -14,7 +14,7 @@ namespace modules {
 namespace uva {
 
 
-class UIRStatsUVA : public QDialog
+class UIRStatsUVA : public QMainWindow
 {
     Q_OBJECT
 

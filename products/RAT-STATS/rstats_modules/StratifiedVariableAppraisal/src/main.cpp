@@ -5,7 +5,7 @@
 
 #include "rstats_ui/inc/UIRStatsWorkbook.h"
 
-using namespace oig::ratstats::sva;
+using namespace oig::ratstats::modules::sva;
 using namespace oig::ratstats::ui;
 using namespace oig::ratstats::utils;
 
