@@ -9,11 +9,14 @@
 #include <QAbstractButton>
 #include <QFont>
 #include <QIcon>
+#include <QApplication>
+#include <QStyleFactory>
 
 #include "rstats_utils/inc/RStatsUtils.hpp"
 #include "rstats_utils/inc/RStatsSettingsManager.h"
 #include "utility/inc/SystemUtils.hpp"
 #include "utility/inc/FileUtils.hpp"
+#include "utility/inc/XMLReader.h"
 
 namespace oig {
 namespace ratstats {
@@ -45,27 +48,57 @@ namespace UIRStatsUtils
         {
             return QIcon(QString::fromStdString(iconFileName));
         }
+
         QIcon icon;
-        std::string exeDir = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getCurrentExecutableDirectory(),"resx/"+iconFileName);
-        std::string appDir = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserAppDirectory(),"resx/"+iconFileName);
-        std::string homeDir = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserHomeDirectory(),"resx/"+iconFileName);
-        if (cbtek::common::utility::FileUtils::fileExists(exeDir))
+        std::string iconResource = cbtek::common::utility::FileUtils::buildFilePath(utils::RStatsUtils::getResourcePath(),iconFileName);
+        if (cbtek::common::utility::FileUtils::fileExists(iconResource))
         {
-            icon = QIcon(QString::fromStdString(exeDir));
+            icon = QIcon(QString::fromStdString(iconResource));
         }
-        else if (cbtek::common::utility::FileUtils::fileExists(appDir))
-        {
-            icon = QIcon(QString::fromStdString(appDir));
-        }
-        else if (cbtek::common::utility::FileUtils::fileExists(homeDir))
-        {
-            icon = QIcon(QString::fromStdString(homeDir));
-        }
+
         return icon;
     }
 
+    static std::string getCurrentTheme()
+    {
+        std::string path = utils::RStatsUtils::getThemeSettingsFilePath();
+        cbtek::common::utility::XMLReader xmlReader;
+        xmlReader.load(path);
+        cbtek::common::utility::XMLDataElement * theme = xmlReader.getElement("theme");
+        if (theme)
+        {
+            cbtek::common::utility::XMLDataElement * style = theme->getChild("style");
+            std::string styleStr = cbtek::common::utility::StringUtils::toUpperTrimmed(style->getElementData());
+            return styleStr;
+        }
+        return "DEFAULT";
+    }
 
+    static void loadThemeSettings(QApplication * app)
+    {
+        std::string path = utils::RStatsUtils::getThemeSettingsFilePath();
+        cbtek::common::utility::XMLReader xmlReader;
+        xmlReader.load(path);
 
+        cbtek::common::utility::XMLDataElement * theme = xmlReader.getElement("theme");
+        app->setStyleSheet("");
+        if (theme)
+        {
+            cbtek::common::utility::XMLDataElement * style = theme->getChild("style");
+            std::string styleStr = cbtek::common::utility::StringUtils::toUpperTrimmed(style->getElementData());
+            if (styleStr == "FUSION")
+            {
+                app->setStyle(QStyleFactory::create("fusion"));
+            }
+            else if (styleStr == "DARK")
+            {
+                std::string resourcePath = utils::RStatsUtils::getResourcePath();
+                resourcePath = cbtek::common::utility::FileUtils::buildFilePath(resourcePath,"dark.qss");
+                QString styleSheet = QString::fromStdString(cbtek::common::utility::FileUtils::getFileContents(resourcePath));
+                app->setStyleSheet(styleSheet);
+            }
+        }
+    }
 }
 }}}//end namespace
 

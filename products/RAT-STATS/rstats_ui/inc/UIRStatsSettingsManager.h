@@ -48,8 +48,7 @@ private:
      std::vector<utils::RStatsScriptProviderProperties>  m_props;
      QButtonGroup * m_editButtons;
      QButtonGroup * m_deleteButtons;
-     QIcon m_editIcon,m_addIcon,m_exitIcon,m_removeIcon;
-     QStyle m_defaultStyle;
+     QIcon m_editIcon,m_addIcon,m_exitIcon,m_removeIcon;     
 private slots:
      void onClose();
      void onInitScriptProviders();
@@ -57,10 +56,8 @@ private slots:
      void onInitKeyBindings();
      void onEditScriptProvider(QAbstractButton * button);
      void onDeleteScriptProvider(QAbstractButton * button);
-     void onAddScriptProvider();
-     void onSetDefaultTheme();
-     void onSetDarkTheme();
-     void onSetFusionTheme();
+     void onAddScriptProvider();     
+     void onWriteThemeSettings();
 };
 
 }}}//end namespace

@@ -89,6 +89,12 @@ enum class RStatsConditionalOperatorType
 
 namespace RStatsUtils
 {
+    /**
+     * @brief ipow
+     * @param base
+     * @param exp
+     * @return
+     */
     template <typename Integer>
     static Integer ipow(Integer base, Integer exp)
     {
@@ -156,7 +162,15 @@ namespace RStatsUtils
         return sum;
     }
 
-    template <typename Number>
+    /**
+     * @brief getNumItemsThatMatchCondition
+     * @param condition
+     * @param values
+     * @param value
+     * @param dimension
+     * @return
+     */
+    template <typename Number>    
     static size_t getNumItemsThatMatchCondition(RStatsConditionalOperatorType condition,
                                                 const RStatsObjectList<Number>& values,
                                                 Number value,
@@ -200,7 +214,15 @@ namespace RStatsUtils
         return count;
     }
 
-    template<typename Number>
+    /**
+     * @brief calculate
+     * @param input1
+     * @param input2
+     * @param result
+     * @param calculation
+     * @param dimension
+     */
+    template<typename Number>    
     static void calculate(const RStatsObjectList<Number>& input1,
                           const RStatsObjectList<Number>& input2,
                           RStatsObjectList<Number> &result,
@@ -257,9 +279,14 @@ namespace RStatsUtils
         }
     }
 
-
-
-    template<typename Number>
+    /**
+     * @brief getNumbersAdded
+     * @param input1
+     * @param input2
+     * @param dimension
+     * @return
+     */
+    template<typename Number>    
     static RStatsObjectList<Number> getNumbersAdded(const RStatsObjectList<Number>& input1,
                                                     const RStatsObjectList<Number>& input2,
                                                     size_t dimension = 0)
@@ -269,7 +296,14 @@ namespace RStatsUtils
         return values;
     }
 
-    template<typename Number>
+    /**
+     * @brief getNumbersSubtracted
+     * @param input1
+     * @param input2
+     * @param dimension
+     * @return
+     */
+    template<typename Number>    
     static RStatsObjectList<Number> getNumbersSubtracted(const RStatsObjectList<Number>& input1,
                                                          const RStatsObjectList<Number>& input2,
                                                          size_t dimension = 0)
@@ -279,7 +313,14 @@ namespace RStatsUtils
         return values;
     }
 
-    template<typename Number>
+    /**
+     * @brief getNumbersMultiplied
+     * @param input1
+     * @param input2
+     * @param dimension
+     * @return
+     */
+    template<typename Number>    
     static RStatsObjectList<Number> getNumbersMultiplied(const RStatsObjectList<Number>& input1,
                                                          const RStatsObjectList<Number>& input2,
                                                          size_t dimension = 0)
@@ -289,7 +330,14 @@ namespace RStatsUtils
         return values;
     }
 
-    template<typename Number>
+    /**
+     * @brief getNumbersDivided
+     * @param input1
+     * @param input2
+     * @param dimension
+     * @return
+     */
+    template<typename Number>    
     static RStatsObjectList<Number> getNumbersDivided(const RStatsObjectList<Number>& input1,
                                                       const RStatsObjectList<Number>& input2,
                                                       size_t dimension = 0)
@@ -299,22 +347,41 @@ namespace RStatsUtils
         return values;
     }
 
-    static std::string getModulePropertiesPath()
+    /**
+     * @brief getValidPath
+     * @param path
+     * @return
+     */
+    static std::string getValidPath(const std::string & pathToValidate)
     {
         std::string path1,path2,path3,path;
-        path1 = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getCurrentExecutableDirectory(), "config/.rstats_module_properties");
+
+        #ifdef __WIN32
+            path1 = cbtek::common::utility::StringUtils::replace(cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getCurrentExecutableDirectory(), pathToValidate),"/","\\");
+        #else
+            path1 = cbtek::common::utility::StringUtils::replace(cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getCurrentExecutableDirectory(), pathToValidate),"\\","/");
+        #endif
         if (cbtek::common::utility::FileUtils::isDirectory(path1) && cbtek::common::utility::FileUtils::isDirectoryWritable(path1))
         {
             path = path1;
         }
 
-        path2 = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserAppDirectory(), "config/.rstats_module_properties");
+        #ifdef __WIN32
+            path2 = cbtek::common::utility::StringUtils::replace(cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserAppDirectory(), ".rat-stats/"+pathToValidate),"/","\\");
+        #else
+            path2 = cbtek::common::utility::StringUtils::replace(cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserAppDirectory(), ".rat-stats/"+pathToValidate),"\\","/");
+        #endif
         if (cbtek::common::utility::FileUtils::isDirectory(path2) && cbtek::common::utility::FileUtils::isDirectoryWritable(path2))
         {
             path = path2;
         }
 
-        path3 = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserHomeDirectory(), "config/.rstats_module_properties");
+        #ifdef __WIN32
+            path3 = cbtek::common::utility::StringUtils::replace(cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserHomeDirectory(), ".rat-stats/"+pathToValidate),"/","\\");
+        #else
+            path3 = cbtek::common::utility::StringUtils::replace(cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserHomeDirectory(), ".rat-stats/"+pathToValidate),"\\","/");
+        #endif
+
         if (cbtek::common::utility::FileUtils::isDirectory(path3) && cbtek::common::utility::FileUtils::isDirectoryWritable(path3))
         {
             path=path3;
@@ -324,7 +391,25 @@ namespace RStatsUtils
         {
             return path;
         }
-        throw cbtek::common::utility::FileAccessException(EXCEPTION_TAG_LINE+"Could not locate directory for module definitions! Valid locations: "+path1+"\n"+path2+"\n"+path3);
+        throw cbtek::common::utility::FileAccessException(EXCEPTION_TAG_LINE+"Could not locate directory for module definitions! Valid locations: \n1) "+path1+"\n2) "+path2+"\n3)"+path3);
+    }
+
+    /**
+     * @brief getModulePropertiesPath
+     * @return
+     */
+    static std::string getModulePropertiesPath()
+    {
+        return getValidPath("config/.rstats_module_properties");
+    }
+
+    /**
+     * @brief getConfigPath
+     * @return
+     */
+    static std::string getConfigPath()
+    {
+        return getValidPath("config");
     }
 
     /**
@@ -333,32 +418,23 @@ namespace RStatsUtils
      */
     static std::string getScriptProviderPropertiesPath()
     {
-        std::string path1,path2,path3,path;
-        path1 = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getCurrentExecutableDirectory(), "config/.rstats_script_provider_properties");
-        if (cbtek::common::utility::FileUtils::isDirectory(path1) && cbtek::common::utility::FileUtils::isDirectoryWritable(path1))
-        {
-            path = path1;
-        }
-
-        path2 = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserAppDirectory(), "config/.rstats_script_provider_properties");
-        if (cbtek::common::utility::FileUtils::isDirectory(path2) && cbtek::common::utility::FileUtils::isDirectoryWritable(path2))
-        {
-            path = path2;
-        }
-
-        path3 = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserHomeDirectory(), "config/.rstats_script_provider_properties");
-        if (cbtek::common::utility::FileUtils::isDirectory(path3) && cbtek::common::utility::FileUtils::isDirectoryWritable(path3))
-        {
-            path=path3;
-        }
-
-        if (!path.empty())
-        {
-            return path;
-        }
-        throw cbtek::common::utility::FileAccessException(EXCEPTION_TAG_LINE+"Could not locate directory for script providers! Valid locations: "+path1+"\n"+path2+"\n"+path3);
+       return getValidPath("config/.rstats_script_provider_properties");
     }
 
+    static std::string getResourcePath()
+    {
+        return getValidPath("resx");
+    }
+
+    static std::string getThemeSettingsFilePath()
+    {
+        return cbtek::common::utility::FileUtils::buildFilePath(RStatsUtils::getConfigPath(),".theme_settings");
+    }
+
+    /**
+     * @brief getModulePropertiesList
+     * @return
+     */
     static std::vector<RStatsModuleProperties> getModulePropertiesList()
     {
         std::vector<RStatsModuleProperties>propsList;
@@ -384,7 +460,10 @@ namespace RStatsUtils
     }
 
 
-
+    /**
+     * @brief getModuleCategories
+     * @return
+     */
     static std::vector<std::string> getModuleCategories()
     {
         std::set<std::string> categorySet;
@@ -414,7 +493,10 @@ namespace RStatsUtils
         return std::vector<std::string>(categorySet.begin(),categorySet.end());
     }
 
-
+    /**
+     * @brief getScriptProviderPropertiesList
+     * @return
+     */
     static std::vector<RStatsScriptProviderProperties> getScriptProviderPropertiesList()
     {
         std::vector<RStatsScriptProviderProperties>propsList;

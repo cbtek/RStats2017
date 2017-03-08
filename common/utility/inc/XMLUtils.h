@@ -27,6 +27,7 @@ SOFTWARE.
 
 #include "XMLReader.h"
 #include "XMLDataElement.h"
+#include "XMLStreamWriter.h"
 
 using namespace cbtek::common::utility;
 

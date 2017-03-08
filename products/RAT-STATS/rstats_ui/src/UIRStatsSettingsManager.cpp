@@ -17,7 +17,9 @@
 
 #include "UIRStatsSettingsManager.h"
 #include "ui_UIRStatsSettingsManager.h"
+
 #include "utility/inc/StringUtils.hpp"
+#include "utility/inc/XMLUtils.h"
 
 #include "UIRStatsErrorMessage.h"
 #include "UIRStatsUtils.hpp"
@@ -145,7 +147,20 @@ void UIRStatsSettingsManager::onInitScriptProviders()
 
 void UIRStatsSettingsManager::onInitThemes()
 {
+    std::string current = UIRStatsUtils::getCurrentTheme();
+    if (current == "DARK")
+    {
+        m_ui->m_rdbDark->setChecked(true);
+    }
+    else if (current == "FUSION")
+    {
+        m_ui->m_rdbFusion->setChecked(true);
+    }
+    else m_ui->m_rdbDefault->setChecked(true);
 
+    connect(m_ui->m_rdbDark,SIGNAL(clicked(bool)),this,SLOT(onWriteThemeSettings()));
+    connect(m_ui->m_rdbDefault,SIGNAL(clicked(bool)),this,SLOT(onWriteThemeSettings()));
+    connect(m_ui->m_rdbFusion,SIGNAL(clicked(bool)),this,SLOT(onWriteThemeSettings()));
 }
 
 void UIRStatsSettingsManager::onInitKeyBindings()
@@ -182,18 +197,26 @@ void UIRStatsSettingsManager::onAddScriptProvider()
    onInitScriptProviders();
 }
 
-void UIRStatsSettingsManager::onSetDefaultTheme()
+void UIRStatsSettingsManager::onWriteThemeSettings()
 {
-}
-
-void UIRStatsSettingsManager::onSetDarkTheme()
-{
-    UIRStatsUtils::loadDarkTheme();
-}
-
-void UIRStatsSettingsManager::onSetFusionTheme()
-{
-    qApp->setStyle(QStyleFactory::create("fusion"));
+    std::string themeSettings = RStatsUtils::getThemeSettingsFilePath();
+    std::ofstream out(themeSettings.c_str(),std::ios::out);
+    XMLStreamWriter xml(out);
+    xml.writeStartDocument();
+    xml.writeStartElementNoAttributes("theme");
+    std::string style = "default";
+    if (m_ui->m_rdbDark->isChecked())
+    {
+        style = "dark";
+    }
+    if (m_ui->m_rdbFusion->isChecked())
+    {
+        style = "fusion";
+    }
+    xml.writeTextElement("style",style);
+    xml.writeEndElement("theme");
+    out.close();
+    UIRStatsUtils::loadThemeSettings(qApp);
 }
 }}}//end namespace
 

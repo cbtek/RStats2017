@@ -3,17 +3,19 @@
 
 #include "UIRStatsLaunchProgressDialog.h"
 #include "rstats_utils/inc/RStatsModuleProperties.h"
-
+#include "rstats_ui/inc/UIRStatsUtils.hpp"
 #include "utility/inc/StringUtils.hpp"
 #include "utility/inc/FileUtils.hpp"
 
 using namespace cbtek::common::utility;
 using namespace oig::ratstats::launcher;
 using namespace oig::ratstats::utils;
+using namespace oig::ratstats::ui;
 
 int main(int argc, char ** argv)
 {
 	QApplication a(argc,argv);
+    UIRStatsUtils::loadThemeSettings(&a);
     RStatsModuleProperties props;
     std::string modulePath = StringUtils::getCommandLineArg(argc,argv,"--module-path","-m");
 
