@@ -1,40 +1,40 @@
 /*
-    UISVA.h
+    UIRStatsSVA.h
     
 
 */
 
-#ifndef _OIG_RATSTATS_SVA_UISVA_H
-#define _OIG_RATSTATS_SVA_UISVA_H
+#pragma once
+
 #include <QMainWindow>
 
-class Ui_UISVA;
+class Ui_UIRStatsSVA;
 
 namespace oig {
 namespace ratstats {
+namespace modules {
 namespace sva {
 
-
-class UISVA : public QMainWindow
+class UIRStatsSVA : public QMainWindow
 {
     Q_OBJECT
 
 public:
-	//! Constructor for UISVA
+    //! Constructor for UIRStatsSVA
 	/*!
-		Detailed description for UISVA
+        Detailed description for UIRStatsSVA
         @param      parent points to embedding super widget. Defaults to null.
 	*/
-    explicit UISVA(QWidget *parent = 0);
+    explicit UIRStatsSVA(QWidget *parent = 0);
 
-    //! Destructor for UISVA
-    ~UISVA();
+    //! Destructor for UIRStatsSVA
+    ~UIRStatsSVA();
 private:
 
     /** 
     * MOC generated ui class for this widget
     */
-     Ui_UISVA *m_ui;
+     Ui_UIRStatsSVA *m_ui;
 
 protected slots:
      void onContinue();
@@ -46,6 +46,4 @@ protected slots:
      void onSetPrinterOptions();
 };
 
-}}}//end namespace
-
-#endif // _OIG_RATSTATS_SVA_UISVA_H
+}}}}//end namespace

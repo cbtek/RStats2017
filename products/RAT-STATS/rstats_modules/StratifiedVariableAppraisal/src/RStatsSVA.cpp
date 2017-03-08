@@ -22,6 +22,7 @@ using namespace cbtek::common::utility;
 
 namespace oig {
 namespace ratstats {
+namespace modules {
 namespace sva {
 
 CREATE_EXCEPTION_NO_MSG(RStatsSVAException)
@@ -1052,7 +1053,5 @@ void RStatsSVA::calculateOverallPrecision(const RStatsSVAInputData &inputData)
         }
     }
 }
-
-
-}}}//end namespace
+}}}}//end namespace
 

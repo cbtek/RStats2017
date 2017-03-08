@@ -53,6 +53,7 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     connect(m_ui->m_chkAccessExcelOutput,SIGNAL(clicked(bool)),this,SLOT(onSaveAccessExcelFile()));
     connect(m_ui->m_chkTextOutput,SIGNAL(clicked(bool)),this,SLOT(onSaveTextFile()));
     connect(&m_clock,SIGNAL(timeout()),this,SLOT(onUpdateClock()));
+    onUpdateClock();
     m_clock.start(1000);
 
     QString defaultAuditName = "NewAudit_"+QString::number(TimeUtils::getSecondsNow());
@@ -97,20 +98,20 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
 
     //initialize default icons
     std::string appDir = SystemUtils::getCurrentExecutableDirectory();
-    m_iconFolder = QIcon(QString::fromStdString(FileUtils::buildFilePath(appDir,"resx/img_folder.png")));
-    m_iconModule = QIcon(QString::fromStdString(FileUtils::buildFilePath(appDir,"resx/img_module.png")));
-    m_iconEdit = QIcon(QString::fromStdString(FileUtils::buildFilePath(appDir,"resx/img_edit.png")));
-    m_iconHelp = QIcon(QString::fromStdString(FileUtils::buildFilePath(appDir,"resx/img_help.png")));
-    m_iconRemove = QIcon(QString::fromStdString(FileUtils::buildFilePath(appDir,"resx/img_remove.png")));
-    m_iconAdd = QIcon(QString::fromStdString(FileUtils::buildFilePath(appDir,"resx/img_add.png")));
-    m_iconExit = QIcon(QString::fromStdString(FileUtils::buildFilePath(appDir,"resx/img_exit.png")));
-    m_iconSettings = QIcon(QString::fromStdString(FileUtils::buildFilePath(appDir,"resx/img_settings.png")));
-    m_iconObject = QIcon(QString::fromStdString(FileUtils::buildFilePath(appDir,"resx/img_object.png")));
-    m_iconAbout = QIcon(QString::fromStdString(FileUtils::buildFilePath(appDir,"resx/img_about.png")));
-    m_iconRun = QIcon(QString::fromStdString(FileUtils::buildFilePath(appDir,"resx/img_run.png")));
-    m_iconWarning = QIcon(QString::fromStdString(FileUtils::buildFilePath(appDir,"resx/img_warning.png")));
-    m_iconError = QIcon(QString::fromStdString(FileUtils::buildFilePath(appDir,"resx/img_error.png")));
-    m_iconOK = QIcon(QString::fromStdString(FileUtils::buildFilePath(appDir,"resx/img_ok.png")));
+    m_iconFolder = UIRStatsUtils::getIcon("img_folder.png");
+    m_iconModule = UIRStatsUtils::getIcon("img_module.png");
+    m_iconEdit = UIRStatsUtils::getIcon("img_edit.png");
+    m_iconHelp = UIRStatsUtils::getIcon("img_help.png");
+    m_iconRemove = UIRStatsUtils::getIcon("img_remove.png");
+    m_iconAdd = UIRStatsUtils::getIcon("img_add.png");
+    m_iconExit = UIRStatsUtils::getIcon("img_exit.png");
+    m_iconSettings = UIRStatsUtils::getIcon("img_settings.png");
+    m_iconObject = UIRStatsUtils::getIcon("img_object.png");
+    m_iconAbout = UIRStatsUtils::getIcon("img_about.png");
+    m_iconRun = UIRStatsUtils::getIcon("img_run.png");
+    m_iconWarning = UIRStatsUtils::getIcon("img_warning.png");
+    m_iconError = UIRStatsUtils::getIcon("img_error.png");
+    m_iconOK = UIRStatsUtils::getIcon("img_ok.png");
 
     QString qss = QString::fromStdString(FileUtils::getFileContents(FileUtils::buildFilePath(appDir,"resx/style.qss")));
     qApp->setStyleSheet(qss);

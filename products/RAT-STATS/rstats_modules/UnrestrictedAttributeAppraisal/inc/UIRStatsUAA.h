@@ -4,18 +4,19 @@
 
 */
 
-#ifndef _OIG_RATSTATS_UAA_UIRSTATSUAA_H
-#define _OIG_RATSTATS_UAA_UIRSTATSUAA_H
-#include <QDialog>
+#pragma once
+
+#include <QMainWindow>
 
 class Ui_UIRStatsUAA;
 
 namespace oig {
 namespace ratstats {
+namespace modules {
 namespace uaa {
 
 
-class UIRStatsUAA : public QDialog
+class UIRStatsUAA : public QMainWindow
 {
     Q_OBJECT
 
@@ -38,6 +39,4 @@ private:
     
 };
 
-}}}//end namespace
-
-#endif // _OIG_RATSTATS_UAA_UIRSTATSUAA_H
+}}}}//end namespace

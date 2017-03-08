@@ -15,7 +15,7 @@ namespace uva {
 
 
 UIRStatsUVA::UIRStatsUVA(QWidget *parent) :
-    QDialog(parent),
+    QMainWindow(parent),
     m_ui(new Ui_UIRStatsUVA)
 {
     m_ui->setupUi(this);

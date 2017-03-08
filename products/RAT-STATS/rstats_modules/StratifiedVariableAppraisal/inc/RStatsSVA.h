@@ -4,8 +4,7 @@
 
 */
 
-#ifndef _OIG_RATSTATS_SVA_RSTATSSVA_H
-#define _OIG_RATSTATS_SVA_RSTATSSVA_H
+#pragma once
 
 #include <vector>
 #include "rstats_utils/inc/RStatsObjectList.hpp"
@@ -14,6 +13,7 @@
 
 namespace oig {
 namespace ratstats {
+namespace modules {
 namespace sva {
 
 /**
@@ -381,7 +381,4 @@ private:
     RStatsSVAFlagList m_dataFormatTypeAvailableFlag;
 
 };
-}}}//end namespace
-
-#endif
-
+}}}}//end namespace

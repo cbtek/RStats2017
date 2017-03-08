@@ -11,6 +11,7 @@
 
 namespace oig {
 namespace ratstats {
+namespace modules {
 namespace uaa {
 
 RStatsUAA RStatsUAA::m_instance = RStatsUAA();
@@ -32,5 +33,5 @@ RStatsUAA::~RStatsUAA()
 }
 
 
-}}}//end namespace
+}}}}//end namespace
 
