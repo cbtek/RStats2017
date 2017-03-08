@@ -13,11 +13,13 @@
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QMessageBox>
+#include <QStyleFactory>
 
 #include "UIRStatsSettingsManager.h"
 #include "ui_UIRStatsSettingsManager.h"
 #include "utility/inc/StringUtils.hpp"
 
+#include "UIRStatsErrorMessage.h"
 #include "UIRStatsUtils.hpp"
 #include "UIRStatsScriptProviderConfigDialog.h"
 
@@ -70,7 +72,18 @@ void UIRStatsSettingsManager::onInitScriptProviders()
     }
     m_editButtons = new QButtonGroup(this);
     m_deleteButtons = new QButtonGroup(this);
-    m_props = RStatsUtils::getScriptProviderPropertiesList();
+    try
+    {
+        m_props = RStatsUtils::getScriptProviderPropertiesList();
+    }
+    catch(std::exception& e)
+    {
+        UIRStatsErrorMessage("RAT-STATS Exception",
+                             std::string("Could not load RAT-STATS Settings dialog. See message below for details:<font style='color:red;'>\n")+
+                             std::string(e.what())+"</font>",false).exec();
+        return;
+    }
+
     QTableWidget * table = m_ui->m_tblScriptProviders;
     table->clear();
     table->horizontalHeader()->hide();
@@ -167,6 +180,20 @@ void UIRStatsSettingsManager::onAddScriptProvider()
    RStatsScriptProviderProperties props;
    UIRStatsScriptProviderConfigDialog(props).exec();
    onInitScriptProviders();
+}
+
+void UIRStatsSettingsManager::onSetDefaultTheme()
+{
+}
+
+void UIRStatsSettingsManager::onSetDarkTheme()
+{
+    UIRStatsUtils::loadDarkTheme();
+}
+
+void UIRStatsSettingsManager::onSetFusionTheme()
+{
+    qApp->setStyle(QStyleFactory::create("fusion"));
 }
 }}}//end namespace
 

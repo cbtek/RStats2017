@@ -15,6 +15,8 @@
 #include "rstats_utils/inc/RStatsSettingsManager.h"
 #include "rstats_utils/inc/RStatsUtils.hpp"
 
+#include <QStyle>
+
 class Ui_UIRStatsSettingsManager;
 
 namespace oig {
@@ -47,6 +49,7 @@ private:
      QButtonGroup * m_editButtons;
      QButtonGroup * m_deleteButtons;
      QIcon m_editIcon,m_addIcon,m_exitIcon,m_removeIcon;
+     QStyle m_defaultStyle;
 private slots:
      void onClose();
      void onInitScriptProviders();
@@ -55,6 +58,9 @@ private slots:
      void onEditScriptProvider(QAbstractButton * button);
      void onDeleteScriptProvider(QAbstractButton * button);
      void onAddScriptProvider();
+     void onSetDefaultTheme();
+     void onSetDarkTheme();
+     void onSetFusionTheme();
 };
 
 }}}//end namespace

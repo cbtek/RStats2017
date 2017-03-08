@@ -441,7 +441,7 @@ inline void getFileEntries(const std::string &dirPath,
             } while (FindNextFileA(h, &fdat) != 0);
 
             FindClose(h);
-            std::set<std::string> sortedFileSet = (entryListOut.begin(),entryListOut.end());
+            std::set<std::string> sortedFileSet(entryListOut.begin(),entryListOut.end());
             entryListOut.clear();
             entryListOut = std::vector<std::string>(sortedFileSet.begin(),sortedFileSet.end());
             StringUtils::removeAllThatEndWith(entryListOut,"\\.");
