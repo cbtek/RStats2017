@@ -100,9 +100,20 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
     }
     m_tableMap.clear();
 
-    std::vector<RStatsModuleProperties> propsList = RStatsUtils::getModulePropertiesList();
-    std::map<std::string, std::vector<RStatsModuleProperties> > groupedModules;
+    std::vector<RStatsModuleProperties> propsList;
+    try
+    {
+         propsList = RStatsUtils::getModulePropertiesList();
+    }
+    catch (...)
+    {
+        RStatsUtils::createValidPath("config/.rstats_module_properties");
+        RStatsUtils::createValidPath("config/.rstats_script_provider_properties");
+        QMessageBox::information(this, "No Modules", "You have no modules available to launch.  You may create modules by pressing [Alt + N] or by clicking the \"Create new Module\" link in the file menu");
+        return;
+    }
 
+    std::map<std::string, std::vector<RStatsModuleProperties> > groupedModules;
 
     for(const RStatsModuleProperties& props : propsList)
     {

@@ -448,7 +448,7 @@ namespace RStatsUtils
             try
             {
                 RStatsModuleProperties props;
-                props.loadConfig(file);
+                props.loadConfig(file);                                
                 propsList.push_back(props);
             }
             catch(...)
@@ -477,7 +477,7 @@ namespace RStatsUtils
             try
             {
                 RStatsModuleProperties props;
-                props.loadConfig(file);
+                props.loadConfig(file);                
                 std::string category = cbtek::common::utility::StringUtils::trimmed(props.getCategory());
                 if(category.empty())
                 {
@@ -510,7 +510,7 @@ namespace RStatsUtils
             try
             {
                 RStatsScriptProviderProperties props;
-                props.loadConfig(file);
+                props.loadConfig(file);                
                 propsList.push_back(props);
             }
             catch(...)
@@ -555,6 +555,63 @@ namespace RStatsUtils
             div = (int)((div - mod) / 26);
         }
         return colLetter;
+    }
+
+
+    static void createValidPath(const std::string& pathToCreate)
+    {
+
+        std::string path1,path2,path3,path,parentPath;
+        #ifdef __WIN32
+            path1 = cbtek::common::utility::StringUtils::replace(cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getCurrentExecutableDirectory(), pathToCreate),"/","\\");
+        #else
+            path1 = cbtek::common::utility::StringUtils::replace(cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getCurrentExecutableDirectory(), pathToCreate),"\\","/");
+        #endif
+        parentPath = cbtek::common::utility::FileUtils::getDirPath(path1);
+        if (cbtek::common::utility::FileUtils::fileExists(path1))
+        {
+            return;
+        }
+        if (cbtek::common::utility::FileUtils::isDirectoryWritable(parentPath))
+        {
+            path = path1;
+        }
+
+        #ifdef __WIN32
+            path2 = cbtek::common::utility::StringUtils::replace(cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserAppDirectory(), ".rat-stats/"+pathToCreate),"/","\\");
+        #else
+            path2 = cbtek::common::utility::StringUtils::replace(cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserAppDirectory(), ".rat-stats/"+pathToCreate),"\\","/");
+        #endif
+        parentPath = cbtek::common::utility::FileUtils::getDirPath(path2);
+        if (cbtek::common::utility::FileUtils::fileExists(path2))
+        {
+            return;
+        }
+        if (cbtek::common::utility::FileUtils::isDirectoryWritable(parentPath))
+        {
+            path = path2;
+        }
+
+        #ifdef __WIN32
+            path3 = cbtek::common::utility::StringUtils::replace(cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserHomeDirectory(), ".rat-stats/"+pathToCreate),"/","\\");
+        #else
+            path3 = cbtek::common::utility::StringUtils::replace(cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserHomeDirectory(), ".rat-stats/"+pathToCreate),"\\","/");
+        #endif
+
+        parentPath = cbtek::common::utility::FileUtils::getDirPath(path3);
+        if (cbtek::common::utility::FileUtils::fileExists(path3))
+        {
+            return;
+        }
+        if (cbtek::common::utility::FileUtils::isDirectoryWritable(parentPath))
+        {
+            path=path3;
+        }
+
+        if (path.empty() || !cbtek::common::utility::FileUtils::createDirectory(path))
+        {
+            throw cbtek::common::utility::FileAccessException(EXCEPTION_TAG_LINE+"Could not create directory at \""+path+"\" because \""+parentPath+"\" is not writable or does not exist!");
+        }
     }
 }
 

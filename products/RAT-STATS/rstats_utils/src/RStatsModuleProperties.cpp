@@ -33,6 +33,28 @@ RStatsModuleProperties::~RStatsModuleProperties()
 
 }
 
+void RStatsModuleProperties::saveConfig(const std::string &filePath)
+{
+    std::ofstream out(filePath.c_str());
+    if (out.is_open())
+    {
+        XMLStreamWriter xml(out);
+        xml.writeStartDocument();
+        xml.writeStartElementNoAttributes("module");
+        xml.writeTextElement("name",m_appName);
+        xml.writeTextElement("category",m_appCategory);
+        xml.writeTextElement("path",m_appPath);
+        xml.writeTextElement("script_path",m_appScriptPath);
+        xml.writeTextElement("type",m_appType);
+        xml.writeTextElement("working_dir",m_appType);
+        xml.writeTextElement("icon",m_appIcon);
+        xml.writeTextElement("show_console", (m_showAppConsole ? "TRUE" : "FALSE"));
+        xml.writeTextElement("args",XMLUtils::getEncodedString(m_appArgs));
+        xml.writeEndElement("module");
+        m_configPath = filePath;
+    }
+}
+
 void RStatsModuleProperties::loadConfig(const std::string &filePath)
 {
     XMLReader reader;
@@ -40,14 +62,22 @@ void RStatsModuleProperties::loadConfig(const std::string &filePath)
     XMLDataElement * module = reader.getElement("module");
     if (module)
     {
-        m_appName = module->getAttributeValue("name");
-        m_appPath = module->getAttributeValue("path");
-        m_appType = module->getAttributeValue("type");
-        m_appWorkingDir = module->getAttributeValue("working_dir");
-        m_appCategory = module->getAttributeValue("category");
-        m_appIcon = module->getAttributeValue("icon");
-        m_showAppConsole = module->getAttributeValueAsBool("show_console");
-        m_appArgs = XMLUtils::getDecodedString(module->getAttributeValue("args"));
+        XMLDataElement * nameModule = module->getChild("name");
+        XMLDataElement * pathModule = module->getChild("path");
+        XMLDataElement * typeModule = module->getChild("type");
+        XMLDataElement * workingDirModule = module->getChild("working_dir");
+        XMLDataElement * categoryModule = module->getChild("category");
+        XMLDataElement * iconModule = module->getChild("icon");
+        XMLDataElement * showConsoleModule = module->getChild("show_console");
+        XMLDataElement * argsModule = module->getChild("args");
+        m_appName = nameModule?nameModule->getElementData():"";
+        m_appPath = pathModule?pathModule->getElementData():"";
+        m_appType = typeModule?typeModule->getElementData():"";
+        m_appWorkingDir = workingDirModule?workingDirModule->getElementData():"";
+        m_appCategory = categoryModule?categoryModule->getElementData():"";
+        m_appIcon = iconModule?iconModule->getElementData():"";
+        m_showAppConsole = showConsoleModule && StringUtils::toUpperTrimmed(showConsoleModule->getElementData()) == "TRUE"?true:false;
+        m_appArgs = argsModule?XMLUtils::getDecodedString(argsModule->getElementData()):"";
         m_configPath = filePath;
     }
     else
@@ -59,27 +89,6 @@ void RStatsModuleProperties::loadConfig(const std::string &filePath)
 void RStatsModuleProperties::saveConfig()
 {
     saveConfig(m_configPath);
-}
-
-void RStatsModuleProperties::saveConfig(const std::string &filePath)
-{
-    std::ofstream out(filePath.c_str());
-    if (out.is_open())
-    {
-        XMLStreamWriter xml(out);
-        xml.writeStartDocument();
-        xml.writeStartElement("module");
-        xml.writeAttribute("name",m_appName);
-        xml.writeAttribute("category",m_appCategory);
-        xml.writeAttribute("path",m_appPath);
-        xml.writeAttribute("script_path",m_appScriptPath);
-        xml.writeAttribute("type",m_appType);
-        xml.writeAttribute("working_dir",m_appType);
-        xml.writeAttribute("icon",m_appIcon);
-        xml.writeAttribute("show_console", (m_showAppConsole ? "TRUE" : "FALSE"));        
-        xml.writeLastAttributeAndCloseTag("args",XMLUtils::getEncodedString(m_appArgs));
-        m_configPath = filePath;
-    }
 }
 
 void RStatsModuleProperties::setType(const std::string &value)

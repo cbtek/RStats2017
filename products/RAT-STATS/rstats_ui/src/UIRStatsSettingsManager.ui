@@ -62,7 +62,7 @@
    <item>
     <widget class="QGroupBox" name="verticalGroupBox_2">
      <property name="title">
-      <string>Script Provider Setup</string>
+      <string>Script Providers</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <property name="leftMargin">

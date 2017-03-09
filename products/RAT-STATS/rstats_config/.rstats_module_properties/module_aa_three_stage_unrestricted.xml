@@ -1,2 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<module name="Three-Stage Unrestricted" category="Attribute Appraisals" path="module_aa_three_stage_unrestricted" script_path="" type="" working_dir="" icon="resx/img_module.png" show_console="FALSE" args=""/>
+<module>
+    <name>Three-Stage Unrestricted</name>
+    <category>Attribute Appraisals</category>
+    <path>module_aa_three_stage_unrestricted</path>
+    <script_path></script_path>
+    <type></type>
+    <working_dir></working_dir>
+    <icon>resx/img_module.png</icon>
+    <show_console>FALSE</show_console>
+    <args></args>
+</module>
