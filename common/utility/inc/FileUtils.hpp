@@ -915,5 +915,21 @@ static std::string getSanitizedPathName(const std::string& filePathName,
     }
     return pathName;
 }
+
+static std::vector<std::string> getFileEntries(const std::string& dirPath,
+                                               const std::string& filter="",
+                                               bool fullPath = true)
+{
+    std::vector<std::string> entries;
+    std::vector<std::string> filters;
+    if (!StringUtils::isEmpty(filter))
+    {
+        filters = StringUtils::split(filter,",");
+    }
+    getFileEntries(dirPath,true,filters,entries);
+    return entries;
+}
+
+
 }}}}
 #endif // _CBTEK_COMMON_UTILITY_FILEUTILS_HPP_

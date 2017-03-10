@@ -18,6 +18,7 @@ int main(int argc, char ** argv)
     QApplication a(argc,argv);
     UIRStatsUtils::loadThemeSettings(&a);
     UIRStatsSSRN form;
+    form.resize(1024,768);
     form.show();
     return a.exec();
 }

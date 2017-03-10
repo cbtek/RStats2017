@@ -92,8 +92,7 @@ std::pair<RStatsIntegerList,RStatsIntegerList> RStatsSSRN::generateRandomNumbers
     currentSeed = vbRandomize(100,currentSeed);
     vbRand(currentSeed,30269,vbRandOutputA);
     vbRand(vbRandOutputA.stepValue,30307,vbRandOutputB);
-    vbRand(vbRandOutputB.stepValue,30323,vbRandOutputC);
-    std::set<RStatsInteger>repeatCheckSet;
+    vbRand(vbRandOutputB.stepValue,30323,vbRandOutputC);    
     double seedA = std::floor(vbRandOutputA.ratStatValue);
     double seedB = std::floor(vbRandOutputB.ratStatValue);
     double seedC = std::floor(vbRandOutputC.ratStatValue);
@@ -103,6 +102,7 @@ std::pair<RStatsIntegerList,RStatsIntegerList> RStatsSSRN::generateRandomNumbers
     RStatsIntegerList randomOrderList(sparesInRandomOrder);
     RStatsInteger sampleSize = sequentialOrder + sparesInRandomOrder;
     RStatsIntegerList randomNumbers(sampleSize,1);
+    std::set<RStatsInteger> repeatCheckSet;
     RStatsInteger upperBound = highNumber;
     RStatsInteger lowerBound = lowNumber;
     RStatsInteger frameSize = upperBound - lowerBound;
@@ -144,21 +144,21 @@ std::pair<RStatsIntegerList,RStatsIntegerList> RStatsSSRN::generateRandomNumbers
             double term4 = seedA/30269.0 + seedB/30307.0 + seedC/30323.0;
             RStatsInteger value = std::floor((term4 - std::floor(term4)) * (upperBound-lowerBound+1))+lowerBound;
             setValue(value,sequentialOrderList,randomOrderList);
-            if (!repeatCheckSet.count(value))
-            {
-                repeatCheckSet.insert(value);
-                setValue(value,sequentialOrderList,randomOrderList);
-                repeatFlag = false;
-            }
-            //            if (!allowDuplicates)
-//            {
-//
-//            }
-//            else
-//            {
 
-//                repeatFlag = false;
-//            }
+            if (!allowDuplicates)
+            {
+              if (!repeatCheckSet.count(value))
+              {
+                  repeatCheckSet.insert(value);
+                  setValue(value,sequentialOrderList,randomOrderList);
+                  repeatFlag = false;
+              }
+            }
+            else
+            {
+              setValue(value,sequentialOrderList,randomOrderList);
+              repeatFlag = false;
+            }
         }
     }
     return std::make_pair(sequentialOrderList,randomOrderList);

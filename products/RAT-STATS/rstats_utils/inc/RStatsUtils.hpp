@@ -37,6 +37,7 @@ SOFTWARE.
 
 #include "RStatsObjectList.hpp"
 
+#include "utility/inc/DateTimeUtils.hpp"
 #include "utility/inc/FileUtils.hpp"
 #include "utility/inc/SystemUtils.hpp"
 #include "utility/inc/StringUtils.hpp"
@@ -611,6 +612,37 @@ namespace RStatsUtils
         if (path.empty() || !cbtek::common::utility::FileUtils::createDirectory(path))
         {
             throw cbtek::common::utility::FileAccessException(EXCEPTION_TAG_LINE+"Could not create directory at \""+path+"\" because \""+parentPath+"\" is not writable or does not exist!");
+        }
+    }
+
+
+    static std::string getValidSessionPath()
+    {
+        std::string path = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserHomeDirectory(),".rstats_sessions");
+        if (cbtek::common::utility::FileUtils::isDirectoryWritable(cbtek::common::utility::FileUtils::getDirPath(path)))
+        {
+            cbtek::common::utility::FileUtils::createDirectory(path);
+        }
+        return path;
+    }
+
+    static std::vector<std::string> getRecentSessions(const std::string& sessionExtension)
+    {
+        return cbtek::common::utility::FileUtils::getFileEntries(getValidSessionPath(),sessionExtension);
+    }
+    static void saveRecentSession(const std::string& sessionData, const std::string& sessionExtension)
+    {
+        std::vector<std::string> sessions = getRecentSessions(sessionExtension);
+        std::string path = getValidSessionPath();
+        path = cbtek::common::utility::FileUtils::buildFilePath(path,"session"+std::to_string(sessions.size())+"."+sessionExtension);
+        cbtek::common::utility::FileUtils::writeFileContents(path,sessionData);
+    }
+    static void clearRecentSessions(const std::string& sessionExtension)
+    {
+        std::vector<std::string> entries = cbtek::common::utility::FileUtils::getFileEntries(getValidSessionPath(),sessionExtension);
+        for (const auto& entry : entries)
+        {
+            cbtek::common::utility::FileUtils::deleteFile(entry);
         }
     }
 }

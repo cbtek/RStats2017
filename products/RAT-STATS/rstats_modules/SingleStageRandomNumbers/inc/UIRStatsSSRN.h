@@ -11,6 +11,7 @@
 #include <QActionGroup>
 
 #include "rstats_utils/inc/RStatsConditionLogger.h"
+#include "rstats_utils/inc/RStatsUtils.hpp"
 
 class Ui_UIRStatsSSRN;
 
@@ -19,6 +20,20 @@ namespace ratstats {
 namespace modules {
 namespace ssrn {
 
+
+struct SessionData
+{
+    SessionData():order(0),spares(0),low(0),high(0),seed(0.){}
+    void load(const std::string& url);
+    std::string toString() const;
+    std::string name;
+    std::string dateTimeStr;
+    oig::ratstats::utils::RStatsInteger order;
+    oig::ratstats::utils::RStatsInteger spares;
+    oig::ratstats::utils::RStatsInteger low;
+    oig::ratstats::utils::RStatsInteger high;
+    oig::ratstats::utils::RStatsFloat seed;
+};
 
 class UIRStatsSSRN : public QMainWindow
 {
@@ -51,13 +66,13 @@ private:
           m_iconError, m_iconOK;
 
     QActionGroup * m_recentSessionActionGroup;
-private slots:
+    QMap<QString,SessionData> m_recentSessionsMap;
 
-     void onSaveSession();
-     void onSaveRecentSession();
-     void onSaveSession(const std::string& sessionUrl);
-     void onLoadSessions();
-     void onLoadSession(const std::string& sessionUrl);
+
+    SessionData getSessionData() const;
+    void setSessionData(const SessionData& data);
+    void updateRecentSessions();
+private slots:                    
      void onClearRecentSessions();
      void onRecentSessionSelected(QAction* action);
      void onExit();

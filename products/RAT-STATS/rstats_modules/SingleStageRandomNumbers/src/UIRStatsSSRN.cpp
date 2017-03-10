@@ -14,6 +14,8 @@
 #include "utility/inc/DateTimeUtils.hpp"
 #include "utility/inc/TimeUtils.hpp"
 #include "utility/inc/XMLReader.h"
+#include "utility/inc/XMLUtils.h"
+#include "utility/inc/XMLStreamWriter.h"
 #include "utility/inc/FileUtils.hpp"
 #include "utility/inc/SystemUtils.hpp"
 
@@ -22,8 +24,9 @@
 
 using namespace oig::ratstats::ui;
 using namespace oig::ratstats::utils;
-
 using namespace cbtek::common::utility;
+
+static const std::string c_RECENT_SESSION_EXTENSION = "modules_ssrn";
 
 namespace oig {
 namespace ratstats {
@@ -35,14 +38,6 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     m_ui(new Ui_UIRStatsSSRN)
 {
     m_ui->setupUi(this);
-
-
-    std::string sessionFolder = FileUtils::buildFilePath(SystemUtils::getUserAppDirectory(),".rstats");
-    if (!FileUtils::isDirectory(sessionFolder))
-    {
-        FileUtils::createDirectory(sessionFolder);
-    }
-
     connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));
     connect(m_ui->m_btnGenerate,SIGNAL(clicked(bool)),this,SLOT(onGenerate()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
@@ -117,122 +112,12 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     UIRStatsUtils::setButtonStyle(m_ui->m_btnExit,font,m_iconExit,buttonHeight);
     UIRStatsUtils::setButtonStyle(m_ui->m_btnGenerate,font,m_iconRun,buttonHeight);
     UIRStatsUtils::setButtonStyle(m_ui->m_btnHelp,font,m_iconHelp,buttonHeight);
-
-    onLoadSessions();
+    updateRecentSessions();
 }
 
 UIRStatsSSRN::~UIRStatsSSRN()
 {
     delete m_ui;
-}
-
-void UIRStatsSSRN::onSaveSession()
-{
-
-}
-
-void UIRStatsSSRN::onSaveRecentSession()
-{
-
-}
-
-void UIRStatsSSRN::onSaveSession(const std::string &sessionUrl)
-{
-    std::ostringstream out;
-    out << "name="<<m_ui->m_txtAuditName->text().toStdString()<<std::endl;
-    out << "seed="<<m_ui->m_spnSeed->value()<<std::endl;
-    out << "order="<<m_ui->m_spnOrder->value()<<std::endl;
-    out << "spares="<<m_ui->m_spnSpares->value()<<std::endl;
-    out << "low="<<m_ui->m_spnLowNumber->value()<<std::endl;
-    out << "high="<<m_ui->m_spnLowNumber->value()<<std::endl;
-    FileUtils::writeFileContents(sessionUrl,out.str());
-}
-
-void UIRStatsSSRN::onLoadSessions()
-{
-    std::vector<std::string> sessionUrls,filters;
-    std::string sessionFolder = FileUtils::buildFilePath(SystemUtils::getUserAppDirectory(),".rstats");
-
-    filters.push_back("ssrn_session");
-    FileUtils::getFileEntries(sessionFolder,
-                              false,
-                              filters,
-                              sessionUrls);
-
-
-    m_recentSessionActionGroup = new QActionGroup(this);
-    connect(m_recentSessionActionGroup,SIGNAL(triggered(QAction*)),this,SLOT(onRecentSessionSelected(QAction*)));
-
-    if (!sessionUrls.empty())
-    {
-        QMenu * recentMenu = new QMenu(m_ui->menuFile);
-        for(const std::string& file : sessionUrls)
-        {
-            QAction * action = new QAction(QString::fromStdString(file), recentMenu);
-            m_recentSessionActionGroup->addAction(action);
-            recentMenu->addAction(action);
-        }
-
-        recentMenu->addSeparator();
-
-        QAction * clearRecentSessionsAction = new QAction(recentMenu);
-        clearRecentSessionsAction->setText("Clear History");
-        connect(clearRecentSessionsAction,SIGNAL(triggered(bool)),this,SLOT(onClearRecentSessions()));
-        recentMenu->addAction(clearRecentSessionsAction);
-        m_ui->actionRecent->setMenu(recentMenu);
-    }
-    else
-    {
-        m_ui->actionRecent->setEnabled(false);
-    }
-
-}
-
-void UIRStatsSSRN::onLoadSession(const std::string &sessionUrl)
-{
-    std::string contents = FileUtils::getFileContents(sessionUrl);
-    std::vector<std::string> items = StringUtils::split(contents,"\n");
-    for(const std::string& item : items)
-    {
-        std::pair<std::string,std::string> keyValue=StringUtils::splitKeyValue(item,"=");
-        std::string key = StringUtils::toUpper(keyValue.first);
-        if (key == "NAME")
-        {
-            m_ui->m_txtAuditName->setText(QString::fromStdString(keyValue.second));
-        }
-    }
-//    std::ostringstream out;
-//    out << "name="<<m_ui->m_txtAuditName->text().toStdString()<<std::endl;
-//    out << "seed="<<m_ui->m_spnSeed->value()<<std::endl;
-//    out << "order="<<m_ui->m_spnOrder->value()<<std::endl;
-//    out << "spares="<<m_ui->m_spnSpares->value()<<std::endl;
-//    out << "low="<<m_ui->m_spnLowNumber->value()<<std::endl;
-//    out << "high="<<m_ui->m_spnLowNumber->value()<<std::endl;
-    //FileUtils::writeFileContents(sessionUrl,out.str());
-}
-
-void UIRStatsSSRN::onClearRecentSessions()
-{
-    std::vector<std::string> sessionUrls,filters;
-    std::string sessionFolder = FileUtils::buildFilePath(SystemUtils::getUserAppDirectory(),".rstats");
-
-    filters.push_back("ssrn_session");
-    FileUtils::getFileEntries(sessionFolder,
-                              false,
-                              filters,
-                              sessionUrls);
-    for (const std::string& sessionUrl : sessionUrls)
-    {
-        FileUtils::deleteFile(sessionUrl);
-    }
-    onLoadSessions();
-}
-
-void UIRStatsSSRN::onRecentSessionSelected(QAction *action)
-{
-    std::string sessionFolder = FileUtils::buildFilePath(SystemUtils::getUserAppDirectory(),".rstats");
-    std::string sessionFile = FileUtils::buildFilePath(sessionFolder, action->text().toStdString());
-    onLoadSession(sessionFile);
 }
 
 void UIRStatsSSRN::onValidateForm()
@@ -340,34 +225,31 @@ void UIRStatsSSRN::onGenerate()
     m_ui->m_tblOutput->clear();
     m_ui->m_tblOutput->setRowCount(sparesList.size()+orderedList.size());
     m_ui->m_tblOutput->setColumnCount(3);
-    m_ui->m_tblOutput->setHorizontalHeaderLabels(QStringList()<<"Type"<<"Index"<<"Value");
+    m_ui->m_tblOutput->setHorizontalHeaderLabels(QStringList()<<"Index"<<"Value"<<"Type");
     size_t row = 0;
     std::map<RStatsInteger,RStatsInteger> orderedMap;
 
     for (const auto& orderedValue : orderedList)
     {
         orderedMap[orderedValue] = row;
+        ++row;
     }
+
+    row = 0;
+
     for (const auto& orderedIt : orderedMap)
     {
-
         RStatsInteger index = orderedIt.second;
         RStatsInteger value = orderedIt.first;
-
         QTableWidgetItem * itemLabel = new QTableWidgetItem;
         QTableWidgetItem * rowLabel = new QTableWidgetItem;
         QTableWidgetItem * typeLabel = new QTableWidgetItem;
         typeLabel->setText("Random");
         itemLabel->setText(QString::number(value));
-        rowLabel->setText(QString::number(index));
-
-        typeLabel->setBackground(QBrush(QColor(255,255,127)));
-        itemLabel->setBackground(QBrush(QColor(255,255,127)));
-        rowLabel->setBackground(QBrush(QColor(255,255,127)));
-
-        m_ui->m_tblOutput->setItem(row,0,typeLabel);
-        m_ui->m_tblOutput->setItem(row,1,rowLabel);
-        m_ui->m_tblOutput->setItem(row,2,itemLabel);
+        rowLabel->setText(QString::number(index));       
+        m_ui->m_tblOutput->setItem(row,0,rowLabel);
+        m_ui->m_tblOutput->setItem(row,1,itemLabel);
+        m_ui->m_tblOutput->setItem(row,2,typeLabel);
         ++row;
     }
     for (const auto& value : sparesList)
@@ -375,38 +257,29 @@ void UIRStatsSSRN::onGenerate()
         QTableWidgetItem * itemLabel = new QTableWidgetItem;
         QTableWidgetItem * rowLabel = new QTableWidgetItem;
         QTableWidgetItem * typeLabel = new QTableWidgetItem;
-
         typeLabel->setText("Spare");
         itemLabel->setText(QString::number(value));
         rowLabel->setText(QString::number(row));
-
-        typeLabel->setBackground(QBrush(QColor(255,255,127)));
-        itemLabel->setBackground(QBrush(QColor(255,255,127)));
-        rowLabel->setBackground(QBrush(QColor(255,255,127)));
-
-        m_ui->m_tblOutput->setItem(row,0,typeLabel);
-        m_ui->m_tblOutput->setItem(row,1,rowLabel);
-        m_ui->m_tblOutput->setItem(row,2,itemLabel);
+        m_ui->m_tblOutput->setItem(row,0,rowLabel);
+        m_ui->m_tblOutput->setItem(row,1,itemLabel);
+        m_ui->m_tblOutput->setItem(row,2,typeLabel);
         ++row;
     }
 
-    m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(0,QHeaderView::Stretch);
+    m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(2,QHeaderView::Stretch);
 
     m_ui->m_grpOutput->show();
     m_ui->m_line->show();
     m_ui->m_frmTotals->show();
     m_ui->m_lblNoData->hide();
     m_ui->m_lblTotalRandomNumbersValue->setText(QString::number(m_ui->m_spnOrder->value()+m_ui->m_spnSpares->value()));
-    m_ui->m_lblTotalFrameSizeValue->setText(QString::number(m_ui->m_spnHighNumber->value()-m_ui->m_spnLowNumber->value()));
+    m_ui->m_lblTotalFrameSizeValue->setText(QString::number(m_ui->m_spnHighNumber->value()-m_ui->m_spnLowNumber->value()));   
 
-    std::string sessionFolder = FileUtils::buildFilePath(SystemUtils::getUserAppDirectory(),".rstats");
-    QString text = m_ui->m_txtAuditName->text();
-    if (text.isEmpty())
-    {
-        text = m_ui->m_txtAuditName->placeholderText();
-    }
-    onSaveSession(FileUtils::buildFilePath(sessionFolder,text.toStdString()+".ssrn_session"));
-    onLoadSessions();
+    SessionData data = getSessionData();
+    data.dateTimeStr = DateTimeUtils::getDisplayTimeStamp();
+    m_recentSessionsMap[QString::fromStdString(data.name)]=data;
+    RStatsUtils::saveRecentSession(data.toString(),c_RECENT_SESSION_EXTENSION);
+    updateRecentSessions();
     m_clock.stop();
 }
 
@@ -419,5 +292,130 @@ void UIRStatsSSRN::onExit()
 {
     this->close();
 }
+
+
+SessionData UIRStatsSSRN::getSessionData() const
+{
+    QString text = m_ui->m_txtAuditName->text();
+    if (text.isEmpty())
+    {
+        text = m_ui->m_txtAuditName->placeholderText();
+    }
+    SessionData data;
+    data.name = text.toStdString();
+    data.seed = m_ui->m_spnSeed->value();
+    data.order = m_ui->m_spnOrder->value();
+    data.spares = m_ui->m_spnSpares->value();
+    data.low = m_ui->m_spnLowNumber->value();
+    data.high = m_ui->m_spnHighNumber->value();
+    return data;
+}
+
+void UIRStatsSSRN::setSessionData(const SessionData &data)
+{
+    m_ui->m_txtAuditName->setText(QString::fromStdString(data.name));
+    m_ui->m_spnSeed->setValue(data.seed);
+    m_ui->m_spnHighNumber->setValue(data.high);
+    m_ui->m_spnLowNumber->setValue(data.low);
+    m_ui->m_spnSpares->setValue(data.spares);
+    m_ui->m_spnOrder->setValue(data.order);
+}
+void UIRStatsSSRN::onClearRecentSessions()
+{
+    RStatsUtils::clearRecentSessions(c_RECENT_SESSION_EXTENSION);
+    updateRecentSessions();
+}
+
+void UIRStatsSSRN::onRecentSessionSelected(QAction *action)
+{
+    QString name = action->property("name").toString();
+    if (m_recentSessionsMap.contains(name))
+    {
+        SessionData data = m_recentSessionsMap[name];
+        setSessionData(data);
+    }
+}
+
+void UIRStatsSSRN::updateRecentSessions()
+{
+    m_recentSessionsMap.clear();
+    std::vector<std::string> sessionUrls = RStatsUtils::getRecentSessions(c_RECENT_SESSION_EXTENSION);
+    for (const auto& url : sessionUrls)
+    {
+        SessionData data;
+        data.load(url);
+        m_recentSessionsMap[QString::fromStdString(data.name)] = data;
+    }
+
+    if (m_recentSessionsMap.empty())
+    {
+        m_ui->actionRecent->setDisabled(true);
+        return;
+    }
+    m_ui->actionRecent->setDisabled(false);
+    m_recentSessionActionGroup = new QActionGroup(this);
+    connect(m_recentSessionActionGroup,SIGNAL(triggered(QAction*)),this,SLOT(onRecentSessionSelected(QAction*)));
+    QMenu * recentMenu = new QMenu(m_ui->menuFile);
+    for (const auto& session : m_recentSessionsMap.toStdMap())
+    {
+        SessionData data = session.second;
+        QAction * action = new QAction(QString::fromStdString(data.name+" "+data.dateTimeStr), recentMenu);
+        action->setProperty("name",QString::fromStdString(data.name));
+        m_recentSessionActionGroup->addAction(action);
+        recentMenu->addAction(action);
+    }
+    recentMenu->addSeparator();
+    QAction * clearRecentSessionsAction = new QAction(recentMenu);
+    clearRecentSessionsAction->setText("Clear History");
+    connect(clearRecentSessionsAction,SIGNAL(triggered(bool)),this,SLOT(onClearRecentSessions()));
+    recentMenu->addAction(clearRecentSessionsAction);
+    m_ui->actionRecent->setMenu(recentMenu);
+
+}
+
+void SessionData::load(const std::string &url)
+{
+    if (!url.empty())
+    {
+        XMLReader reader;
+        reader.load(url);
+        XMLDataElement * session = reader.getElement("session");
+        if (session)
+        {
+            XMLDataElement* nameXML = session->getChild("name");
+            XMLDataElement* seedXML = session->getChild("seed");
+            XMLDataElement* orderXML = session->getChild("order");
+            XMLDataElement* sparesXML = session->getChild("spares");
+            XMLDataElement* lowXML = session->getChild("low");
+            XMLDataElement* highXML = session->getChild("high");
+            XMLDataElement* dateTimeXML = session->getChild("datetime");
+            if (nameXML)this->name = XMLUtils::getDecodedString(nameXML->getElementData());
+            if (seedXML)this->seed = StringUtils::toFloat64(seedXML->getElementData());
+            if (orderXML)this->order = StringUtils::toInt(orderXML->getElementData());
+            if (sparesXML)this->spares = StringUtils::toInt(sparesXML->getElementData());
+            if (lowXML)this->low = StringUtils::toInt(lowXML->getElementData());
+            if (highXML)this->high = StringUtils::toInt(highXML->getElementData());
+            if (dateTimeXML)this->dateTimeStr = XMLUtils::getDecodedString(dateTimeXML->getElementData());
+        }
+    }
+}
+
+std::string SessionData::toString() const
+{
+    std::ostringstream out;
+    XMLStreamWriter xml(out);
+    xml.writeStartDocument();
+    xml.writeStartElementNoAttributes("session");
+    xml.writeTextElement("name",XMLUtils::getEncodedString(name));
+    xml.writeTextElement("seed",StringUtils::toString(seed));
+    xml.writeTextElement("order",StringUtils::toString(order));
+    xml.writeTextElement("spares",StringUtils::toString(spares));
+    xml.writeTextElement("low",StringUtils::toString(low));
+    xml.writeTextElement("high",StringUtils::toString(high));
+    xml.writeTextElement("datetime",XMLUtils::getEncodedString(dateTimeStr));
+    xml.writeEndElement("session");
+    return out.str();
+}
+
 }}}}//end namespace
 

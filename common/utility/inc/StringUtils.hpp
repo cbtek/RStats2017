@@ -1546,5 +1546,10 @@ static inline std::pair<std::string,std::string> splitKeyValue(const std::string
     }
     throw InvalidOperationException(EXCEPTION_TAG+"Could not split item=\""+itemToSplit+"\" into 2 parts with delimiter=\""+delimiter+"\"");
 }
+
+static inline bool isEmpty(const std::string& srcStr)
+{
+    return StringUtils::trimmed(srcStr).empty();
+}
 }}}} //namespace
 #endif //_CBTEK_COMMON_UTILITY_STRING_UTILS_HPP_
