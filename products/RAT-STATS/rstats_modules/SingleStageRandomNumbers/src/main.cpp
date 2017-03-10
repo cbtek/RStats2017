@@ -6,13 +6,17 @@
 
 #include "RStatsSSRN.h"
 #include "UIRStatsSSRN.h"
+#include "rstats_ui/inc/UIRStatsUtils.hpp"
 
 using namespace oig::ratstats::utils;
+
+using namespace oig::ratstats::ui;
 using namespace oig::ratstats::modules::ssrn;
 
 int main(int argc, char ** argv)
 {
     QApplication a(argc,argv);
+    UIRStatsUtils::loadThemeSettings(&a);
     UIRStatsSSRN form;
     form.show();
     return a.exec();

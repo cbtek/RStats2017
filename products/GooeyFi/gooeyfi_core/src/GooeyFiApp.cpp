@@ -135,8 +135,8 @@ void GooeyFiApp::write()
     {
         xml.writeStartElement("GooeyFiPage");
         xml.writeAttribute("title",page.getTitle());
-        xml.writeLastAttribute("layout",getLayoutTypeString(page.getLayout()->getType()));
-        for(const GooeyFiWidgetPtr& widgetPtr : page.getLayout()->getWidgets())
+        xml.writeLastAttribute("layout",getLayoutTypeString(page->getType()));
+        for(const GooeyFiWidgetPtr& widgetPtr : page->getWidgets())
         {
             const GooeyFiWidgetImpl *impl = dynamic_cast <const GooeyFiWidgetImpl*>(widgetPtr.get());
 

@@ -54,7 +54,7 @@ public:
      * @param highNumber
      * @return
      */
-    RStatsIntegerList generateRandomNumbers(const std::string & auditName,
+    std::pair<RStatsIntegerList,RStatsIntegerList> generateRandomNumbers(const std::string & auditName,
                                            oig::ratstats::utils::RStatsInteger inputSeed,
                                            oig::ratstats::utils::RStatsInteger sequentialOrder,
                                            oig::ratstats::utils::RStatsInteger sparesInRandomOrder,
@@ -67,6 +67,13 @@ public:
     static RStatsSSRN & inst();
 
 private:
+
+    size_t m_sequentialCount;
+    size_t m_sparesCount;
+
+    void setValue( oig::ratstats::utils::RStatsInteger value,
+                   oig::ratstats::utils::RStatsIntegerList& orderedList,
+                   oig::ratstats::utils::RStatsIntegerList& randomList);
     /**
      * @brief The SSRNStruct struct
      */

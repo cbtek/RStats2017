@@ -33,7 +33,7 @@ void RStatsConditionLogger::addWarning(bool condition,
     if (condition)
     {        
         m_messages.push_back(StringUtils::replace(m_warningQSS,"%MESSAGE%",message));
-        m_conditionSet.push_back(ConditionType::WARNING);
+        m_conditionSet.push_back(ConditionType::Warning);
     }
 }
 
@@ -43,7 +43,7 @@ void RStatsConditionLogger::addInformation(bool condition,
     if (condition)
     {
         m_messages.push_back(StringUtils::replace(m_informationQSS,"%MESSAGE%",message));
-        m_conditionSet.push_back(ConditionType::INFORMATION);
+        m_conditionSet.push_back(ConditionType::Informative);
     }
 }
 
@@ -53,7 +53,7 @@ void RStatsConditionLogger::addError(bool condition,
     if (condition)
     {
         m_messages.push_back(StringUtils::replace(m_errorQSS,"%MESSAGE%",message));
-        m_conditionSet.push_back(ConditionType::ERROR);
+        m_conditionSet.push_back(ConditionType::Error);
     }
 }
 
@@ -71,7 +71,7 @@ bool RStatsConditionLogger::hasError() const
 {
     for (size_t a1 = 0; a1 < m_conditionSet.size(); ++a1)
     {
-        if (m_conditionSet[a1] == ConditionType::ERROR)
+        if (m_conditionSet[a1] == ConditionType::Error)
         {
             return true;
         }
@@ -84,7 +84,7 @@ bool RStatsConditionLogger::hasWarning() const
 {
     for (size_t a1 = 0; a1 < m_conditionSet.size(); ++a1)
     {
-        if (m_conditionSet[a1] == ConditionType::WARNING)
+        if (m_conditionSet[a1] == ConditionType::Warning)
         {
             return true;
         }
@@ -96,7 +96,7 @@ bool RStatsConditionLogger::hasInformation() const
 {
     for (size_t a1 = 0; a1 < m_conditionSet.size(); ++a1)
     {
-        if (m_conditionSet[a1] == ConditionType::INFORMATION)
+        if (m_conditionSet[a1] == ConditionType::Informative)
         {
             return true;
         }
@@ -127,17 +127,17 @@ void RStatsConditionLogger::setInformationQSS(const std::string &qss)
 
 bool RStatsConditionLogger::isError(size_t index) const
 {
-    return index < m_conditionSet.size() && m_conditionSet[index] == ConditionType::ERROR;
+    return index < m_conditionSet.size() && m_conditionSet[index] == ConditionType::Error;
 }
 
 bool RStatsConditionLogger::isWarning(size_t index) const
 {
-    return index < m_conditionSet.size() && m_conditionSet[index] == ConditionType::WARNING;
+    return index < m_conditionSet.size() && m_conditionSet[index] == ConditionType::Warning;
 }
 
 bool RStatsConditionLogger::isInformation(size_t index) const
 {
-    return index < m_conditionSet.size() && m_conditionSet[index] == ConditionType::INFORMATION;
+    return index < m_conditionSet.size() && m_conditionSet[index] == ConditionType::Informative;
 }
 
 RStatsConditionLogger::~RStatsConditionLogger()

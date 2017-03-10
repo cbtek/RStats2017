@@ -112,22 +112,12 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     m_iconWarning = UIRStatsUtils::getIcon("img_warning.png");
     m_iconError = UIRStatsUtils::getIcon("img_error.png");
     m_iconOK = UIRStatsUtils::getIcon("img_ok.png");
-
-    QString qss = QString::fromStdString(FileUtils::getFileContents(FileUtils::buildFilePath(appDir,"resx/style.qss")));
-    qApp->setStyleSheet(qss);
-
     onValidateForm();
 
     UIRStatsUtils::setButtonStyle(m_ui->m_btnExit,font,m_iconExit,buttonHeight);
     UIRStatsUtils::setButtonStyle(m_ui->m_btnGenerate,font,m_iconRun,buttonHeight);
     UIRStatsUtils::setButtonStyle(m_ui->m_btnHelp,font,m_iconHelp,buttonHeight);
 
-    setFont(font);
-    m_ui->m_grpLog->setFont(font);
-    m_ui->m_grpNumberingOptions->setFont(font);
-    m_ui->m_grpOutputOptions->setFont(font);
-    m_ui->m_grpReviewName->setFont(font);
-    m_ui->m_grpSeed->setFont(font);
     onLoadSessions();
 }
 
@@ -255,7 +245,7 @@ void UIRStatsSSRN::onValidateForm()
     std::int64_t spare= m_ui->m_spnSpares->value();
 
     m_logger.addWarning(m_ui->m_txtAuditName->text().isEmpty(),
-                        "You did not specify an audit name.  Using default.");
+                        "You did not specify an audit name.  Using default: ("+m_ui->m_txtAuditName->placeholderText().toStdString()+")");
 
     m_logger.addError(((order + spare) == 0 ),
                       "The number of generated values must be greater than zero!");
@@ -274,7 +264,6 @@ void UIRStatsSSRN::onValidateForm()
     {
         QListWidgetItem * item = new QListWidgetItem;
         item->setText(QString::fromStdString(message));
-        item->setForeground(QBrush(Qt::black));
         if (m_logger.isError(index))
         {
             item->setIcon(m_iconError);
@@ -338,21 +327,69 @@ void UIRStatsSSRN::onGenerate()
 {
 
     onUpdateClock();
-    RStatsIntegerList items = RStatsSSRN::inst().generateRandomNumbers(m_ui->m_txtAuditName->text().toStdString(),
+    std::pair<RStatsIntegerList,RStatsIntegerList> items = RStatsSSRN::inst().generateRandomNumbers(m_ui->m_txtAuditName->text().toStdString(),
                                                                      m_ui->m_spnSeed->value(),
                                                                      m_ui->m_spnOrder->value(),
                                                                      m_ui->m_spnSpares->value(),
                                                                      m_ui->m_spnLowNumber->value(),
                                                                      m_ui->m_spnHighNumber->value());
 
+    std::vector<RStatsInteger> orderedList = items.first.toStdVector();
+    std::vector<RStatsInteger> sparesList = items.second.toStdVector();
+
     m_ui->m_tblOutput->clear();
-    m_ui->m_tblOutput->setRowCount(items.size());
-    m_ui->m_tblOutput->setColumnCount(1);
-    m_ui->m_tblOutput->setHorizontalHeaderLabels(QStringList()<<"Value");
-    for (size_t a2 = 0; a2 < items.size();++a2)
+    m_ui->m_tblOutput->setRowCount(sparesList.size()+orderedList.size());
+    m_ui->m_tblOutput->setColumnCount(3);
+    m_ui->m_tblOutput->setHorizontalHeaderLabels(QStringList()<<"Type"<<"Index"<<"Value");
+    size_t row = 0;
+    std::map<RStatsInteger,RStatsInteger> orderedMap;
+
+    for (const auto& orderedValue : orderedList)
     {
-        m_ui->m_tblOutput->setItem(a2,0,new QTableWidgetItem(QString::number(items(a2))));
+        orderedMap[orderedValue] = row;
     }
+    for (const auto& orderedIt : orderedMap)
+    {
+
+        RStatsInteger index = orderedIt.second;
+        RStatsInteger value = orderedIt.first;
+
+        QTableWidgetItem * itemLabel = new QTableWidgetItem;
+        QTableWidgetItem * rowLabel = new QTableWidgetItem;
+        QTableWidgetItem * typeLabel = new QTableWidgetItem;
+        typeLabel->setText("Random");
+        itemLabel->setText(QString::number(value));
+        rowLabel->setText(QString::number(index));
+
+        typeLabel->setBackground(QBrush(QColor(255,255,127)));
+        itemLabel->setBackground(QBrush(QColor(255,255,127)));
+        rowLabel->setBackground(QBrush(QColor(255,255,127)));
+
+        m_ui->m_tblOutput->setItem(row,0,typeLabel);
+        m_ui->m_tblOutput->setItem(row,1,rowLabel);
+        m_ui->m_tblOutput->setItem(row,2,itemLabel);
+        ++row;
+    }
+    for (const auto& value : sparesList)
+    {
+        QTableWidgetItem * itemLabel = new QTableWidgetItem;
+        QTableWidgetItem * rowLabel = new QTableWidgetItem;
+        QTableWidgetItem * typeLabel = new QTableWidgetItem;
+
+        typeLabel->setText("Spare");
+        itemLabel->setText(QString::number(value));
+        rowLabel->setText(QString::number(row));
+
+        typeLabel->setBackground(QBrush(QColor(255,255,127)));
+        itemLabel->setBackground(QBrush(QColor(255,255,127)));
+        rowLabel->setBackground(QBrush(QColor(255,255,127)));
+
+        m_ui->m_tblOutput->setItem(row,0,typeLabel);
+        m_ui->m_tblOutput->setItem(row,1,rowLabel);
+        m_ui->m_tblOutput->setItem(row,2,itemLabel);
+        ++row;
+    }
+
     m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(0,QHeaderView::Stretch);
 
     m_ui->m_grpOutput->show();

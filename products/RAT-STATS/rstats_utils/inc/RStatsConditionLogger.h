@@ -15,9 +15,9 @@ namespace ratstats {
 namespace utils {
 enum class ConditionType
 {
-    WARNING,
-    INFORMATION,
-    ERROR
+    Warning,
+    Informative,
+    Error
 };
 
 class RStatsConditionLogger 

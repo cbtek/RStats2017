@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1024</width>
-    <height>661</height>
+    <height>697</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -349,62 +349,6 @@
       </layout>
      </widget>
     </item>
-    <item>
-     <widget class="QGroupBox" name="m_grpLog">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="title">
-       <string>Error Console:</string>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_7">
-       <property name="leftMargin">
-        <number>4</number>
-       </property>
-       <property name="topMargin">
-        <number>8</number>
-       </property>
-       <property name="rightMargin">
-        <number>4</number>
-       </property>
-       <property name="bottomMargin">
-        <number>8</number>
-       </property>
-       <item>
-        <widget class="QListWidget" name="m_lstErrorConsole">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>96</height>
-          </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QListWidget
-{
-}
-QListWidget::item
-{
-	border:1px solid gray;
-	color:black;
-	background:#777;
-	height:24px;
-	padding:4px;
-}</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
    </layout>
   </widget>
   <widget class="QDockWidget" name="dockWidget_2">
@@ -734,7 +678,7 @@ QListWidget::item
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>20</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -754,6 +698,47 @@ QListWidget::item
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QDockWidget" name="m_dockOutput">
+   <property name="windowTitle">
+    <string>Output Console:</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QVBoxLayout" name="verticalLayout_11">
+     <item>
+      <widget class="QListWidget" name="m_lstErrorConsole">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>96</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QListWidget
+{
+}
+QListWidget::item
+{
+	border:1px solid gray;
+	color:black;
+	background:#777;
+	height:24px;
+	padding:4px;
+}</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
   </widget>
   <action name="actionRecent">
    <property name="text">
@@ -790,7 +775,6 @@ QListWidget::item
   <tabstop>m_btnExit</tabstop>
   <tabstop>m_btnHelp</tabstop>
   <tabstop>m_tblOutput</tabstop>
-  <tabstop>m_lstErrorConsole</tabstop>
  </tabstops>
  <resources/>
  <connections/>

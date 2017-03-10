@@ -56,17 +56,34 @@ RStatsSSRN & RStatsSSRN::inst()
     return m_instance;
 }
 
+void RStatsSSRN::setValue(RStatsInteger value,
+                          RStatsIntegerList &orderedList,
+                          RStatsIntegerList &randomList)
+{
+    if (this->m_sequentialCount > 0)
+    {
+        orderedList(this->m_sequentialCount-1) = value;
+        m_sequentialCount--;
+    }
+    else if (this->m_sparesCount > 0)
+    {
+        randomList(m_sparesCount-1) = value;
+        m_sparesCount--;
+    }
+}
+
 RStatsSSRN::RStatsSSRN()
 {
 
 }
 
-RStatsIntegerList RStatsSSRN::generateRandomNumbers(const std::string &auditName,
+std::pair<RStatsIntegerList,RStatsIntegerList> RStatsSSRN::generateRandomNumbers(const std::string &auditName,
                                                              RStatsInteger inputSeed,
                                                              RStatsInteger sequentialOrder,
                                                              RStatsInteger sparesInRandomOrder,
                                                              RStatsInteger lowNumber,
-                                                             RStatsInteger highNumber, bool allowDuplicates)
+                                                             RStatsInteger highNumber,
+                                                             bool allowDuplicates)
 {
     SSRNStruct vbRandOutput,vbRandOutputA,vbRandOutputB,vbRandOutputC;
     RStatsInteger currentSeed = this->vbRandInit(-1);
@@ -76,14 +93,16 @@ RStatsIntegerList RStatsSSRN::generateRandomNumbers(const std::string &auditName
     vbRand(currentSeed,30269,vbRandOutputA);
     vbRand(vbRandOutputA.stepValue,30307,vbRandOutputB);
     vbRand(vbRandOutputB.stepValue,30323,vbRandOutputC);
-
+    std::set<RStatsInteger>repeatCheckSet;
     double seedA = std::floor(vbRandOutputA.ratStatValue);
     double seedB = std::floor(vbRandOutputB.ratStatValue);
     double seedC = std::floor(vbRandOutputC.ratStatValue);
-
+    m_sequentialCount = sequentialOrder;
+    m_sparesCount = sparesInRandomOrder;
+    RStatsIntegerList sequentialOrderList(sequentialOrder);
+    RStatsIntegerList randomOrderList(sparesInRandomOrder);
     RStatsInteger sampleSize = sequentialOrder + sparesInRandomOrder;
     RStatsIntegerList randomNumbers(sampleSize,1);
-    std::set<RStatsInteger> repeatCheckSet;
     RStatsInteger upperBound = highNumber;
     RStatsInteger lowerBound = lowNumber;
     RStatsInteger frameSize = upperBound - lowerBound;
@@ -124,24 +143,25 @@ RStatsIntegerList RStatsSSRN::generateRandomNumbers(const std::string &auditName
 
             double term4 = seedA/30269.0 + seedB/30307.0 + seedC/30323.0;
             RStatsInteger value = std::floor((term4 - std::floor(term4)) * (upperBound-lowerBound+1))+lowerBound;
-
-            if (!allowDuplicates)
+            setValue(value,sequentialOrderList,randomOrderList);
+            if (!repeatCheckSet.count(value))
             {
-                if (!repeatCheckSet.count(value))
-                {
-                    repeatCheckSet.insert(value);
-                    randomNumbers(j) = value;
-                    repeatFlag = false;
-                }
-            }
-            else
-            {
-                randomNumbers(j) = value;
+                repeatCheckSet.insert(value);
+                setValue(value,sequentialOrderList,randomOrderList);
                 repeatFlag = false;
             }
+            //            if (!allowDuplicates)
+//            {
+//
+//            }
+//            else
+//            {
+
+//                repeatFlag = false;
+//            }
         }
     }
-    return randomNumbers;
+    return std::make_pair(sequentialOrderList,randomOrderList);
 }
 
 RStatsInteger RStatsSSRN::vbRandInit(RStatsInteger initVariable)

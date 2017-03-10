@@ -31,7 +31,9 @@ SOFTWARE.
 #include <map>
 #include <string>
 #include <vector>
+#include <set>
 #include <tgmath.h>
+#include <algorithm>
 
 #include "utility/inc/Exception.hpp"
 
@@ -126,11 +128,31 @@ public:
     RStatsObjectList<T> getValues(size_t dimension = 0) const;
 
     /**
+     * @brief toStdVector
+     * @param dimension
+     * @return
+     */
+    std::vector<T> toStdVector(size_t dimension = 0) const;
+
+    /**
+     * @brief toStdSet
+     * @param dimension
+     * @return
+     */
+    std::set<T> toStdSet(size_t dimension = 0) const;
+
+    /**
      * @brief clear
      */
     void clear();
 
-	//! Destructor
+    /**
+     * @brief sort
+     * @param dimension
+     */
+    void sort(size_t dimension = 0);
+
+    //! Destructor
     ~RStatsObjectList();
 private:
     std::vector<std::vector<T> > m_values;
@@ -292,6 +314,41 @@ RStatsObjectList<T> RStatsObjectList<T>::getValues(size_t dimension) const
         return values;
     }
     throw cbtek::common::utility::IndexOutOfRangeException(EXCEPTION_TAG_LINE+"Dimension index is out of range!");
+}
+
+
+template<typename T>
+std::vector<T> RStatsObjectList<T>::toStdVector(size_t dimension) const
+{
+    std::vector<T> values;
+    size_t count = this->size(dimension);
+    for (size_t a1 = 0; a1 < count;++a1)
+    {
+        values.push_back(this->operator ()(dimension));
+    }
+    return values;
+}
+
+template<typename T>
+std::set<T> RStatsObjectList<T>::toStdSet(size_t dimension) const
+{
+    std::set<T> values;
+    size_t count = this->size(dimension);
+    for (size_t a1 = 0; a1 < count;++a1)
+    {
+        values.insert(this->operator ()(dimension));
+    }
+    return values;
+}
+
+template<typename T>
+void RStatsObjectList<T>::sort(size_t dimension)
+{
+    if (dimension < this->getNumDimensions())
+    {
+        std::sort(m_values[dimension].begin(),
+                  m_values[dimension].end());
+    }
 }
 
 typedef RStatsObjectList<std::int64_t> RStatsInt64List;
