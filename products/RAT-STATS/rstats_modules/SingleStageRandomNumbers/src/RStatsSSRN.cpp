@@ -56,61 +56,40 @@ RStatsSSRN & RStatsSSRN::inst()
     return m_instance;
 }
 
-void RStatsSSRN::setValue(RStatsInteger value,
-                          RStatsIntegerList &orderedList,
-                          RStatsIntegerList &randomList)
-{
-    if (this->m_sequentialCount > 0)
-    {
-        orderedList(this->m_sequentialCount-1) = value;
-        m_sequentialCount--;
-    }
-    else if (this->m_sparesCount > 0)
-    {
-        randomList(m_sparesCount-1) = value;
-        m_sparesCount--;
-    }
-}
-
 RStatsSSRN::RStatsSSRN()
 {
 
 }
 
-std::pair<RStatsIntegerList,RStatsIntegerList> RStatsSSRN::generateRandomNumbers(const std::string &auditName,
+RStatsSSRNOutputData RStatsSSRN::generateRandomNumbers(const std::string &auditName,
                                                              RStatsInteger inputSeed,
                                                              RStatsInteger sequentialOrder,
                                                              RStatsInteger sparesInRandomOrder,
                                                              RStatsInteger lowNumber,
-                                                             RStatsInteger highNumber,
-                                                             bool allowDuplicates)
+                                                             RStatsInteger highNumber)
 {
-    SSRNStruct vbRandOutput,vbRandOutputA,vbRandOutputB,vbRandOutputC;
+    RStatsSSRNInputData vbRandOutput,vbRandOutputA,vbRandOutputB,vbRandOutputC;
     RStatsInteger currentSeed = this->vbRandInit(-1);
     this->vbRand(currentSeed, 30269,vbRandOutput);
-    currentSeed = vbRandOutput.stepValue;    
-    currentSeed = vbRandomize(100,currentSeed);
+    currentSeed = vbRandOutput.stepValue;
+    currentSeed = vbRandomize(inputSeed,currentSeed);
     vbRand(currentSeed,30269,vbRandOutputA);
     vbRand(vbRandOutputA.stepValue,30307,vbRandOutputB);
     vbRand(vbRandOutputB.stepValue,30323,vbRandOutputC);    
     double seedA = std::floor(vbRandOutputA.ratStatValue);
     double seedB = std::floor(vbRandOutputB.ratStatValue);
-    double seedC = std::floor(vbRandOutputC.ratStatValue);
+    double seedC = std::floor(vbRandOutputC.ratStatValue);    
     m_sequentialCount = sequentialOrder;
     m_sparesCount = sparesInRandomOrder;
     RStatsIntegerList sequentialOrderList(sequentialOrder);
-    RStatsIntegerList randomOrderList(sparesInRandomOrder);
+    RStatsIntegerList sparesInRandomOrderList(sparesInRandomOrder);
     RStatsInteger sampleSize = sequentialOrder + sparesInRandomOrder;
-    RStatsIntegerList randomNumbers(sampleSize,1);
-    std::set<RStatsInteger> repeatCheckSet;
+    RStatsIntegerList randomNumbers(sampleSize);
     RStatsInteger upperBound = highNumber;
     RStatsInteger lowerBound = lowNumber;
-    RStatsInteger frameSize = upperBound - lowerBound;
-
-    if (!allowDuplicates && frameSize < sampleSize)
-    {
-        //throw RStatsWarningException(EXCEPTION_TAG_LINE+"The frame size ("+std::to_string(frameSize)+") is less than the number of requested random values("+std::to_string(sampleSize)+").\nRe-enter the quantities of random numbers to be generated.");
-    }
+    RStatsInteger frameSize = (upperBound - lowerBound)+1;
+    std::vector<RStatsInteger> repeatCheck(frameSize);
+    RStatsSSRNOutputData outputData;
 
     for (size_t j = 0; j < sampleSize; ++j)
     {
@@ -122,7 +101,7 @@ std::pair<RStatsIntegerList,RStatsIntegerList> RStatsSSRN::generateRandomNumbers
             seedA = 171 * term2 - 2 * term1;
             if (seedA <= 0)
             {
-                seedA = seedA + 30269;
+                seedA += 30269;
             }
 
             term1 = std::floor(seedB / 176.0);
@@ -130,7 +109,7 @@ std::pair<RStatsIntegerList,RStatsIntegerList> RStatsSSRN::generateRandomNumbers
             seedB = 172 * term2 - 35 * term1;
             if (seedB <= 0)
             {
-                seedB = seedB + 30307;
+                seedB += 30307;
             }
 
             term1 = std::floor(seedC / 178.0);
@@ -138,35 +117,84 @@ std::pair<RStatsIntegerList,RStatsIntegerList> RStatsSSRN::generateRandomNumbers
             seedC = 170 * term2 - 63 * term1;
             if (seedC <= 0)
             {
-                seedC = seedC + 30323;
+                seedC += 30323;
             }
 
             double term4 = seedA/30269.0 + seedB/30307.0 + seedC/30323.0;
             RStatsInteger value = std::floor((term4 - std::floor(term4)) * (upperBound-lowerBound+1))+lowerBound;
-            setValue(value,sequentialOrderList,randomOrderList);
-
-            if (!allowDuplicates)
+            randomNumbers(j) = value;
+            int check = (value-lowerBound)-1;
+            if (check >=0 && check < repeatCheck.size())
             {
-              if (!repeatCheckSet.count(value))
-              {
-                  repeatCheckSet.insert(value);
-                  setValue(value,sequentialOrderList,randomOrderList);
-                  repeatFlag = false;
-              }
-            }
-            else
-            {
-              setValue(value,sequentialOrderList,randomOrderList);
-              repeatFlag = false;
+                if (repeatCheck[check] == 0)
+                {
+                    repeatCheck[check] = 1;
+                    repeatFlag = false;
+                }
             }
         }
     }
-    return std::make_pair(sequentialOrderList,randomOrderList);
+
+    //Note: The naming here can be a little confusing
+    //Given an associative container: values[index] = value
+    //RandomOrder means that the "values" will appear at random but the "indices" will be
+    //in order.
+    //This is considered to be "RandomOrder"
+    //values[0] = 10
+    //values[1] = 6
+    //values[2] = 3
+    //values[3] = 13
+
+    //SequentialOrder means that the "values" will be sorted by "value" rather than "index"
+    //which makes the index appear random.
+    //This is considered to be in SequentialOrder:
+    //values[2] = 3
+    //values[1] = 6
+    //values[0] = 10
+    //values[3] = 13
+
+    size_t index = 0;
+    std::map<RStatsInteger, RStatsSSRNValue> sequentialOrderMap;
+    std::map<size_t, RStatsSSRNValue> randomOrderMap;
+    RStatsInteger sum = 0;
+    for (const auto& value : randomNumbers.toStdVector())
+    {
+        RStatsSSRNValue ssrnValue;
+        ssrnValue.value = value;
+        ssrnValue.orderIndex = index;
+        sum += value;
+        if (this->m_sequentialCount > 0)
+        {
+            ssrnValue.orderType = RStatsSSRNOrderType::SequentiallyOrdered;
+            sequentialOrderMap[value] = ssrnValue;
+            m_sequentialCount--;
+        }
+        else if (this->m_sparesCount > 0)
+        {
+            ssrnValue.orderType = RStatsSSRNOrderType::RandomlyOrdered;
+            randomOrderMap[index] = ssrnValue;
+            m_sparesCount--;
+        }
+        ++index;
+    }
+
+
+    for (const auto& it : sequentialOrderMap)
+    {
+        outputData.values.push_back(it.second);
+    }
+
+    for (const auto& it : randomOrderMap)
+    {
+        outputData.values.push_back(it.second);
+    }
+    outputData.sum = sum;
+    return outputData;
 }
 
-RStatsInteger RStatsSSRN::vbRandInit(RStatsInteger initVariable)
+RStatsInteger RStatsSSRN::vbRandInit(float initVariable)
 {
-    float fpVal = (float)initVariable;
+    float fpVal = initVariable;
     std::int32_t fpValInt;
     memcpy(&fpValInt, &fpVal, sizeof(fpValInt));
     std::bitset<32> bits32(fpValInt), output32A,output32B;
@@ -186,7 +214,7 @@ RStatsInteger RStatsSSRN::vbRandInit(RStatsInteger initVariable)
 
 void RStatsSSRN::vbRand(RStatsInteger ExcelSeed,
                            RStatsInteger outputmax,
-                           SSRNStruct & output)
+                           RStatsSSRNInputData & output)
 {
     RStatsInteger vara,varb,varc;
     vara = ExcelSeed;
@@ -206,10 +234,10 @@ void RStatsSSRN::vbRand(RStatsInteger ExcelSeed,
     output.ratStatValue = ValueA;
 }
 
-RStatsInteger RStatsSSRN::vbRandomize(RStatsInteger startingPoint,
-                                        RStatsInteger currentSeed)
+RStatsInteger RStatsSSRN::vbRandomize(RStatsFloat startingPoint,
+                                      RStatsFloat currentSeed)
 {
-    double fpVal = (double)startingPoint;
+    double fpVal = startingPoint;
     RStatsInteger fpValInt;
     memcpy(&fpValInt, &fpVal, sizeof(fpValInt));
     std::bitset<64> bits64(fpValInt);

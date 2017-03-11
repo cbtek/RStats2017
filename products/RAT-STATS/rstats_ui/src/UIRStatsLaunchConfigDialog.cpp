@@ -81,14 +81,8 @@ void UIRStatsLaunchConfigDialog::onInit()
     QIcon icon = UIRStatsUtils::getIcon(m_props.getIcon());
     if (!icon.isNull())
     {
-        QPixmap pixmapIcon = icon.pixmap(icon.actualSize(QSize(64, 64)));
-         m_ui->m_lblIcon->setPixmap(pixmapIcon);
-         m_ui->m_lblNoIcon->hide();
-    }
-    else
-    {
-        m_ui->m_lblIcon->hide();
-    }
+        m_ui->m_btnSetIcon->setIcon(icon);
+    }    
 
     //Setup signal/slot connections
     connect(m_ui->m_btnSave,SIGNAL(clicked(bool)),this,SLOT(onSave()));
@@ -164,10 +158,7 @@ void UIRStatsLaunchConfigDialog::onBrowseModuleIcon()
     {
         m_props.setIcon(file.toStdString());
         QIcon icon(file);
-        QPixmap pixmapIcon = icon.pixmap(icon.actualSize(QSize(64, 64)));
-        m_ui->m_lblIcon->show();
-        m_ui->m_lblIcon->setPixmap(pixmapIcon);
-        m_ui->m_lblNoIcon->hide();
+        m_ui->m_btnSetIcon->setIcon(icon);
     }
 }
 }}}//end namespace

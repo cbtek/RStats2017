@@ -7,7 +7,8 @@
 #include "RStatsSSRN.h"
 #include "UIRStatsSSRN.h"
 #include "rstats_ui/inc/UIRStatsUtils.hpp"
-
+#include "utility/inc/Random.h"
+using namespace cbtek::common::utility;
 using namespace oig::ratstats::utils;
 
 using namespace oig::ratstats::ui;

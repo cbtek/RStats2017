@@ -39,28 +39,63 @@ namespace ratstats {
 namespace modules {
 namespace ssrn {
 
+enum class RStatsSSRNOrderType
+{
+    SequentiallyOrdered,
+    RandomlyOrdered
+};
+
+/**
+ * @brief The RStatsSSRNValue struct
+ */
+struct RStatsSSRNValue
+{
+    RStatsInteger orderIndex;
+    RStatsInteger value;
+    RStatsSSRNOrderType orderType;
+};
+
+/**
+ * @brief The RStatsSSRNOutputData struct
+ */
+struct RStatsSSRNOutputData
+{
+    std::vector<RStatsSSRNValue> values;
+    oig::ratstats::utils::RStatsInteger sum;
+};
+
+/**
+ * @brief The RStatsSSRNInputData struct
+ */
+struct RStatsSSRNInputData
+{
+    double ratStatValue;
+    double excelValue;
+    oig::ratstats::utils::RStatsInteger stepValue;
+};
+
+
 class RStatsSSRN
 {
 
 public:
 
     /**
-     * @brief generateRandomNumbers
-     * @param auditName
-     * @param currentSeed
-     * @param sequentialOrder
-     * @param sparesInRandomOrder
-     * @param lowNumber
-     * @param highNumber
-     * @return
-     */
-    std::pair<RStatsIntegerList,RStatsIntegerList> generateRandomNumbers(const std::string & auditName,
+       * @brief generateRandomNumbers
+       * @param auditName
+       * @param inputSeed
+       * @param sequentialOrder
+       * @param sparesInRandomOrder
+       * @param lowNumber
+       * @param highNumber
+       * @return
+       */
+      RStatsSSRNOutputData generateRandomNumbers(const std::string & auditName,
                                            oig::ratstats::utils::RStatsInteger inputSeed,
                                            oig::ratstats::utils::RStatsInteger sequentialOrder,
                                            oig::ratstats::utils::RStatsInteger sparesInRandomOrder,
                                            oig::ratstats::utils::RStatsInteger lowNumber,
-                                           oig::ratstats::utils::RStatsInteger highNumber,
-                                           bool allowDuplicates = false);
+                                           oig::ratstats::utils::RStatsInteger highNumber);
 
 
 	//! Static instance method for this singleton
@@ -70,22 +105,6 @@ private:
 
     size_t m_sequentialCount;
     size_t m_sparesCount;
-
-    void setValue( oig::ratstats::utils::RStatsInteger value,
-                   oig::ratstats::utils::RStatsIntegerList& orderedList,
-                   oig::ratstats::utils::RStatsIntegerList& randomList);
-    /**
-     * @brief The SSRNStruct struct
-     */
-    struct SSRNStruct
-    {
-        double ratStatValue;
-        double excelValue;
-        oig::ratstats::utils::RStatsInteger stepValue;
-    };
-
-
-
     static RStatsSSRN m_instance;
 
     /**
@@ -96,7 +115,7 @@ private:
      */
     void vbRand(oig::ratstats::utils::RStatsInteger ExcelSeed,
                 oig::ratstats::utils::RStatsInteger outputmax,
-                SSRNStruct & output);
+                RStatsSSRNInputData & output);
 
     /**
      * @brief vbRandomize
@@ -104,15 +123,15 @@ private:
      * @param currentSeed
      * @return
      */
-    oig::ratstats::utils::RStatsInteger vbRandomize(oig::ratstats::utils::RStatsInteger startingPoint,
-                             oig::ratstats::utils::RStatsInteger currentSeed);
+    oig::ratstats::utils::RStatsInteger vbRandomize(RStatsFloat startingPoint,
+                                                    oig::ratstats::utils::RStatsFloat currentSeed);
     
     /**
      * @brief vbRandInit
      * @param initVariable
      * @return
      */
-    oig::ratstats::utils::RStatsInteger vbRandInit(oig::ratstats::utils::RStatsInteger initVariable);
+    oig::ratstats::utils::RStatsInteger vbRandInit(float initVariable);
 
     /**
      * @brief RStatsSSRN constructor

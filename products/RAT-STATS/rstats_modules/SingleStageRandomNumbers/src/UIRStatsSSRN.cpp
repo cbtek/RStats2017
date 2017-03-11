@@ -48,6 +48,7 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     connect(m_ui->m_chkAccessExcelOutput,SIGNAL(clicked(bool)),this,SLOT(onSaveAccessExcelFile()));
     connect(m_ui->m_chkTextOutput,SIGNAL(clicked(bool)),this,SLOT(onSaveTextFile()));
     connect(&m_clock,SIGNAL(timeout()),this,SLOT(onUpdateClock()));
+    connect(m_ui->m_grpSeed,SIGNAL(toggled(bool)),this,SLOT(onSeedBoxToggled(bool)));
     onUpdateClock();
     m_clock.start(1000);
 
@@ -206,60 +207,36 @@ void UIRStatsSSRN::onUpdateClock()
 {
     m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::to12HourTimeString(TimeUtils::getCurrentTime())));
     m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toShortDateString(DateUtils::getCurrentDate())));
+    if (!m_ui->m_grpSeed->isChecked())
+    {
+        m_ui->m_spnSeed->setValue(TimeUtils::getMillisecondsNow());
+    }
 }
 
 void UIRStatsSSRN::onGenerate()
 {
 
     onUpdateClock();
-    std::pair<RStatsIntegerList,RStatsIntegerList> items = RStatsSSRN::inst().generateRandomNumbers(m_ui->m_txtAuditName->text().toStdString(),
+    RStatsSSRNOutputData outputData = RStatsSSRN::inst().generateRandomNumbers(m_ui->m_txtAuditName->text().toStdString(),
                                                                      m_ui->m_spnSeed->value(),
                                                                      m_ui->m_spnOrder->value(),
                                                                      m_ui->m_spnSpares->value(),
                                                                      m_ui->m_spnLowNumber->value(),
                                                                      m_ui->m_spnHighNumber->value());
 
-    std::vector<RStatsInteger> orderedList = items.first.toStdVector();
-    std::vector<RStatsInteger> sparesList = items.second.toStdVector();
-
     m_ui->m_tblOutput->clear();
-    m_ui->m_tblOutput->setRowCount(sparesList.size()+orderedList.size());
+    m_ui->m_tblOutput->setRowCount(outputData.values.size());
     m_ui->m_tblOutput->setColumnCount(3);
     m_ui->m_tblOutput->setHorizontalHeaderLabels(QStringList()<<"Index"<<"Value"<<"Type");
-    size_t row = 0;
-    std::map<RStatsInteger,RStatsInteger> orderedMap;
-
-    for (const auto& orderedValue : orderedList)
-    {
-        orderedMap[orderedValue] = row;
-        ++row;
-    }
-
-    row = 0;
-
-    for (const auto& orderedIt : orderedMap)
-    {
-        RStatsInteger index = orderedIt.second;
-        RStatsInteger value = orderedIt.first;
-        QTableWidgetItem * itemLabel = new QTableWidgetItem;
-        QTableWidgetItem * rowLabel = new QTableWidgetItem;
-        QTableWidgetItem * typeLabel = new QTableWidgetItem;
-        typeLabel->setText("Random");
-        itemLabel->setText(QString::number(value));
-        rowLabel->setText(QString::number(index));       
-        m_ui->m_tblOutput->setItem(row,0,rowLabel);
-        m_ui->m_tblOutput->setItem(row,1,itemLabel);
-        m_ui->m_tblOutput->setItem(row,2,typeLabel);
-        ++row;
-    }
-    for (const auto& value : sparesList)
+    int row = 0;
+    for (const auto& value : outputData.values)
     {
         QTableWidgetItem * itemLabel = new QTableWidgetItem;
         QTableWidgetItem * rowLabel = new QTableWidgetItem;
         QTableWidgetItem * typeLabel = new QTableWidgetItem;
-        typeLabel->setText("Spare");
-        itemLabel->setText(QString::number(value));
-        rowLabel->setText(QString::number(row));
+        typeLabel->setText(value.orderType==RStatsSSRNOrderType::RandomlyOrdered?"(Random)":"(Spare)");
+        itemLabel->setText(QString::number(value.value));
+        rowLabel->setText(QString::number(value.orderIndex+1));
         m_ui->m_tblOutput->setItem(row,0,rowLabel);
         m_ui->m_tblOutput->setItem(row,1,itemLabel);
         m_ui->m_tblOutput->setItem(row,2,typeLabel);
@@ -267,18 +244,19 @@ void UIRStatsSSRN::onGenerate()
     }
 
     m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(2,QHeaderView::Stretch);
-
     m_ui->m_grpOutput->show();
     m_ui->m_line->show();
     m_ui->m_frmTotals->show();
     m_ui->m_lblNoData->hide();
     m_ui->m_lblTotalRandomNumbersValue->setText(QString::number(m_ui->m_spnOrder->value()+m_ui->m_spnSpares->value()));
-    m_ui->m_lblTotalFrameSizeValue->setText(QString::number(m_ui->m_spnHighNumber->value()-m_ui->m_spnLowNumber->value()));   
+    m_ui->m_lblTotalFrameSizeValue->setText(QString::number((m_ui->m_spnHighNumber->value()-m_ui->m_spnLowNumber->value())+1));
+    m_ui->m_lblOutputSummationValue->setText(QString::number(outputData.sum));
 
-    SessionData data = getSessionData();
-    data.dateTimeStr = DateTimeUtils::getDisplayTimeStamp();
-    m_recentSessionsMap[QString::fromStdString(data.name)]=data;
-    RStatsUtils::saveRecentSession(data.toString(),c_RECENT_SESSION_EXTENSION);
+    SessionData sessionData = getSessionData();
+    sessionData.dateValue = DateUtils::getCurrentDate().toDateInteger();
+    sessionData.timeValue = TimeUtils::getCurrentTime().toTimeInteger();
+    m_recentSessionsMap[QString::fromStdString(sessionData.name)]=sessionData;
+    RStatsUtils::saveRecentSession(sessionData.toString(),c_RECENT_SESSION_EXTENSION);
     updateRecentSessions();
     m_clock.stop();
 }
@@ -340,26 +318,23 @@ void UIRStatsSSRN::updateRecentSessions()
 {
     m_recentSessionsMap.clear();
     std::vector<std::string> sessionUrls = RStatsUtils::getRecentSessions(c_RECENT_SESSION_EXTENSION);
+    if (sessionUrls.empty())
+    {
+        m_ui->actionRecent->setDisabled(true);
+        return;
+    }
+
+    m_ui->actionRecent->setDisabled(false);
+    m_recentSessionActionGroup = new QActionGroup(this);
+    connect(m_recentSessionActionGroup,SIGNAL(triggered(QAction*)),this,SLOT(onRecentSessionSelected(QAction*)));
+    QMenu * recentMenu = new QMenu(m_ui->menuFile);
     for (const auto& url : sessionUrls)
     {
         SessionData data;
         data.load(url);
         m_recentSessionsMap[QString::fromStdString(data.name)] = data;
-    }
-
-    if (m_recentSessionsMap.empty())
-    {
-        m_ui->actionRecent->setDisabled(true);
-        return;
-    }
-    m_ui->actionRecent->setDisabled(false);
-    m_recentSessionActionGroup = new QActionGroup(this);
-    connect(m_recentSessionActionGroup,SIGNAL(triggered(QAction*)),this,SLOT(onRecentSessionSelected(QAction*)));
-    QMenu * recentMenu = new QMenu(m_ui->menuFile);
-    for (const auto& session : m_recentSessionsMap.toStdMap())
-    {
-        SessionData data = session.second;
-        QAction * action = new QAction(QString::fromStdString(data.name+" "+data.dateTimeStr), recentMenu);
+        std::string dateTimeStr = DateTimeUtils::getDisplayTimeStamp(DateEntity(data.dateValue),TimeEntity(data.timeValue));
+        QAction * action = new QAction(QString::fromStdString(data.name+" "+dateTimeStr), recentMenu);
         action->setProperty("name",QString::fromStdString(data.name));
         m_recentSessionActionGroup->addAction(action);
         recentMenu->addAction(action);
@@ -370,6 +345,20 @@ void UIRStatsSSRN::updateRecentSessions()
     connect(clearRecentSessionsAction,SIGNAL(triggered(bool)),this,SLOT(onClearRecentSessions()));
     recentMenu->addAction(clearRecentSessionsAction);
     m_ui->actionRecent->setMenu(recentMenu);
+
+}
+
+void UIRStatsSSRN::onSeedBoxToggled(bool toggle)
+{
+    if (toggle)
+    {
+        m_ui->m_spnSeed->clear();
+        m_ui->m_spnSeed->setFocus();
+    }
+    else
+    {
+        onUpdateClock();
+    }
 
 }
 
@@ -388,14 +377,16 @@ void SessionData::load(const std::string &url)
             XMLDataElement* sparesXML = session->getChild("spares");
             XMLDataElement* lowXML = session->getChild("low");
             XMLDataElement* highXML = session->getChild("high");
-            XMLDataElement* dateTimeXML = session->getChild("datetime");
-            if (nameXML)this->name = XMLUtils::getDecodedString(nameXML->getElementData());
-            if (seedXML)this->seed = StringUtils::toFloat64(seedXML->getElementData());
-            if (orderXML)this->order = StringUtils::toInt(orderXML->getElementData());
-            if (sparesXML)this->spares = StringUtils::toInt(sparesXML->getElementData());
-            if (lowXML)this->low = StringUtils::toInt(lowXML->getElementData());
-            if (highXML)this->high = StringUtils::toInt(highXML->getElementData());
-            if (dateTimeXML)this->dateTimeStr = XMLUtils::getDecodedString(dateTimeXML->getElementData());
+            XMLDataElement* dateXML = session->getChild("date");
+            XMLDataElement* timeXML = session->getChild("time");
+            if (nameXML)this->name = XMLUtils::getDecodedString(nameXML->getElementData(true));
+            if (seedXML)this->seed = seedXML->getElementDataAsFloat();
+            if (orderXML)this->order = orderXML->getElementDataAsInteger();
+            if (sparesXML)this->spares = sparesXML->getElementDataAsInteger();
+            if (lowXML)this->low = lowXML->getElementDataAsInteger();
+            if (highXML)this->high = highXML->getElementDataAsInteger();
+            if (dateXML)this->dateValue = dateXML->getElementDataAsInteger();
+            if (timeXML)this->timeValue = timeXML->getElementDataAsInteger();
         }
     }
 }
@@ -412,7 +403,8 @@ std::string SessionData::toString() const
     xml.writeTextElement("spares",StringUtils::toString(spares));
     xml.writeTextElement("low",StringUtils::toString(low));
     xml.writeTextElement("high",StringUtils::toString(high));
-    xml.writeTextElement("datetime",XMLUtils::getEncodedString(dateTimeStr));
+    xml.writeTextElement("date",StringUtils::toString(dateValue));
+    xml.writeTextElement("time",StringUtils::toString(timeValue));
     xml.writeEndElement("session");
     return out.str();
 }

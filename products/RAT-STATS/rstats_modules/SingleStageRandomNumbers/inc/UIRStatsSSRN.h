@@ -23,11 +23,12 @@ namespace ssrn {
 
 struct SessionData
 {
-    SessionData():order(0),spares(0),low(0),high(0),seed(0.){}
+    SessionData():dateValue(0),timeValue(0),order(0),spares(0),low(0),high(0),seed(0.){}
     void load(const std::string& url);
     std::string toString() const;
     std::string name;
-    std::string dateTimeStr;
+    std::uint64_t dateValue;
+    std::uint64_t timeValue;
     oig::ratstats::utils::RStatsInteger order;
     oig::ratstats::utils::RStatsInteger spares;
     oig::ratstats::utils::RStatsInteger low;
@@ -73,6 +74,7 @@ private:
     void setSessionData(const SessionData& data);
     void updateRecentSessions();
 private slots:                    
+        void onSeedBoxToggled(bool toggle);
      void onClearRecentSessions();
      void onRecentSessionSelected(QAction* action);
      void onExit();

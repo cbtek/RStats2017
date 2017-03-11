@@ -8,10 +8,8 @@ ExcelRand64<-function(ExcelSeed,outputmax)
 	varc = as.integer64(12820163)
 	firstflag<-TRUE
 	ValueA<-0
-	while(ValueA>=outputmax | firstflag)
-  {
-	  
-	  firstflag<-FALSE
+	while(ValueA>=outputmax | firstflag){
+		firstflag<-FALSE
 		vara = as.integer64(ExcelSeed)
 		ExcelSeed<-as.integer64(vara *varb +varc )%%as.integer64(2^24)
 		ValueA<- outputmax*ExcelSeed/2^24+1
@@ -24,8 +22,7 @@ ExcelRand64<-function(ExcelSeed,outputmax)
 }
 
 #The below function replicates the operation of the Visual Based 6 function Randomize()
-ExcelRandomize64<-function(startingpoint,ExcelSeed)
-{
+ExcelRandomize64<-function(startingpoint,ExcelSeed){
 	testhelptemp<-writeBin(as.double(startingpoint),raw(),size=8)
 	bitlist<-rawToBits(testhelptemp)[33:64]
 	bitseed<-intToBits(as.integer(ExcelSeed))
@@ -46,7 +43,7 @@ ExcelRandInit<-function(initvar)
 }
 
 #Sets the path for the relevant R library files
-rootpath<-"C:/Dev/tools\r/"
+rootpath<-"C:/Partlist"
 .libPaths(file.path(rootpath,"Library"))
 
 #This replication requires the "bit64" library.
@@ -55,16 +52,13 @@ library(bit64)
 
 #Emulates Rnd(-1)
 CurrentSeed<-ExcelRandInit(-1)
-print(CurrentSeed)
-
 #Emulates Rnd()
 CurrentSeed<-ExcelRand64(CurrentSeed,30269)[["Step"]]
 #The above two lines of code result in the value 3758214 which is listed in Step 1 of the detailed specification
 
 
 #Emulates the Visual Basic function Randomize() given the seed entered by the user or the system clock if no seed is provided
-CurrentSeed<-ExcelRandomize64(100,CurrentSeed)
-print(CurrentSeed)
+CurrentSeed<-ExcelRandomize64(12345,CurrentSeed)
 #The above line of code equates to steps 2 through 5 in the detailed specification document
 
 
@@ -80,13 +74,12 @@ ResC<-ExcelRand64(ResB[["Step"]],30323)
 Seed_A<-floor(ResA[["RATSTAT"]])
 Seed_B<-floor(ResB[["RATSTAT"]])
 Seed_C<-floor(ResC[["RATSTAT"]])
-samsiz<-1000
+samsiz<-10
 RandomNumber<-NA*(1:samsiz)
-Lowb<-100
-Upb<-11000
+Lowb<-1
+Upb<-1000
 repcheck<-0*(1:(Upb-Lowb+1))
-for(j in 1:samsiz)
-{
+for(j in 1:samsiz){
 	repflag=TRUE
 	while(repflag){	
 		Term_1=floor(Seed_A/177)
@@ -115,4 +108,6 @@ for(j in 1:samsiz)
 }
 
 sum(RandomNumber)
+print(RandomNumber)
+print(sum(RandomNumber))
 

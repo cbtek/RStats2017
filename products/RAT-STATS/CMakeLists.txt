@@ -7,6 +7,7 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_utils")
 add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_ui")
 add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_main")
 add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_launcher")
+add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_batch")
 
 #Built in Modules
 add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_modules/SingleStageRandomNumbers")

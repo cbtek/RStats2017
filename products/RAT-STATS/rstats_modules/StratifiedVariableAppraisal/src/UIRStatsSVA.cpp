@@ -8,6 +8,8 @@
 #include "UIRStatsSVA.h"
 #include "ui_UIRStatsSVA.h"
 
+#include <QFileDialog>
+
 namespace oig {
 namespace ratstats {
 namespace modules {
@@ -18,12 +20,12 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     QMainWindow(parent),
     m_ui(new Ui_UIRStatsSVA)
 {
-    m_ui->setupUi(this);    
+    m_ui->setupUi(this);
     connect(m_ui->m_btnImportData,SIGNAL(clicked(bool)),this,SLOT(onImportInputData()));
     connect(m_ui->m_btnExportData,SIGNAL(clicked(bool)),this,SLOT(onExportInputData()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
     connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));
-    connect(m_ui->m_btnContinue,SIGNAL(clicked(bool)),this,SLOT(onContinue()));
+    connect(m_ui->m_btnContinue,SIGNAL(clicked(bool)),this,SLOT(onContinue()));    
 }
 
 UIRStatsSVA::~UIRStatsSVA()
@@ -43,7 +45,11 @@ void UIRStatsSVA::onExit()
 
 void UIRStatsSVA::onImportInputData()
 {
+    QString filename = QFileDialog::getOpenFileName(this,"Import Stratified Variable Appraisal Input File...","","Input Files(*.dat *.txt *.xls *.xlsx)");
+    if (!filename.isEmpty() && QFile::exists(filename))
+    {
 
+    }
 }
 
 void UIRStatsSVA::onExportInputData()

@@ -34,15 +34,20 @@ namespace common{
 namespace utility{
 namespace DateTimeUtils{
 
+inline std::string getDisplayTimeStamp(const DateEntity& dateEntity,
+                                       const TimeEntity& timeEntity)
+{
+    return (DateUtils::toShortDateString(dateEntity,"mm/dd/yyyy")+" at "+StringUtils::toString(TimeUtils::to12HourTimeString(timeEntity)));
+}
+
 inline std::string getDisplayTimeStamp()
 {
-    return (DateUtils::toShortDateString(DateUtils::getCurrentDate(),"mm/dd/yyyy")+" at "+StringUtils::toString(TimeUtils::to12HourTimeString(TimeUtils::getCurrentTime())));
+    return getDisplayTimeStamp(DateUtils::getCurrentDate(),TimeUtils::getCurrentTime());
 }
 
 inline std::string getTimeStamp()
 {
     return (DateUtils::toShortDateString(DateUtils::getCurrentDate(),"yyyymmdd")+"T"+StringUtils::toString(TimeUtils::getCurrentTime().toTimeInteger())+"."+StringUtils::toString((std::uint64_t)TimeUtils::getMillisecondsNow()));
 }
-
 }}}} //namespace
 #endif //_CBTEK_COMMON_UTILITY_DATETIMEUTILS_HPP_

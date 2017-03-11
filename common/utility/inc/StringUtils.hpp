@@ -984,9 +984,7 @@ inline bool isFloat(const std::string &floatString)
     double f;
     iss >> std::noskipws >> f;
     return iss.eof() && !iss.fail();
-
 }
-
 
 /**
 * @brief Determines if inputString starts with value
@@ -1517,7 +1515,10 @@ inline size_t removeAllThatDoNotContain(std::vector<std::string> & vecOut,
     return totalRemoved;
 }
 
-
+/**
+ * @brief removeNonAlphaNumericInPlace
+ * @param srcStr
+ */
 static inline void removeNonAlphaNumericInPlace(std::string & srcStr)
 {
     for (int a1=srcStr.size()-1;a1>=0;--a1)
@@ -1529,6 +1530,11 @@ static inline void removeNonAlphaNumericInPlace(std::string & srcStr)
     }
 }
 
+/**
+ * @brief removeNonAlphaNumeric
+ * @param srcStr
+ * @return
+ */
 static inline std::string removeNonAlphaNumeric(const std::string & srcStr)
 {
     std::string str = srcStr;
@@ -1536,6 +1542,12 @@ static inline std::string removeNonAlphaNumeric(const std::string & srcStr)
     return str;
 }
 
+/**
+ * @brief splitKeyValue
+ * @param itemToSplit
+ * @param delimiter
+ * @return
+ */
 static inline std::pair<std::string,std::string> splitKeyValue(const std::string& itemToSplit,
                                                                const std::string& delimiter)
 {
@@ -1544,12 +1556,28 @@ static inline std::pair<std::string,std::string> splitKeyValue(const std::string
     {
         return std::make_pair(itemPair[0],itemPair[1]);
     }
-    throw InvalidOperationException(EXCEPTION_TAG+"Could not split item=\""+itemToSplit+"\" into 2 parts with delimiter=\""+delimiter+"\"");
+    std::make_pair(itemToSplit,"");
 }
 
+/**
+ * @brief isEmpty
+ * @param srcStr
+ * @return
+ */
 static inline bool isEmpty(const std::string& srcStr)
 {
     return StringUtils::trimmed(srcStr).empty();
+}
+
+
+/**
+ * @brief isNumber
+ * @param potentialNumber
+ * @return
+ */
+inline bool isNumeric(const std::string& potentialNumber)
+{
+    return (isFloat(potentialNumber) || isSignedInteger(potentialNumber) || isUnsignedInteger(potentialNumber));
 }
 }}}} //namespace
 #endif //_CBTEK_COMMON_UTILITY_STRING_UTILS_HPP_

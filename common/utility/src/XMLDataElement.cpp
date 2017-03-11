@@ -118,9 +118,19 @@ bool XMLDataElement::attributeExists(const std::string & attributeName, bool cas
 }
 
 
-const std::string &XMLDataElement::getElementData() const
+std::string XMLDataElement::getElementData(bool trimmed) const
+{    
+    return trimmed ? StringUtils::trimmed(m_Data) : m_Data;
+}
+
+int64_t XMLDataElement::getElementDataAsInteger() const
 {
-    return m_Data;
+    return StringUtils::toInt(StringUtils::trimmed(getElementData()));
+}
+
+double XMLDataElement::getElementDataAsFloat() const
+{
+    return StringUtils::toFloat64(StringUtils::trimmed(getElementData()));
 }
 
 std::string XMLDataElement::getAttributeValue(const std::string & attributeName,

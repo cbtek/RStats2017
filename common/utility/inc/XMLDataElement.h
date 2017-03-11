@@ -54,7 +54,9 @@ public:
     const ChildElementVector & getChildren() const;
 
     const std::string & getElementName() const;
-    const std::string & getElementData() const;
+    std::string getElementData(bool trimmed=false) const;
+    std::int64_t getElementDataAsInteger() const;
+    double getElementDataAsFloat() const;
 
     std::string getAttributeValue(const std::string & attributeName,bool caseSensitive=false) const;
     std::string getAttributeName(size_t index)const;

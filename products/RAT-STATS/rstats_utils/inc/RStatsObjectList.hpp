@@ -132,14 +132,7 @@ public:
      * @param dimension
      * @return
      */
-    std::vector<T> toStdVector(size_t dimension = 0) const;
-
-    /**
-     * @brief toStdSet
-     * @param dimension
-     * @return
-     */
-    std::set<T> toStdSet(size_t dimension = 0) const;
+    const std::vector<T>& toStdVector(size_t dimension = 0) const;
 
     /**
      * @brief clear
@@ -318,27 +311,13 @@ RStatsObjectList<T> RStatsObjectList<T>::getValues(size_t dimension) const
 
 
 template<typename T>
-std::vector<T> RStatsObjectList<T>::toStdVector(size_t dimension) const
+const std::vector<T> &RStatsObjectList<T>::toStdVector(size_t dimension) const
 {
-    std::vector<T> values;
-    size_t count = this->size(dimension);
-    for (size_t a1 = 0; a1 < count;++a1)
+    if (dimension < m_values.size())
     {
-        values.push_back(this->operator ()(dimension));
+        return m_values[dimension];
     }
-    return values;
-}
-
-template<typename T>
-std::set<T> RStatsObjectList<T>::toStdSet(size_t dimension) const
-{
-    std::set<T> values;
-    size_t count = this->size(dimension);
-    for (size_t a1 = 0; a1 < count;++a1)
-    {
-        values.insert(this->operator ()(dimension));
-    }
-    return values;
+    throw cbtek::common::utility::IndexOutOfRangeException(EXCEPTION_TAG_LINE+"Dimension index is out of range!");
 }
 
 template<typename T>
