@@ -355,14 +355,17 @@ namespace RStatsUtils
      */
     static std::string getValidPath(const std::string & pathToValidate)
     {
-        std::string path1,path2,path3,path;
+        std::string path1,path2,path3,path;        
 
         #ifdef __WIN32
             path1 = cbtek::common::utility::StringUtils::replace(cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getCurrentExecutableDirectory(), pathToValidate),"/","\\");
         #else
             path1 = cbtek::common::utility::StringUtils::replace(cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getCurrentExecutableDirectory(), pathToValidate),"\\","/");
         #endif
-        if (cbtek::common::utility::FileUtils::isDirectory(path1) && cbtek::common::utility::FileUtils::isDirectoryWritable(path1))
+
+        if ((cbtek::common::utility::FileUtils::isDirectory(path1) &&
+            (cbtek::common::utility::FileUtils::isDirectoryWritable(path1)) ||
+             cbtek::common::utility::FileUtils::fileExists(path1)))
         {
             path = path1;
         }
@@ -372,7 +375,9 @@ namespace RStatsUtils
         #else
             path2 = cbtek::common::utility::StringUtils::replace(cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserAppDirectory(), ".rat-stats/"+pathToValidate),"\\","/");
         #endif
-        if (cbtek::common::utility::FileUtils::isDirectory(path2) && cbtek::common::utility::FileUtils::isDirectoryWritable(path2))
+        if ((cbtek::common::utility::FileUtils::isDirectory(path2) &&
+            cbtek::common::utility::FileUtils::isDirectoryWritable(path2)) ||
+            cbtek::common::utility::FileUtils::fileExists(path2))
         {
             path = path2;
         }
@@ -383,7 +388,9 @@ namespace RStatsUtils
             path3 = cbtek::common::utility::StringUtils::replace(cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserHomeDirectory(), ".rat-stats/"+pathToValidate),"\\","/");
         #endif
 
-        if (cbtek::common::utility::FileUtils::isDirectory(path3) && cbtek::common::utility::FileUtils::isDirectoryWritable(path3))
+        if ((cbtek::common::utility::FileUtils::isDirectory(path3) &&
+            cbtek::common::utility::FileUtils::isDirectoryWritable(path3)) ||
+            cbtek::common::utility::FileUtils::fileExists(path3))
         {
             path=path3;
         }
@@ -392,7 +399,7 @@ namespace RStatsUtils
         {
             return path;
         }
-        throw cbtek::common::utility::FileAccessException(EXCEPTION_TAG_LINE+"Could not locate directory for module definitions! Valid locations: \n1) "+path1+"\n2) "+path2+"\n3)"+path3);
+        throw cbtek::common::utility::FileAccessException(EXCEPTION_TAG_LINE+"Could not locate existing or valid directory! Valid locations: \n1) "+path1+"\n2) "+path2+"\n3)"+path3);
     }
 
     /**
@@ -411,6 +418,32 @@ namespace RStatsUtils
     static std::string getConfigPath()
     {
         return getValidPath("config");
+    }
+
+    /**
+     * @brief getContribPath
+     * @return
+     */
+    static std::string getContribPath()
+    {
+        return getValidPath("contrib");
+    }
+
+    /**
+     * @brief getUnzipCommandPath
+     * @return
+     */
+    static std::string getUnzipCommandPath()
+    {
+        std::string path;
+        #ifdef __WIN32
+        path = getValidPath("contrib/unzip/win32/unzip.exe");
+        #elif __gnu_linux__
+        path = getValidPath("contrib/unzip/linux/unzip");
+        #else
+        path = getValidPath("contrib/unzip/macos");
+        #endif
+        return path;
     }
 
     /**
@@ -556,6 +589,28 @@ namespace RStatsUtils
             div = (int)((div - mod) / 26);
         }
         return colLetter;
+    }
+
+    static std::pair<size_t,size_t> getCellIndexFromAddress(const std::string& cellAddress)
+    {
+        std::string label;
+        std::string number;
+        for (size_t a1 = 0; a1 < cellAddress.size();++a1)
+        {
+            if (std::isalpha(cellAddress[a1]))
+            {
+                label.push_back(cellAddress[a1]);
+            }
+            else if (std::isdigit(cellAddress[a1]))
+            {
+                number.push_back(cellAddress[a1]);
+            }
+        }
+        size_t row = cbtek::common::utility::StringUtils::toInt(number);
+        if (row >0)row--;
+        size_t col = getColumnIndexFromLabel(label);
+        std::pair<size_t,size_t> cellIndex = std::make_pair(row,col);
+        return cellIndex;
     }
 
 

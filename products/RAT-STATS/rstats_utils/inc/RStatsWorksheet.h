@@ -97,6 +97,15 @@ public:
    RStatsCell& operator()(size_t row, size_t column);
 
 
+   /**
+    * @brief getCell
+    * @param row
+    * @param column
+    * @return
+    */
+   const RStatsCell& getCell(size_t row, size_t column) const;
+
+
     /**
      * @brief operator ()
      * @param address
@@ -159,15 +168,20 @@ public:
     void resetDefaults();
 
 
+    std::string toCommaDelimitedString() const;
+
+    std::string toTabDelimitedString() const;
     //! Destructor
 	~RStatsWorksheet();	
 
 private:
+        RStatsCell m_emptyCell;
         std::string m_worksheetTitle;
         std::map<std::pair<size_t,size_t>, RStatsCell> m_dataTable;
         size_t m_numRows;
         size_t m_numColumns;
         void parseCellAddress(const std::string& address, size_t& r, size_t& c);
+        std::string toString(const std::string& prefix,const std::string& seperator, const std::string& postfix) const;
 
 };
 typedef std::shared_ptr<RStatsWorksheet> RStatsWorksheetPtr;

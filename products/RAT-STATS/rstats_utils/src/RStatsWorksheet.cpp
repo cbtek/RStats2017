@@ -22,6 +22,8 @@ Color RStatsCell::ms_DefaultFGColor = Color(0,0,0);
 Font RStatsCell::ms_DefaultFont = cbtek::common::utility::Font("arial");
 size_t RStatsCell::ms_DefaultFloatingPointDecimals = 6;
 
+CREATE_EXCEPTION_NO_MSG(WorksheetCellOutOfRange)
+
 RStatsWorksheet::RStatsWorksheet(const std::string &name)
 {
     m_numColumns = 0;
@@ -85,6 +87,16 @@ void RStatsWorksheet::resetDefaults()
     RStatsCell::ms_DefaultFloatingPointDecimals = 6;
 }
 
+std::string RStatsWorksheet::toCommaDelimitedString() const
+{
+    return toString("\"",",","\"");
+}
+
+std::string RStatsWorksheet::toTabDelimitedString() const
+{
+    return toString("","\t","");
+}
+
 RStatsCell& RStatsWorksheet::operator()(size_t row, size_t column)
 {
     if (row >= m_numRows)
@@ -96,6 +108,23 @@ RStatsCell& RStatsWorksheet::operator()(size_t row, size_t column)
         m_numColumns = column + 1;
     }
     return m_dataTable[std::make_pair(row,column)];
+}
+
+const RStatsCell &RStatsWorksheet::getCell(size_t row, size_t column) const
+{
+    const auto& it = m_dataTable.find(std::make_pair(row,column));
+    if (it != m_dataTable.end())
+    {
+        return it->second;
+    }
+    else if (row < getNumRows() && column < getNumColumns())
+    {
+        return m_emptyCell;
+    }
+    throw WorksheetCellOutOfRange(EXCEPTION_TAG_LINE+"The row/column is out of range for this cell.\n"+
+                                  std::to_string(row)+" should be less than "+std::to_string(getNumRows())+
+                                  +"\n"+std::to_string(column)+" should be less than "+std::to_string(getNumColumns()));
+    //throw exception
 }
 
 RStatsWorksheet::~RStatsWorksheet()
@@ -121,6 +150,24 @@ void RStatsWorksheet::parseCellAddress(const std::string &address, size_t &r, si
     }
     r = StringUtils::toInt(rowLabel) - 1;
     c = RStatsUtils::getColumnIndexFromLabel(colLabel);
+}
+
+std::string RStatsWorksheet::toString(const std::string &prefix,
+                               const std::string &seperator,
+                               const std::string &postfix) const
+{
+    size_t cols = getNumColumns();
+    size_t rows = getNumRows();
+    std::ostringstream out;
+    for(size_t r = 0;r<rows;++r)
+    {
+        for(size_t c = 0;c<cols;++c)
+        {
+            std::string data = getCell(r,c).text;
+            out << prefix << data << postfix << ((c<(cols-1))?seperator:"\n");
+        }
+    }
+    return out.str();
 }
 
 void RStatsWorksheet::setWorksheetTitle(const std::string & value)

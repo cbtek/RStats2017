@@ -79,6 +79,10 @@ add_custom_command(TARGET ${CURR_TARGET} POST_BUILD
               COMMAND ${CMAKE_COMMAND} -E copy_directory
               ${PROJECT_SOURCE_DIR}/rstats_config $<TARGET_FILE_DIR:${CURR_TARGET}>/config)
 
+add_custom_command(TARGET ${CURR_TARGET} POST_BUILD
+              COMMAND ${CMAKE_COMMAND} -E copy_directory
+              ${PROJECT_SOURCE_DIR}/rstats_contrib $<TARGET_FILE_DIR:${CURR_TARGET}>/contrib)
+
 
 
 

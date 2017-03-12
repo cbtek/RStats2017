@@ -10,7 +10,7 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_launcher")
 add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_batch")
 
 #Built in Modules
-add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_modules/SingleStageRandomNumbers")
-add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_modules/UnrestrictedAttributeAppraisal")
-add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_modules/UnrestrictedVariableAppraisal")
-add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_modules/StratifiedVariableAppraisal")
+add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_modules/single_stage_random_numbers")
+add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_modules/unrestricted_attribute_appraisal")
+add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_modules/unrestricted_variable_appraisal")
+add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_modules/stratified_variable_appraisal")

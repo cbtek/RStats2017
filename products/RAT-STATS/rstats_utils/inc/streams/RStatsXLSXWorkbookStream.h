@@ -4,14 +4,13 @@
 
 */
 
-#ifndef _OIG_RATSTATS_UTILS_RSTATSXLSXWORKBOOKSTREAM_H
-#define _OIG_RATSTATS_UTILS_RSTATSXLSXWORKBOOKSTREAM_H
-#include "RStatsWorkbookStream.hpp"
+#pragma once
+#include "rstats_utils/inc/RStatsWorkbookStream.hpp"
 
 namespace oig {
 namespace ratstats {
 namespace utils {
-
+namespace streams {
 
 class RStatsXLSXWorkbookStream :public RStatsWorkbookStream
 {
@@ -37,10 +36,18 @@ public:
 	//! Destructor
 	~RStatsXLSXWorkbookStream();	
 
-private:
+private:    
+    struct XLSXWorksheetDefinition
+    {
+        std::string sheetName;
+        std::string id;
+        std::string sheetFile;
+    };
+
+    std::map<std::string, XLSXWorksheetDefinition> getWorksheetDefinitions(const std::string &workbookFilePath, const std::string &workbookRelationshipFilePath) const;
+    std::map<size_t, std::string> getSharedStrings(const std::string& sharedStringsFilePath) const;
     std::string m_filePath;
 };
-}}}//end namespace
+}}}}//end namespace
 
-#endif // _OIG_RATSTATS_UTILS_RSTATSXLSXWORKBOOKSTREAM_H
 

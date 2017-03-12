@@ -23,7 +23,7 @@ public:
 	*/
     RStatsDataFileParser(const std::string& filePath);
 
-    void load();
+    RStatsWorksheet load();
 
     void write(const RStatsWorksheet& sheet);
 
@@ -32,8 +32,8 @@ public:
 
 private:
     std::string m_filePath;
-
-    std::vector<std::string> splitLine(const std::string& line);
+    std::vector<std::string> m_header;
+    std::vector<std::string> splitLine(const std::string& line) const;
 };
 }}}//end namespace
 

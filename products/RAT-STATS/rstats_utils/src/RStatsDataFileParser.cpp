@@ -22,14 +22,14 @@ RStatsDataFileParser::RStatsDataFileParser(const std::string &filePath)
     m_filePath = filePath;
 }
 
-void RStatsDataFileParser::load()
+RStatsWorksheet RStatsDataFileParser::load()
 {
+    RStatsWorksheet sheet;
     std::vector<std::string> lines = FileUtils::getFileLines(m_filePath);
     StringUtils::clean(lines);
     if (lines.empty())
     {
         //Throw exception
-        return;
     }
 
     std::vector<std::string> firstLineItems = splitLine(lines.front());
@@ -44,28 +44,28 @@ void RStatsDataFileParser::load()
         {
             startRow = 1;
             hasHeader = true;
+            m_header = firstLineItems;
         }
     }
-
+    for (size_t a1 = 0;a1<m_header.size();++a1)
+    {
+        sheet(0,a1) = m_header[a1];
+    }
     for (size_t a1 = startRow; a1 < lines.size();++a1)
     {
         std::string line = lines[a1];
         std::vector<std::string> items = splitLine(line);
         for (size_t a2 = 0; a2 < items.size();++a2)
         {
-            if (hasHeader && a2 < firstLineItems.size())
-            {
-                std::cerr << firstLineItems[a2]<<":";
-            }
-            items[a2] = StringUtils::remove(items[a2],",");
-            std::cerr << items[a2]<<std::endl;
+            sheet(a1,a2) = StringUtils::remove(items[a2],",");
         }
     }
+    return sheet;
 }
 
 void RStatsDataFileParser::write(const RStatsWorksheet &sheet)
 {
-
+    FileUtils::writeFileContents(m_filePath,sheet.toCommaDelimitedString());
 }
 
 RStatsDataFileParser::~RStatsDataFileParser()
@@ -73,14 +73,31 @@ RStatsDataFileParser::~RStatsDataFileParser()
 
 }
 
-std::vector<std::string> RStatsDataFileParser::splitLine(const std::string &line)
+std::vector<std::string> RStatsDataFileParser::splitLine(const std::string &line) const
 {
+    if (StringUtils::trimmed(line).empty())
+    {
+        return std::vector<std::string>();
+    }
     std::vector<std::string>delimiters{"\t"," ",","};
     for (size_t a1 = 0; a1 < delimiters.size(); ++a1)
     {
         std::string delimiter = delimiters[a1];
         std::vector<std::string> items = StringUtils::split(line,delimiter);
         StringUtils::clean(items);
+
+        //Check and see if CSV has quotes around each item and remove if true
+        if (items.size() && delimiter == "," &&
+            StringUtils::startsWith(items[0],"\"") &&
+            StringUtils::endsWith(items[0],"\""))
+        {
+            for (std::string& item : items)
+            {
+                item.pop_back();
+                item.erase(item.begin()+0);
+            }
+        }
+
         if (items.size() > 1)
         {
             return items;

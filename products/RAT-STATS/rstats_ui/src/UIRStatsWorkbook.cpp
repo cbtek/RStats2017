@@ -111,13 +111,10 @@ void UIRStatsWorkbook::onSheetSelected(int index)
 void UIRStatsWorkbook::onResizeToContents()
 {
 
-    m_ui->m_tblCurrentSheet->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
-    m_ui->m_tblCurrentSheet->horizontalHeader()->setSectionResizeMode(1,QHeaderView::Stretch);
-    m_ui->m_tblCurrentSheet->horizontalHeader()->setSectionResizeMode(2,QHeaderView::ResizeToContents);
-    m_ui->m_tblCurrentSheet->horizontalHeader()->setSectionResizeMode(3,QHeaderView::ResizeToContents);
-    m_ui->m_tblCurrentSheet->horizontalHeader()->setSectionResizeMode(4,QHeaderView::Stretch);
-    m_ui->m_tblCurrentSheet->horizontalHeader()->setSectionResizeMode(5,QHeaderView::Stretch);
-    m_ui->m_tblCurrentSheet->horizontalHeader()->setSectionResizeMode(6,QHeaderView::Stretch);
+    if (m_ui->m_tblCurrentSheet->columnCount() > 0)
+    {
+        m_ui->m_tblCurrentSheet->horizontalHeader()->setSectionResizeMode(m_ui->m_tblCurrentSheet->columnCount()-1,QHeaderView::ResizeToContents);
+    }
     m_ui->m_tblCurrentSheet->resizeRowsToContents();
     m_ui->m_tblCurrentSheet->update();
     this->update();
