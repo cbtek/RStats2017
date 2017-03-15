@@ -7,6 +7,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QTimer>
 
 class Ui_UIRStatsSVA;
 
@@ -36,7 +37,15 @@ private:
     */
      Ui_UIRStatsSVA *m_ui;
 
+     QIcon m_iconFolder;
+     QIcon m_iconSave;
+     QIcon m_iconHelp;
+     QIcon m_iconExit;
+     QIcon m_iconRun;
+     QTimer m_clock;
+
 protected slots:
+     void onUpdateClock();
      void onContinue();
      void onExit();
      void onImportInputData();

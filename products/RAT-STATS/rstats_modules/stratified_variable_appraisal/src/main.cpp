@@ -8,6 +8,8 @@
 #include "rstats_utils/inc/RStatsWorksheet.h"
 #include "rstats_utils/inc/streams/RStatsXLSXWorkbookStream.h"
 
+#include "rstats_ui/inc/UIRStatsUtils.hpp"
+
 #include "utility/inc/SystemUtils.hpp"
 
 using namespace oig::ratstats::modules::sva;
@@ -18,6 +20,12 @@ using namespace cbtek::common::utility;
 int main(int argc, char ** argv)
 {
     QApplication a(argc,argv);
+    UIRStatsUtils::loadThemeSettings(&a);
+    UIRStatsSVA form;
+    form.resize(1024,768);
+    form.show();
+    return a.exec();
+//
     streams::RStatsXLSXWorkbookStream stream("/home/cbtek/dev/bin/TeamCBTek/debug/example.xlsx");
     RStatsWorkbook workbook = stream.read();
     UIRStatsWorkbook * workbookWidget = new UIRStatsWorkbook(workbook);
@@ -34,11 +42,7 @@ int main(int argc, char ** argv)
     oig::ratstats::utils::RStatsWorksheet sheet1 = parser.load();
     parser.write(sheet1);
     return 0;    
-    UIRStatsSVA form;
-    form.resize(1024,768);
-    form.show();
-    return a.exec();
-//    RStatsSVAInputDataList inputDataList;
+      RStatsSVAInputDataList inputDataList;
 //    RStatsSVAInputData data1,data2;
 //    data1.sampleSize = 5;
 //    data1.universeSize = 5;

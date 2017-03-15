@@ -65,35 +65,7 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
 
     m_ui->m_btnGenerate->setEnabled(false);
 
-    int buttonHeight = 32;
-    int fontSize = 10;
-    QString selectedOutputPath=QString::fromStdString(SystemUtils::getUserHomeDirectory());
-
-    try
-    {
-        SettingPtr fontSizeSetting = RStatsSettingsManager::inst().getSettingById("fntSize");
-        SettingPtr buttonHeightSetting = RStatsSettingsManager::inst().getSettingById("btnHeight");
-        SettingPtr outputPathSetting = RStatsSettingsManager::inst().getSettingById("txtOutput");
-
-
-        fontSize = (dynamic_cast<NumericSetting*>(fontSizeSetting.get()))->value;
-        buttonHeight = (dynamic_cast<NumericSetting*>(buttonHeightSetting.get()))->value;
-        std::string outputPath = StringUtils::trimmed((dynamic_cast<PathBrowserSetting*>(outputPathSetting.get()))->value);
-        if (outputPath.size() > 0 && FileUtils::fileExists(outputPath))
-        {
-            selectedOutputPath = QString::fromStdString(outputPath);
-        }
-    }
-    catch(const std::exception& e)
-    {
-
-    }
-
-    QFont font = this->font();
-    font.setPointSize(fontSize);
-
     //initialize default icons
-    std::string appDir = SystemUtils::getCurrentExecutableDirectory();
     m_iconFolder = UIRStatsUtils::getIcon("img_folder.png");
     m_iconModule = UIRStatsUtils::getIcon("img_module.png");
     m_iconEdit = UIRStatsUtils::getIcon("img_edit.png");
@@ -109,10 +81,10 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     m_iconError = UIRStatsUtils::getIcon("img_error.png");
     m_iconOK = UIRStatsUtils::getIcon("img_ok.png");
     onValidateForm();
-
-    UIRStatsUtils::setButtonStyle(m_ui->m_btnExit,font,m_iconExit,buttonHeight);
-    UIRStatsUtils::setButtonStyle(m_ui->m_btnGenerate,font,m_iconRun,buttonHeight);
-    UIRStatsUtils::setButtonStyle(m_ui->m_btnHelp,font,m_iconHelp,buttonHeight);
+    int buttonHeight = 32;
+    UIRStatsUtils::setButtonStyle(m_ui->m_btnExit,this->font(),m_iconExit,buttonHeight);
+    UIRStatsUtils::setButtonStyle(m_ui->m_btnGenerate,this->font(),m_iconRun,buttonHeight);
+    UIRStatsUtils::setButtonStyle(m_ui->m_btnHelp,this->font(),m_iconHelp,buttonHeight);
     updateRecentSessions();
 }
 

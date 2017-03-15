@@ -22,6 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
+
+#pragma once
+
 #include "utility/inc/StringUtils.hpp"
 #include "utility/inc/DateEntity.h"
 
@@ -73,6 +76,16 @@ static inline DateEntity getCurrentDate()
     time_t t = time(0);
     struct tm * now = localtime( & t );
     return DateEntity(now->tm_mon + 1,now->tm_mday,now->tm_year + 1900);
+}
+
+static inline std::string toCurrentLongDateString()
+{
+    return toLongDateString(getCurrentDate());
+}
+
+static inline std::string toCurrentShortDateString()
+{
+    return toShortDateString(getCurrentDate());
 }
 
 }}}}//namespace

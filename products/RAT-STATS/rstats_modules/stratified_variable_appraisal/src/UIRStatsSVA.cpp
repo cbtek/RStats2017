@@ -10,6 +10,14 @@
 
 #include <QFileDialog>
 
+#include "rstats_ui/inc/UIRStatsUtils.hpp"
+
+#include "utility/inc/TimeUtils.hpp"
+#include "utility/inc/DateUtils.hpp"
+
+using namespace cbtek::common::utility;
+using namespace oig::ratstats::ui;
+
 namespace oig {
 namespace ratstats {
 namespace modules {
@@ -21,16 +29,45 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     m_ui(new Ui_UIRStatsSVA)
 {
     m_ui->setupUi(this);
+
+    //initialize default icons
+
+    m_iconFolder = UIRStatsUtils::getIcon("img_folder.png");
+    m_iconHelp = UIRStatsUtils::getIcon("img_help.png");
+    m_iconExit = UIRStatsUtils::getIcon("img_exit.png");
+    m_iconSave = UIRStatsUtils::getIcon("img_save.png");
+    m_iconRun = UIRStatsUtils::getIcon("img_run.png");
+
+    int buttonHeight = 32;
+    UIRStatsUtils::setButtonStyle(m_ui->m_btnExit,this->font(),m_iconExit,buttonHeight);
+    UIRStatsUtils::setButtonStyle(m_ui->m_btnHelp,this->font(),m_iconHelp,buttonHeight);
+    UIRStatsUtils::setButtonStyle(m_ui->m_btnContinue,this->font(),m_iconRun,buttonHeight);
+    UIRStatsUtils::setButtonStyle(m_ui->m_btnExportData,this->font(),m_iconSave,buttonHeight);
+    UIRStatsUtils::setButtonStyle(m_ui->m_btnImportData,this->font(),m_iconFolder,buttonHeight);
+
     connect(m_ui->m_btnImportData,SIGNAL(clicked(bool)),this,SLOT(onImportInputData()));
     connect(m_ui->m_btnExportData,SIGNAL(clicked(bool)),this,SLOT(onExportInputData()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
     connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));
     connect(m_ui->m_btnContinue,SIGNAL(clicked(bool)),this,SLOT(onContinue()));    
+    connect(&m_clock,SIGNAL(timeout()),this,SLOT(onUpdateClock()));
+
+    //m_ui->m_lblNoData->hide();
+    m_ui->m_frmDateTime->hide();
+    m_ui->m_grpOutput->hide();
+    m_clock.start(1000);
+    onUpdateClock();
 }
 
 UIRStatsSVA::~UIRStatsSVA()
 {
     delete m_ui;
+}
+
+void UIRStatsSVA::onUpdateClock()
+{
+    m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toCurrentShortDateString()));
+    m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::toCurrent12HourTimeString()));
 }
 
 void UIRStatsSVA::onContinue()
@@ -45,7 +82,7 @@ void UIRStatsSVA::onExit()
 
 void UIRStatsSVA::onImportInputData()
 {
-    QString filename = QFileDialog::getOpenFileName(this,"Import Stratified Variable Appraisal Input File...","","Input Files(*.dat *.txt *.xls *.xlsx)");
+    QString filename = QFileDialog::getOpenFileName(this,"Import Stratified Variable Appraisal Input File...","","Input Files(*.dat *.csv *.txt *.xls *.xlsx)");
     if (!filename.isEmpty() && QFile::exists(filename))
     {
 
@@ -71,5 +108,6 @@ void UIRStatsSVA::onSetPrinterOptions()
 {
 
 }
+
 }}}}//end namespace
 

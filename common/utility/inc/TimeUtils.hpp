@@ -129,6 +129,16 @@ static inline TimeEntity getTimeFromMilliseconds(const uint64_t &ms)
     return getTimeFromSeconds(ms/1000);
 }
 
+
+static inline std::string toCurrentTimeString()
+{
+    return toTimeString(getCurrentTime());
+}
+
+static inline std::string toCurrent12HourTimeString()
+{
+    return to12HourTimeString(getCurrentTime());
+}
 }}}}//namespace
 
 #endif
