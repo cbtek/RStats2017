@@ -25,7 +25,6 @@ struct RStatsSVAInputData
     oig::ratstats::utils::RStatsInteger universeSize;
     oig::ratstats::utils::RStatsInteger interestSize;
     oig::ratstats::utils::RStatsFloatList samples;
-
 };
 
 struct RStatsSVAOutputData
@@ -88,6 +87,17 @@ public:
     RStatsSVAOutputDataList execute(oig::ratstats::utils::RStatsDataFormatType dataFormatType,
                                     const RStatsSVAInputDataList& strataDataList);
     
+
+    /**
+     * @brief execute
+     * @param sizeSheet
+     * @param inputSheet
+     * @param dataFormatType
+     * @return
+     */
+    RStatsSVAOutputDataList execute(const oig::ratstats::utils::RStatsWorksheet& sizeSheet,
+                                    const oig::ratstats::utils::RStatsWorksheet& inputSheet, size_t numStratum,
+                                    oig::ratstats::utils::RStatsDataFormatType dataFormatType);
 
     /**
      * @brief populateWorkbookFromOutput

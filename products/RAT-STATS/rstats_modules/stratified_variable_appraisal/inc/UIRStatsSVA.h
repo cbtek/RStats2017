@@ -9,6 +9,8 @@
 #include <QMainWindow>
 #include <QTimer>
 
+#include "rstats_utils/inc/RStatsWorkbook.h"
+
 class Ui_UIRStatsSVA;
 
 namespace oig {
@@ -44,15 +46,20 @@ private:
      QIcon m_iconRun;
      QTimer m_clock;
 
-protected slots:
+     oig::ratstats::utils::RStatsWorksheet m_currentInputSheet;
+     oig::ratstats::utils::RStatsWorksheet m_currentSizeSheet;
+protected slots:     
      void onUpdateClock();
      void onContinue();
-     void onExit();
-     void onImportInputData();
-     void onExportInputData();
+     void onExit();     
+     void onSampleSizeSheetSelected(const oig::ratstats::utils::RStatsWorksheet& sheet);
+     void onSampleInputSheetSelected(const oig::ratstats::utils::RStatsWorksheet& sheet);
+     void onImportSampleInputData();
+     void onImportSampleSizeData();
      void onHelp();
      void onSetOutputFolder();
      void onSetPrinterOptions();
+     void onSetStratum(int count);
 };
 
 }}}}//end namespace

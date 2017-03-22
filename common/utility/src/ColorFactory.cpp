@@ -1295,7 +1295,7 @@ Color ColorFactory::create(const colors::ColorType &color)
         case colors::RANDOM_LIGHT:return createRandomLightColor();break;
         case colors::RANDOM_DARK:return createRandomDarkColor();break;
         case colors::INVISIBLE_1:
-        case colors::TRANSPARENT_1:return Color("Transparent",0,0,0,255);break;
+        case colors::TRANSPARENT_1:return Color("Transparent",0,0,0,0);break;
     default:break;
 
     }

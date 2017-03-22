@@ -11,12 +11,17 @@
 #include <QFileDialog>
 
 #include "rstats_ui/inc/UIRStatsUtils.hpp"
+#include "rstats_ui/inc/UIRStatsImportWorksheet.h"
+#include "rstats_ui/inc/UIRStatsErrorMessage.h"
+
+#include "rstats_utils/inc/RStatsWorkbookStreamFactory.h"
 
 #include "utility/inc/TimeUtils.hpp"
 #include "utility/inc/DateUtils.hpp"
 
 using namespace cbtek::common::utility;
 using namespace oig::ratstats::ui;
+using namespace oig::ratstats::utils;
 
 namespace oig {
 namespace ratstats {
@@ -42,11 +47,11 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     UIRStatsUtils::setButtonStyle(m_ui->m_btnExit,this->font(),m_iconExit,buttonHeight);
     UIRStatsUtils::setButtonStyle(m_ui->m_btnHelp,this->font(),m_iconHelp,buttonHeight);
     UIRStatsUtils::setButtonStyle(m_ui->m_btnContinue,this->font(),m_iconRun,buttonHeight);
-    UIRStatsUtils::setButtonStyle(m_ui->m_btnExportData,this->font(),m_iconSave,buttonHeight);
-    UIRStatsUtils::setButtonStyle(m_ui->m_btnImportData,this->font(),m_iconFolder,buttonHeight);
+    UIRStatsUtils::setButtonStyle(m_ui->m_btnImportSampleSizeData,this->font(),m_iconFolder,buttonHeight);
+    UIRStatsUtils::setButtonStyle(m_ui->m_btnImportSampleInputData,this->font(),m_iconFolder,buttonHeight);
 
-    connect(m_ui->m_btnImportData,SIGNAL(clicked(bool)),this,SLOT(onImportInputData()));
-    connect(m_ui->m_btnExportData,SIGNAL(clicked(bool)),this,SLOT(onExportInputData()));
+    connect(m_ui->m_btnImportSampleInputData,SIGNAL(clicked(bool)),this,SLOT(onImportSampleInputData()));
+    connect(m_ui->m_btnImportSampleSizeData,SIGNAL(clicked(bool)),this,SLOT(onImportSampleSizeData()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
     connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));
     connect(m_ui->m_btnContinue,SIGNAL(clicked(bool)),this,SLOT(onContinue()));    
@@ -64,6 +69,18 @@ UIRStatsSVA::~UIRStatsSVA()
     delete m_ui;
 }
 
+void UIRStatsSVA::onSampleSizeSheetSelected(const RStatsWorksheet &sheet)
+{
+    UIRStatsUtils::bindSheetToUI(sheet,m_ui->m_tblSampleSizeData,true);
+    m_currentSizeSheet = sheet;
+}
+
+void UIRStatsSVA::onSampleInputSheetSelected(const RStatsWorksheet &sheet)
+{
+    UIRStatsUtils::bindSheetToUI(sheet,m_ui->m_tblSampleInputData,true);
+    m_currentInputSheet = sheet;
+}
+
 void UIRStatsSVA::onUpdateClock()
 {
     m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toCurrentShortDateString()));
@@ -77,21 +94,62 @@ void UIRStatsSVA::onContinue()
 
 void UIRStatsSVA::onExit()
 {
-
+    this->close();
 }
 
-void UIRStatsSVA::onImportInputData()
+void UIRStatsSVA::onImportSampleInputData()
 {
-    QString filename = QFileDialog::getOpenFileName(this,"Import Stratified Variable Appraisal Input File...","","Input Files(*.dat *.csv *.txt *.xls *.xlsx)");
+    QString filename = QFileDialog::getOpenFileName(this,"Import Stratified Variable Appraisal Sample Input File...","","Input Files(*.dat *.csv *.txt *.xls *.xlsx)");
     if (!filename.isEmpty() && QFile::exists(filename))
     {
+        RStatsWorkbook workbook;
+        try
+        {
+            std::string filePath = filename.toStdString();
+            workbook.load(filePath);
+        }
+        catch(const std::exception& exception)
+        {
+            QString title = "Error occured trying to import " + filename;
+            QString message = QString(exception.what());
+            UIRStatsErrorMessage(title,message).exec();
+            return;
+        }
+        UIRStatsImportWorksheet importUI(workbook);
+        connect(&importUI,
+                SIGNAL(sheetSelected(const oig::ratstats::utils::RStatsWorksheet &)),
+                this,
+                SLOT(onSampleInputSheetSelected(const oig::ratstats::utils::RStatsWorksheet &)));
 
+        importUI.exec();
     }
 }
 
-void UIRStatsSVA::onExportInputData()
+void UIRStatsSVA::onImportSampleSizeData()
 {
-
+    QString filename = QFileDialog::getOpenFileName(this,"Import Stratified Variable Appraisal Universe/Sample Size Input File...","","Input Files(*.dat *.csv *.txt *.xls *.xlsx)");
+    if (!filename.isEmpty() && QFile::exists(filename))
+    {
+        RStatsWorkbook workbook;
+        try
+        {
+            std::string filePath = filename.toStdString();
+            workbook.load(filePath);
+        }
+        catch(const std::exception& exception)
+        {
+            QString title = "Error occured trying to import " + filename;
+            QString message = QString(exception.what());
+            UIRStatsErrorMessage(title,message).exec();
+            return;
+        }
+        UIRStatsImportWorksheet importUI(workbook);
+        connect(&importUI,
+                SIGNAL(sheetSelected(const oig::ratstats::utils::RStatsWorksheet &)),
+                this,
+                SLOT(onSampleSizeSheetSelected(const oig::ratstats::utils::RStatsWorksheet &)));
+        importUI.exec();
+    }
 }
 
 void UIRStatsSVA::onHelp()
@@ -107,6 +165,15 @@ void UIRStatsSVA::onSetOutputFolder()
 void UIRStatsSVA::onSetPrinterOptions()
 {
 
+}
+
+void UIRStatsSVA::onSetStratum(int count)
+{
+    size_t rowCount = m_ui->m_tblSampleSizeData->rowCount();
+    if (count < rowCount)
+    {
+
+    }
 }
 
 }}}}//end namespace

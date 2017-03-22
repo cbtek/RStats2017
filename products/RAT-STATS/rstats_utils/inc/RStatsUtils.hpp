@@ -364,8 +364,8 @@ namespace RStatsUtils
         #endif
 
         if ((cbtek::common::utility::FileUtils::isDirectory(path1) &&
-            (cbtek::common::utility::FileUtils::isDirectoryWritable(path1)) ||
-             cbtek::common::utility::FileUtils::fileExists(path1)))
+            cbtek::common::utility::FileUtils::isDirectoryWritable(path1)) ||
+             cbtek::common::utility::FileUtils::fileExists(path1))
         {
             path = path1;
         }
@@ -699,6 +699,11 @@ namespace RStatsUtils
         {
             cbtek::common::utility::FileUtils::deleteFile(entry);
         }
+    }
+
+    static RStatsFloat divideValues(RStatsInteger value1, RStatsInteger value2)
+    {
+        return (static_cast<RStatsFloat>(value1) / static_cast<RStatsFloat>(value2));
     }
 }
 

@@ -83,3 +83,13 @@ TEST_CASE("Testing FileUtils::copy", "[utility::FileUtils]" )
     FileUtils::deleteFile("test-copy.tmp");
     REQUIRE(dataIn == data);
 }
+
+TEST_CASE("Testing FileUtils::getFileExtension","[utility::FileUtils]")
+{
+    std::string test1 = "My/File/Name/file.txt";
+    std::string test2 = ".extMy/File/Name/file.txt.out";
+    std::string test3 = "    .noextMy/File/Name/file   ";
+    REQUIRE(FileUtils::getFileExtension(test1) == "txt");
+    REQUIRE(FileUtils::getFileExtension(test2) == "out");
+    REQUIRE(FileUtils::getFileExtension(test3) == "");
+}

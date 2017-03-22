@@ -10,6 +10,8 @@
 
 #include "utility/inc/Exception.hpp"
 
+#include "RStatsWorkbookStreamFactory.h"
+
 namespace oig {
 namespace ratstats {
 namespace utils {
@@ -23,12 +25,20 @@ RStatsWorkbook::RStatsWorkbook()
 
 void RStatsWorkbook::save(const std::string &filePath)
 {
-
+    RStatsWorkbookStreamPtr stream = RStatsWorkbookStreamFactory::create(filePath);
+    if (stream.get())
+    {
+        stream->write(*this);
+    }
 }
 
 void RStatsWorkbook::load(const std::string &filePath)
 {
-
+    RStatsWorkbookStreamPtr stream = RStatsWorkbookStreamFactory::create(filePath);
+    if (stream.get())
+    {
+        (*this) = stream->read();
+    }
 }
 
 void RStatsWorkbook::addWorksheet(const RStatsWorksheet &sheet)

@@ -31,20 +31,7 @@ RStatsXLSXWorkbookStream::RStatsXLSXWorkbookStream(const std::string &filePath)
 
 void RStatsXLSXWorkbookStream::write(const RStatsWorkbook &workbook)
 {
-//    lxw_workbook  *workbookTo  = workbook_new(m_filePath.c_str());
-//    size_t sheetCount = workbook.getNumWorksheets();
-//    for (size_t a1 = 0; a1 < sheetCount; ++a1)
-//    {
-//        const RStatsWorksheet& worksheetFrom = workbook(a1);
-//        lxw_worksheet *worksheetTo = workbook_add_worksheet(workbookTo, worksheetFrom.getWorksheetTitle().c_str());
-//        for (const auto& it : worksheetFrom.getCells())
-//        {
-//            std::pair<size_t,size_t> index = it.first;
-//            RStatsCell cell = it.second;
-//            worksheet_write_string(worksheetTo,index.first,index.second,cell.text.c_str(), NULL);
-//        }
-//    }
-//    workbook_close(workbookTo);
+    THROW_GENERIC_EXCEPTION("The XLSX writing feature has not been added")
 }
 
 RStatsWorkbook RStatsXLSXWorkbookStream::read()

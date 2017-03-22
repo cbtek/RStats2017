@@ -14,7 +14,7 @@ namespace utils {
 class RStatsWorkbookStreamFactory
 {
 public:
-    RStatsWorkbookStreamPtr create(const std::string& filePath);
+    static RStatsWorkbookStreamPtr create(const std::string& filePath);
 
 private:
     //! Private constructor for RStatsWorkbookStreamFactory

@@ -17,7 +17,7 @@ namespace ratstats {
 namespace utils {
 
 RStatsTextAlignment RStatsCell::ms_DefaultAlignment = RStatsTextAlignment::AlignLeft;
-Color RStatsCell::ms_DefaultBGColor = Color(255,255,255);
+Color RStatsCell::ms_DefaultBGColor = ColorFactory::create(colors::TRANSPARENT_1);
 Color RStatsCell::ms_DefaultFGColor = Color(0,0,0);
 Font RStatsCell::ms_DefaultFont = cbtek::common::utility::Font("arial");
 size_t RStatsCell::ms_DefaultFloatingPointDecimals = 6;
@@ -46,6 +46,28 @@ size_t RStatsWorksheet::getNumRows() const
 size_t RStatsWorksheet::getNumColumns() const
 {
     return m_numColumns;
+}
+
+std::pair<size_t,size_t> RStatsWorksheet::getLastDataRowAndColumn() const
+{
+    size_t rows = getNumRows();
+    size_t cols = getNumColumns();
+    if (rows == 0 || cols == 0)
+    {
+        return std::make_pair(0,0);
+    }
+
+    for (int r = rows-1; r >= 0;++r)
+    {
+        for (int c = cols-1; c >= 0;++c)
+        {
+            if (!StringUtils::isEmpty(getCell(r,c).text))
+            {
+                return std::make_pair(r,c);
+            }
+        }
+    }
+    return std::make_pair(0,0);
 }
 
 const std::map<std::pair<size_t, size_t>, RStatsCell>& RStatsWorksheet::getCells() const
@@ -81,7 +103,7 @@ void RStatsWorksheet::setDefaultFloatingPointDecimals(size_t count)
 void RStatsWorksheet::resetDefaults()
 {
     RStatsCell::ms_DefaultAlignment = RStatsTextAlignment::AlignLeft;
-    RStatsCell::ms_DefaultBGColor = Color(255,255,255);
+    RStatsCell::ms_DefaultBGColor = ColorFactory::create(colors::TRANSPARENT_1);
     RStatsCell::ms_DefaultFGColor = Color(0,0,0);
     RStatsCell::ms_DefaultFont = cbtek::common::utility::Font("arial");
     RStatsCell::ms_DefaultFloatingPointDecimals = 6;
@@ -97,6 +119,11 @@ std::string RStatsWorksheet::toTabDelimitedString() const
     return toString("","\t","");
 }
 
+bool RStatsWorksheet::isEmpty() const
+{
+    return (this->m_dataTable.size() == 0);
+}
+
 RStatsCell& RStatsWorksheet::operator()(size_t row, size_t column)
 {
     if (row >= m_numRows)
@@ -108,6 +135,11 @@ RStatsCell& RStatsWorksheet::operator()(size_t row, size_t column)
         m_numColumns = column + 1;
     }
     return m_dataTable[std::make_pair(row,column)];
+}
+
+const RStatsCell &RStatsWorksheet::operator()(size_t row, size_t column) const
+{
+    return getCell(row,column);
 }
 
 const RStatsCell &RStatsWorksheet::getCell(size_t row, size_t column) const

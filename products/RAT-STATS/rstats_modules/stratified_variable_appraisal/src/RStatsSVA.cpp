@@ -102,6 +102,40 @@ RStatsSVAOutputDataList RStatsSVA::execute(RStatsDataFormatType dataFormatType,
     return summaryDataList;
 }
 
+RStatsSVAOutputDataList RStatsSVA::execute(const RStatsWorksheet &sizeSheet,
+                                           const RStatsWorksheet &inputSheet,
+                                           size_t numStratum,
+                                           RStatsDataFormatType dataFormatType)
+{
+    std::pair<size_t,size_t> sizeSheetRowColMax = sizeSheet.getLastDataRowAndColumn();
+    std::pair<size_t,size_t> inputSheetRowColMax = inputSheet.getLastDataRowAndColumn();
+
+    RStatsSVAInputDataList svaInputList;
+    size_t colCount = sizeSheet.getNumColumns();
+    size_t dataRow = 0;
+    for (size_t r = 0; r < sizeSheet.getNumRows(); ++r)
+    {
+        RStatsSVAInputData data;
+
+        //Read size info for stratum
+        std::string lineCounter = sizeSheet(r, (size_t)0).text;
+        std::string universeSize = sizeSheet(r,(size_t)1).text;
+        std::string sampleSize = sizeSheet(r,(size_t)2).text;
+        data.universeSize = StringUtils::toInt(universeSize);
+        data.sampleSize = StringUtils::toInt(sampleSize);
+
+        //For each stratum lets grab the data samples
+        for (size_t a1 = dataRow; a1 < data.sampleSize;++a1)
+        {
+            if (a1 < inputSheet.getNumRows())
+            {
+                //inputSheet(a1,)
+            }
+        }
+    }
+
+}
+
 void RStatsSVA::populateWorkbookFromOutputList(RStatsSVAOutputDataList &outputList,
                                                RStatsWorkbook &workbookOut)
 {

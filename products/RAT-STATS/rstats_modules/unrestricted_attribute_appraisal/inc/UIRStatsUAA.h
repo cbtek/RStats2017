@@ -32,6 +32,10 @@ public:
     //! Destructor for UIRStatsUAA
     ~UIRStatsUAA();
 private:
+
+    QIcon m_exitIcon;
+    QIcon m_runIcon;
+    QIcon m_helpIcon;
     /** 
     * MOC generated ui class for this widget
     */

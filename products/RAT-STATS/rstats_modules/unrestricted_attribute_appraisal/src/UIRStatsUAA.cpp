@@ -8,6 +8,20 @@
 #include "UIRStatsUAA.h"
 #include "ui_UIRStatsUAA.h"
 
+#include <QFileDialog>
+
+#include "rstats_ui/inc/UIRStatsUtils.hpp"
+#include "rstats_ui/inc/UIRStatsImportWorksheet.h"
+#include "rstats_ui/inc/UIRStatsErrorMessage.h"
+
+#include "utility/inc/TimeUtils.hpp"
+#include "utility/inc/DateUtils.hpp"
+
+using namespace cbtek::common::utility;
+using namespace oig::ratstats::ui;
+using namespace oig::ratstats::utils;
+
+
 namespace oig {
 namespace ratstats {
 namespace modules {
@@ -19,6 +33,9 @@ UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
     m_ui(new Ui_UIRStatsUAA)
 {
     m_ui->setupUi(this);
+    m_exitIcon = UIRStatsUtils::getIcon("img_exit.png");
+    m_runIcon = UIRStatsUtils::getIcon("img_run.png");
+    m_helpIcon = UIRStatsUtils::getIcon("img_help.png");
 }
 
 UIRStatsUAA::~UIRStatsUAA()

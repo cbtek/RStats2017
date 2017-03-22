@@ -8,6 +8,8 @@
 #include "UIRStatsWorkbook.h"
 #include "ui_UIRStatsWorkbook.h"
 
+#include "UIRStatsUtils.hpp"
+
 namespace oig {
 namespace ratstats {
 namespace ui {
@@ -45,58 +47,23 @@ void UIRStatsWorkbook::setWorkbook(const RStatsWorkbook &workbook)
     connect(m_ui->m_lstWorksheets,SIGNAL(currentRowChanged(int)),this,SLOT(onSheetSelected(int)));
 }
 
+RStatsWorksheet UIRStatsWorkbook::getCurrentSheet() const
+{
+    return m_currentSheet;
+}
+
+
 UIRStatsWorkbook::~UIRStatsWorkbook()
 {
     delete m_ui;
 }
 
 void UIRStatsWorkbook::onPopulateTable(const RStatsWorksheet &sheet)
-{
-    m_ui->m_tblCurrentSheet->clear();
-    m_ui->m_tblCurrentSheet->setColumnCount(sheet.getNumColumns());
-    m_ui->m_tblCurrentSheet->setRowCount(sheet.getNumRows());
-    for (size_t a1 = 0; a1 < sheet.getNumColumns();++a1)
-    {
-        QTableWidgetItem * header = new QTableWidgetItem;
-        header->setText(QString::fromStdString(RStatsUtils::getColumnLabelFromIndex(a1)));
-        m_ui->m_tblCurrentSheet->setHorizontalHeaderItem(a1,header);
-    }
-
-    for(const auto& itNext : sheet.getCells())
-    {
-        std::pair<size_t,size_t> index = itNext.first;
-        RStatsCell cell = itNext.second;
-        QTableWidgetItem * item = new QTableWidgetItem;
-        item->setText(QString::fromStdString(cell.text));
-        m_ui->m_tblCurrentSheet->setRowHeight(index.first,30);
-        //set colors
-        int r,g,b;
-        r = cell.bgColor.getRed();
-        g = cell.bgColor.getGreen();
-        b = cell.bgColor.getBlue();
-        item->setBackground(QBrush(QColor(r,g,b)));
-
-        r = cell.fgColor.getRed();
-        g = cell.fgColor.getGreen();
-        b = cell.fgColor.getBlue();
-        item->setForeground(QBrush(QColor(r,g,b)));
-
-        //set font
-        QFont font;
-        font.setBold(cell.font.isBold());
-        font.setUnderline(cell.font.isUnderlined());
-        font.setItalic(cell.font.isItalic());
-        font.setFamily(QString::fromStdString(cell.font.getFontFamily()));
-        font.setPointSize(cell.font.getPointSize());
-        item->setFont(font);
-        switch(cell.alignment)
-        {
-            case RStatsTextAlignment::AlignMiddle:item->setTextAlignment(Qt::AlignVCenter | Qt::AlignHCenter);break;
-            case RStatsTextAlignment::AlignRight:item->setTextAlignment(Qt::AlignVCenter | Qt::AlignRight);break;
-            default:item->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);break;
-        }
-        m_ui->m_tblCurrentSheet->setItem(index.first,index.second,item);
-    }
+{    
+    m_currentSheet = sheet;
+    UIRStatsUtils::bindSheetToUI(sheet,m_ui->m_tblCurrentSheet);
+    emit sheetSelected(sheet);
+    emit sheetSelected(m_ui->m_tblCurrentSheet);
 }
 
 void UIRStatsWorkbook::onSheetSelected(int index)
@@ -107,6 +74,7 @@ void UIRStatsWorkbook::onSheetSelected(int index)
         onResizeToContents();
     }
 }
+
 
 void UIRStatsWorkbook::onResizeToContents()
 {

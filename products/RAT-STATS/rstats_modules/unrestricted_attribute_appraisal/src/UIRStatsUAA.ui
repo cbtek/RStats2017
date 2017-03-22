@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>753</width>
+    <width>770</width>
     <height>558</height>
    </rect>
   </property>
@@ -28,14 +28,9 @@
         <item>
          <widget class="QFrame" name="m_frmTimeDate">
           <property name="styleSheet">
-           <string notr="true">#m_frmTimeDate
-{
-	border:2px solid gray;
-	border-radius:10px;
-	padding: 5px;
-}</string>
+           <string notr="true"/>
           </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <layout class="QGridLayout" name="gridLayout_3">
            <property name="leftMargin">
             <number>4</number>
            </property>
@@ -48,34 +43,7 @@
            <property name="bottomMargin">
             <number>4</number>
            </property>
-           <item>
-            <widget class="QLabel" name="label_6">
-             <property name="font">
-              <font>
-               <pointsize>12</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>Date:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="m_lblDate">
-             <property name="font">
-              <font>
-               <pointsize>12</pointsize>
-               <weight>75</weight>
-               <italic>false</italic>
-               <bold>true</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>02/22/99</string>
-             </property>
-            </widget>
-           </item>
-           <item>
+           <item row="1" column="2">
             <spacer name="horizontalSpacer">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -88,19 +56,7 @@
              </property>
             </spacer>
            </item>
-           <item>
-            <widget class="QLabel" name="label_5">
-             <property name="font">
-              <font>
-               <pointsize>12</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>Time:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
+           <item row="1" column="4">
             <widget class="QLabel" name="m_lblTime">
              <property name="font">
               <font>
@@ -111,6 +67,57 @@
              </property>
              <property name="text">
               <string>00:00</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLabel" name="m_lblDate">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+               <weight>75</weight>
+               <italic>false</italic>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>02/22/99</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="label_6">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Date</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="4">
+            <widget class="QLabel" name="label_5">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Time</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
              </property>
             </widget>
            </item>
@@ -146,21 +153,6 @@
              <attribute name="verticalHeaderVisible">
               <bool>false</bool>
              </attribute>
-             <column>
-              <property name="text">
-               <string>Universe Size</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Sample Size</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Number with Characteristics of Interest</string>
-              </property>
-             </column>
             </widget>
            </item>
           </layout>
@@ -191,6 +183,9 @@
    </layout>
   </widget>
   <widget class="QDockWidget" name="dockWidget">
+   <property name="features">
+    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+   </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
@@ -219,100 +214,6 @@
           <property name="spacing">
            <number>11</number>
           </property>
-          <item row="4" column="0">
-           <widget class="QCheckBox" name="m_chkOC0">
-            <property name="text">
-             <string>Only compute upper limit when COI = 0</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QGroupBox" name="verticalGroupBox_3">
-            <property name="title">
-             <string>Sample Size:</string>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_6">
-             <property name="leftMargin">
-              <number>9</number>
-             </property>
-             <property name="topMargin">
-              <number>9</number>
-             </property>
-             <property name="rightMargin">
-              <number>9</number>
-             </property>
-             <property name="bottomMargin">
-              <number>9</number>
-             </property>
-             <item>
-              <widget class="QSpinBox" name="m_spnSampleSize"/>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item row="6" column="0">
-           <widget class="QGroupBox" name="verticalGroupBox_4">
-            <property name="title">
-             <string>Output Options:</string>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_4">
-             <item>
-              <widget class="QFrame" name="frame">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <layout class="QGridLayout" name="gridLayout_4">
-                <item row="0" column="0">
-                 <widget class="QCheckBox" name="m_chkTextOutput">
-                  <property name="text">
-                   <string>Text File</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QCheckBox" name="m_chkExcelAccessOutput">
-                  <property name="text">
-                   <string>Excel / Access File</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QGroupBox" name="verticalGroupBox">
-            <property name="title">
-             <string>Universe Size:</string>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout">
-             <item>
-              <widget class="QSpinBox" name="m_spnStrata">
-               <property name="alignment">
-                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-               </property>
-               <property name="suffix">
-                <string> Total Strata</string>
-               </property>
-               <property name="prefix">
-                <string/>
-               </property>
-               <property name="minimum">
-                <number>1</number>
-               </property>
-               <property name="maximum">
-                <number>125</number>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
           <item row="0" column="0">
            <widget class="QLineEdit" name="m_txtAuditName">
             <property name="text">
@@ -320,33 +221,21 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
-           <widget class="QGroupBox" name="verticalGroupBox_5">
-            <property name="title">
-             <string>Number with Characteristic of Interest (COI):</string>
-            </property>
-            <layout class="QGridLayout" name="gridLayout">
-             <item row="0" column="0">
-              <widget class="QSpinBox" name="m_spnCOI"/>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item row="5" column="0">
+          <item row="6" column="0">
            <widget class="QCheckBox" name="m_chkOCSample">
             <property name="text">
              <string>Only compute lower limit  when COI = sample size</string>
             </property>
            </widget>
           </item>
-          <item row="7" column="0">
+          <item row="8" column="0">
            <widget class="QPushButton" name="m_btnContinue">
             <property name="text">
              <string>Continue</string>
             </property>
            </widget>
           </item>
-          <item row="8" column="0">
+          <item row="9" column="0">
            <widget class="QWidget" name="widget" native="true">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -410,6 +299,128 @@
                 <enum>Qt::ToolButtonTextUnderIcon</enum>
                </property>
               </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QCheckBox" name="m_chkOC0">
+            <property name="text">
+             <string>Only compute upper limit when COI = 0</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QGroupBox" name="verticalGroupBox_4">
+            <property name="title">
+             <string>Output Options:</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_4">
+             <item>
+              <widget class="QFrame" name="frame">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_4">
+                <item row="0" column="0">
+                 <widget class="QCheckBox" name="m_chkTextOutput">
+                  <property name="text">
+                   <string>Text File</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QCheckBox" name="m_chkExcelAccessOutput">
+                  <property name="text">
+                   <string>Excel / Access File</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <property name="leftMargin">
+             <number>4</number>
+            </property>
+            <property name="topMargin">
+             <number>4</number>
+            </property>
+            <property name="rightMargin">
+             <number>4</number>
+            </property>
+            <property name="bottomMargin">
+             <number>4</number>
+            </property>
+            <item>
+             <widget class="QGroupBox" name="verticalGroupBox">
+              <property name="title">
+               <string>Universe Size:</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout">
+               <item>
+                <widget class="QSpinBox" name="m_spnStrata">
+                 <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                 </property>
+                 <property name="suffix">
+                  <string/>
+                 </property>
+                 <property name="prefix">
+                  <string/>
+                 </property>
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>125</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="verticalGroupBox_3">
+              <property name="title">
+               <string>Sample Size:</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_6">
+               <property name="leftMargin">
+                <number>9</number>
+               </property>
+               <property name="topMargin">
+                <number>9</number>
+               </property>
+               <property name="rightMargin">
+                <number>9</number>
+               </property>
+               <property name="bottomMargin">
+                <number>9</number>
+               </property>
+               <item>
+                <widget class="QSpinBox" name="m_spnSampleSize"/>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="2" column="0">
+           <widget class="QGroupBox" name="verticalGroupBox_5">
+            <property name="title">
+             <string>Number with Characteristic of Interest (COI):</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout">
+             <item row="0" column="0">
+              <widget class="QSpinBox" name="m_spnCOI"/>
              </item>
             </layout>
            </widget>

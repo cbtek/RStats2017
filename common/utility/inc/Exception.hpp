@@ -32,7 +32,6 @@ SOFTWARE.
 
 #define EXCEPTION_TAG "Exception thrown in "+std::string(__FILE__)+"("+std::string(__func__)+") on line ("+std::to_string(__LINE__)+"): "
 #define EXCEPTION_TAG_LINE "Exception thrown in "+std::string(__FILE__)+"("+std::string(__func__)+") on line ("+std::to_string(__LINE__)+"): \n"
-
 namespace cbtek{
 namespace common{
 namespace utility{
@@ -84,6 +83,8 @@ namespace utility{
             std::string m_message;\
     };\
 
+CREATE_EXCEPTION(GenericException,"")
+CREATE_EXCEPTION(FeatureNotSupportedException,"Requested feature is not supported")
 CREATE_EXCEPTION(FileNotFoundException,"FileNotFoundException")
 CREATE_EXCEPTION(FileParseException,"FileParseException")
 CREATE_EXCEPTION(FileAccessException,"FileAccessException")
@@ -92,6 +93,8 @@ CREATE_EXCEPTION(InvalidOperationException,"Invalid operation occured")
 CREATE_EXCEPTION(InvalidParameterException,"Invalid parameter exception")
 CREATE_EXCEPTION(InvalidMapKeyException,"Invalid Map Key")
 CREATE_EXCEPTION(InvalidCastException,"Invalid Cast Exception")
+
+#define THROW_GENERIC_EXCEPTION(MESSAGE) throw cbtek::common::utility::GenericException(EXCEPTION_TAG_LINE+MESSAGE);
 
 }}}//namespace
 

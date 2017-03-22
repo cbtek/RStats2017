@@ -9,9 +9,45 @@
 
 #include "RStatsWorkbookStreamFactory.h"
 
+#include "utility/inc/FileUtils.hpp"
+#include "utility/inc/Exception.hpp"
+
+#include "streams/RStatsDelimitedWorkbookStream.h"
+#include "streams/RStatsXLSXWorkbookStream.h"
+#include "streams/RStatsAccessWorkbookStream.h"
+
+using namespace cbtek::common::utility;
+
 namespace oig {
 namespace ratstats {
 namespace utils {
+
+RStatsWorkbookStreamPtr RStatsWorkbookStreamFactory::create(const std::string &filePath)
+{
+    std::string ext = StringUtils::toUpperTrimmed(FileUtils::getFileExtension(filePath));
+
+    if ((ext == "XLSX") || (ext == "XLSM"))
+    {
+        return RStatsWorkbookStreamPtr(new streams::RStatsXLSXWorkbookStream(filePath));
+    }
+    else if (ext == "XLS")
+    {
+        THROW_GENERIC_EXCEPTION("XLS not supported")
+    }
+    else if (ext == "CSV" || ext == "TXT" || ext == "DAT")
+    {
+        return RStatsWorkbookStreamPtr(new streams::RStatsDelimitedWorkbookStream(filePath));
+    }
+    else if (ext == "MDB")
+    {
+        THROW_GENERIC_EXCEPTION("MDB not supported")
+    }
+    else if (ext == "AACDB")
+    {
+        THROW_GENERIC_EXCEPTION("AACDB not supported")
+    }
+    THROW_GENERIC_EXCEPTION("Invalid type type detected at \""+filePath+"\"")
+}
 
 
 

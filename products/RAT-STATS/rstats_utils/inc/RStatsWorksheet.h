@@ -98,6 +98,14 @@ public:
 
 
    /**
+    * @brief operator ()
+    * @param row
+    * @param column
+    * @return
+    */
+  const RStatsCell& operator()(size_t row, size_t column) const;
+
+   /**
     * @brief getCell
     * @param row
     * @param column
@@ -125,6 +133,12 @@ public:
      * @return
      */
     size_t getNumColumns() const;
+
+    /**
+     * @brief getLastDataRow
+     * @return
+     */
+    std::pair<size_t, size_t> getLastDataRowAndColumn() const;
 
     /**
      * @brief getCells
@@ -168,9 +182,24 @@ public:
     void resetDefaults();
 
 
+    /**
+     * @brief toCommaDelimitedString
+     * @return
+     */
     std::string toCommaDelimitedString() const;
 
+    /**
+     * @brief toTabDelimitedString
+     * @return
+     */
     std::string toTabDelimitedString() const;
+
+    /**
+     * @brief isEmpty
+     * @return
+     */
+    bool isEmpty() const;
+
     //! Destructor
 	~RStatsWorksheet();	
 

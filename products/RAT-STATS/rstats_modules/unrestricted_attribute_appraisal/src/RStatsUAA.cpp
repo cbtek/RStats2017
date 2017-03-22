@@ -9,6 +9,10 @@
 
 #include "RStatsUAA.h"
 
+#include "rstats_utils/inc/RStatsUtils.hpp"
+
+using namespace oig::ratstats::utils;
+
 namespace oig {
 namespace ratstats {
 namespace modules {
@@ -22,6 +26,140 @@ RStatsUAA & RStatsUAA::inst()
     return m_instance;
 }
 
+void RStatsUAA::execute(RStatsInteger sampleSize,
+                        RStatsInteger universeSize,
+                        RStatsInteger coiSize,
+                        bool computeOneSided)
+{
+    reset();
+    m_sampleSize = sampleSize;
+    m_universeSize = universeSize;
+    m_numItems = coiSize;
+
+//    '*********************************************
+//    CALCULATESTATS:
+//    '*********************************************
+
+    int outputFlag = 7;
+
+    //if (computeOneSided && (m_numItems == 0 || m_numItems == m_sampleSize ))
+
+
+//       If NITEMS& = 0 Or NITEMS& = SAMPLESIZE& Then
+//          OutputFlag = MsgBox("Would you like to compute a one-sided confidence interval?  If you answer YES, a one-sided interval will be computed.  If you answer NO, the usual two-sided confidence interval will be computed.", vbYesNo)
+//       End If
+    m_isActive = true;
+    m_max = 1000000000000.;
+    m_min = 1 / m_max;
+    m_ratio = RStatsUtils::divideValues(m_numItems,m_sampleSize);
+    RStatsFloat currentRatio = m_ratio;
+    for (m_conditionLevel = 1; m_conditionLevel <= 3;++m_conditionLevel)
+    {
+        if (m_conditionLevel == 1)
+        {
+            m_zValue = 1.28155;
+            if (m_numItems == 0 || m_numItems == m_sampleSize)
+            {
+                if (outputFlag == 6)
+                {
+                    m_tail = 0.2;
+                }
+                else
+                {
+                    m_tail = 0.1;
+                }
+            }
+            else
+            {
+                m_tail = 0.1;
+            }
+        }
+        else if (m_conditionLevel == 2)
+        {
+            m_zValue = 1.64485;
+            if (m_numItems == 0 || m_numItems == m_sampleSize)
+            {
+                if (outputFlag == 6)
+                {
+                    m_tail = 0.1;
+                }
+                else
+                {
+                    m_tail = 0.05;
+                }
+            }
+            else
+            {
+                m_tail = 0.05;
+            }
+        }
+        else
+        {
+            m_zValue = 1.95996;
+            if (m_numItems == 0 || m_numItems == m_sampleSize)
+            {
+                if (outputFlag == 6)
+                {
+                    m_tail = 0.05;
+                }
+                else
+                {
+                    m_tail = 0.025;
+                }
+            }
+            else
+            {
+                m_tail = 0.025;
+            }
+        }
+        m_phat = RStatsUtils::divideValues(m_numItems,m_sampleSize);
+        m_term = m_phat * (1 - m_phat) * m_universeSize * (m_universeSize - m_sampleSize) / (m_sampleSize - 1);
+
+        std::cerr << "term:"<<m_term<<std::endl;
+
+        m_kOld = 0;
+        m_iter = 1;
+
+        //    '*
+        //    '*     FIND UPPER LIMIT
+        //    '*
+        if (m_numItems == m_sampleSize)
+        {
+            m_kUpper = m_universeSize;
+            processFindLower();
+        }
+        m_kSt = (m_universeSize * m_phat) + m_zValue * std::sqrt(m_term);
+        if (m_kSt > (.95 * m_universeSize))
+        {
+            m_kSt = m_universeSize;
+        }
+        for (size_t i = 1; i <= 11; ++i)
+        {
+            m_kAdd = (m_universeSize - m_kSt) * .1 * (i - 1);
+            if (m_numItems == 0 || m_numItems == m_sampleSize)
+            {
+                m_kAdd = m_universeSize * .1 * (i - 1);
+            }
+            m_k = m_kSt + m_kAdd;
+            if (m_k > m_universeSize)
+            {
+                m_k = m_universeSize;
+            }
+            processSumHypergeometric();
+            if (m_cumalativeProbability < 1e-05)
+            {
+                m_cumalativeProbability = 0.;
+            }
+            m_sSum = m_cumalativeProbability - m_tail;
+            if (m_sSum < 0)
+            {
+                processFindBottomUpper();
+            }
+
+        }
+    }
+}
+
 RStatsUAA::RStatsUAA()
 {
 
@@ -30,6 +168,347 @@ RStatsUAA::RStatsUAA()
 RStatsUAA::~RStatsUAA()
 {
 
+}
+
+void RStatsUAA::processFindLower()
+{
+    if (m_numItems == m_sampleSize)
+    {
+        m_kLower = m_kTop;
+        processResults();
+    }
+
+    m_kLower = m_kTop;
+
+    if (m_kLower < m_numItems)
+    {
+        m_kLower = m_numItems;
+    }
+}
+
+void RStatsUAA::processResults()
+{
+    if (m_conditionLevel == 0)
+    {
+        m_lower80 = m_kLower;
+        m_upper80 = m_kUpper;
+    }
+    else if (m_conditionLevel == 1)
+    {
+        m_lower90 = m_kLower;
+        m_upper90 = m_kUpper;
+    }
+    else
+    {
+        m_lower95 = m_kLower;
+        m_upper95 = m_kUpper;
+    }
+}
+
+void RStatsUAA::processSumHypergeometric()
+{
+    m_numExponents = 0;
+    m_popGood = m_universeSize - m_k;
+    m_minBad = m_sampleSize - m_popGood;
+    if (m_numItems < m_minBad)
+    {
+        m_cumalativeProbability = 0;
+        return;
+    }
+
+    if (m_minBad < 0)
+    {
+        m_minBad = 0;
+    }
+    m_z = 1;
+    if (m_minBad > 0)
+    {
+        for (int j = 0; j < m_sampleSize; ++j)
+        {
+            if (j < m_minBad)
+            {
+               m_z = m_z * (m_k - j) / (m_universeSize - j);
+            }
+            else
+            {
+               m_z = m_z * (j + 1) / (m_universeSize - j);
+            }
+            if (m_z < m_min)
+            {
+               m_z = m_z * m_max;
+            }
+            if (m_z > m_max || RStatsUtils::isEqual(m_z,m_max))
+            {
+               m_z = m_z * m_min;
+               ++m_numExponents;
+            }
+        }
+    }
+   else
+   {
+       for (int j = 0; j < m_sampleSize; ++j)
+       {
+           m_z = m_z * (m_popGood - j) / (m_universeSize - j);
+           if (m_z < m_min)
+           {
+               m_z = m_z * m_max;
+               --m_numExponents;
+           }
+       }
+    }
+    if (m_numExponents < -1)
+    {
+        m_cumalativeProbability = 0;
+    }
+    else
+    {
+        double test1 = m_z * std::pow(m_max, m_numExponents);
+        double test2 = std::pow((m_max * m_z), m_numExponents);
+        m_cumalativeProbability = m_z * std::pow(m_max, m_numExponents);
+    }
+
+//    '
+//    '  COMPUTE PROB OF MINBAD TO X ERRORS IN THE SAMPLE
+//    '
+
+    if (m_minBad > 0)
+    {
+        m_pb = m_k - m_minBad;
+        m_pg = m_popGood + m_minBad;
+        m_ss = m_sampleSize - m_minBad;
+        m_sb = m_numItems - m_minBad;
+    }
+    else
+    {
+        m_pb = m_k;
+        m_pg = m_popGood;
+        m_ss = m_sampleSize;
+        m_sb = m_numItems;
+    }
+
+    for (int j = 1; j < m_sb; ++j)
+    {
+        m_z = m_z * (m_pb - j + 1) * (m_ss - j + 1);
+        m_z = m_z / ( (j + m_minBad) * (m_pg - m_sampleSize + j));
+        if (m_z > m_max)
+        {
+            m_z = m_z / m_max;
+            ++m_numExponents;
+        }
+        if (std::abs(m_numExponents) < 2)
+        {
+                m_cumalativeProbability = m_cumalativeProbability + m_z * std::pow(m_max, m_numExponents);
+        }
+    }
+}
+
+void RStatsUAA::processFindBottomUpper()
+{
+    m_kTop = m_k;
+    m_kSt = (m_universeSize * m_phat) + m_zValue * std::sqrt(m_term);
+    if (m_kSt > (.95 * m_universeSize))
+    {
+        m_kSt = m_universeSize;
+    }
+    for (int i = 0; i <  11; ++i)
+    {
+        m_kSub = (m_kSt - m_universeSize * m_phat) * .1 * ((i+1)% - 1);
+        m_k = m_kSt - m_kSub;
+        processSumHypergeometric();
+        if (m_cumalativeProbability < 1e-05)
+        {
+            m_cumalativeProbability = 0.;
+        }
+        m_sSum = m_cumalativeProbability - m_tail;
+        if (m_sSum > 0)
+        {
+            m_kBottom = m_k;
+            m_kOld = m_k;
+            processCloseInUpper();
+        }
+    }
+}
+
+void RStatsUAA::processFindBottomLower()
+{
+    m_kTop = m_k;
+    m_kSt = (m_universeSize * m_phat) - m_zValue * std::sqrt(m_term);
+    if (m_kSt < 0 || RStatsUtils::isEqual(m_kSt,0.))
+    {
+        m_kSt = 0;
+    }
+
+    m_k = m_kSt;
+
+    for (int i = 0; i <  11; ++i)
+    {
+        m_kSub = (m_kSt * m_phat) * .1 * ((i+1)% - 1);
+        m_k = m_kSt - m_kSub;
+        if (m_k < 0)
+        {
+            m_k = 0;
+        }
+
+        processSumHypergeometric();
+
+        if (m_cumalativeProbability < 1e-05)
+        {
+            m_cumalativeProbability = 0.;
+        }
+        m_sSum = 1 - m_cumalativeProbability - m_tail;
+        if (m_sSum < 0)
+        {
+            m_kBottom = m_k;
+            processCloseInLower();
+        }
+    }
+}
+
+void RStatsUAA::processCloseInUpper()
+{
+    if (RStatsUtils::isEqual(m_kTop - m_kBottom,1.))
+    {
+        processFinalUpper();
+    }
+    m_k = m_kBottom + (m_kTop - m_kBottom) / 2.;
+    processSumHypergeometric();
+    m_sSum = m_cumalativeProbability - m_tail;
+    if (m_sSum < 0 || RStatsUtils::isEqual(m_sSum,0.))
+    {
+        m_kTop = m_k;
+    }
+    else
+    {
+        m_kBottom = m_k;
+    }
+    m_iter = m_iter + 1;
+    if (m_iter > 100)
+    {
+        //THROW_GENERIC_EXCEPTION("Number of Iterations is greater than 100. Exiting");
+        processExit();
+    }
+    m_kOld = m_k;
+    m_sumNew = m_sSum;
+}
+
+void RStatsUAA::processCloseInLower()
+{
+    if (m_kTop == m_kBottom)
+    {
+        processFinalLower();
+        return;
+    }
+    m_k = m_kBottom + (m_kTop - m_kBottom) / 2;
+    processSumHypergeometric();
+    if (m_cumalativeProbability < 1e-05)
+    {
+        m_cumalativeProbability = 0;
+    }
+
+    m_sSum = 1 - m_cumalativeProbability - m_tail;
+
+    if (m_sSum < 0 || RStatsUtils::isEqual(m_sSum,0.))
+    {
+        m_kBottom = m_k;
+    }
+    else
+    {
+        m_kTop = m_k;
+    }
+    ++m_iter;
+    if (m_iter  > 100)
+    {
+        //Print "NO. OF ITERATIONS > 100 -- EXITING"
+        processExit();
+    }
+    m_kOld = m_k;
+//  SUM1NEW# = SSUM1#
+//  GoTo CloseInLower
+    processCloseInLower();
+}
+
+void RStatsUAA::processFinalUpper()
+{
+    if (m_numItems == 0)
+    {
+        m_kUpper = m_kBottom;
+        m_kLower = 0.;
+        processResults();
+        return;
+    }
+
+    m_kUpper = m_kBottom;
+
+    if (m_kUpper > (m_universeSize - m_sampleSize + m_numItems))
+    {
+        m_kUpper = m_universeSize - m_sampleSize + m_numItems;
+    }
+}
+
+void RStatsUAA::processFinalLower()
+{
+    if (m_numItems == m_sampleSize)
+    {
+        m_kLower = m_kTop;
+        processResults();
+    }
+
+    m_kLower = m_kTop;
+
+    if (m_kLower < m_numItems)
+    {
+        m_kLower = m_numItems;
+    }
+}
+
+
+void RStatsUAA::processExit()
+{
+    m_isActive = false;
+}
+
+void RStatsUAA::reset()
+{
+     m_numCompare = 0;
+     m_numExponents = 0;
+     m_sampleSize = 0;
+     m_numItems = 0;
+     m_numItemsInSample = 0;
+     m_conditionLevel = 0;
+     m_iter = 0;
+     m_universeSize = 0;
+     m_phat = 0;
+     m_term = 0;
+     m_kUpper = 0;
+     m_kAdd = 0;
+     m_kOld = 0;
+     m_kLower = 0;
+     m_kTop = 0;
+     m_kBottom = 0;
+     m_kSt = 0;
+     m_max = 0;
+     m_min = 0;
+     m_ratio = 0;
+     m_lower80 = 0;
+     m_lower90 = 0;
+     m_lower95 = 0;
+     m_upper80 = 0;
+     m_upper90 = 0;
+     m_upper95 = 0;
+     m_zValue = 0;
+     m_k = 0;
+     m_kSub = 0;
+     m_tail = 0;
+     m_cumalativeProbability = 0;
+     m_sSum = 0;
+     m_sumNew = 0;
+     m_minBad = 0;
+     m_popGood = 0;
+     m_z = 0;
+     m_pb = 0;
+     m_pg = 0;
+     m_ss = 0;
+     m_sb = 0;
 }
 
 
