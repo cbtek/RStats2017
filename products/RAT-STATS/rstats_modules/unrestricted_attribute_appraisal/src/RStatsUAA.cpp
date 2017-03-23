@@ -128,7 +128,7 @@ void RStatsUAA::execute(RStatsInteger sampleSize,
             m_kUpper = m_universeSize;
             processFindLower();
         }
-        m_kSt = (m_universeSize * m_phat) + m_zValue * std::sqrt(m_term);
+        m_kSt = static_cast<RStatsInteger>((static_cast<RStatsFloat>(m_universeSize) * m_phat) + std::ceil(m_zValue * std::sqrt(m_term)));
         if (m_kSt > (.95 * m_universeSize))
         {
             m_kSt = m_universeSize;
@@ -155,9 +155,10 @@ void RStatsUAA::execute(RStatsInteger sampleSize,
             {
                 processFindBottomUpper();
             }
-
         }
     }
+
+    int x = 0;
 }
 
 RStatsUAA::RStatsUAA()
@@ -188,12 +189,12 @@ void RStatsUAA::processFindLower()
 
 void RStatsUAA::processResults()
 {
-    if (m_conditionLevel == 0)
+    if (m_conditionLevel == 1)
     {
         m_lower80 = m_kLower;
         m_upper80 = m_kUpper;
     }
-    else if (m_conditionLevel == 1)
+    else if (m_conditionLevel == 2)
     {
         m_lower90 = m_kLower;
         m_upper90 = m_kUpper;
@@ -262,8 +263,6 @@ void RStatsUAA::processSumHypergeometric()
     }
     else
     {
-        double test1 = m_z * std::pow(m_max, m_numExponents);
-        double test2 = std::pow((m_max * m_z), m_numExponents);
         m_cumalativeProbability = m_z * std::pow(m_max, m_numExponents);
     }
 
@@ -286,7 +285,7 @@ void RStatsUAA::processSumHypergeometric()
         m_sb = m_numItems;
     }
 
-    for (int j = 1; j < m_sb; ++j)
+    for (int j = 1; j <= m_sb; ++j)
     {
         m_z = m_z * (m_pb - j + 1) * (m_ss - j + 1);
         m_z = m_z / ( (j + m_minBad) * (m_pg - m_sampleSize + j));
@@ -297,7 +296,7 @@ void RStatsUAA::processSumHypergeometric()
         }
         if (std::abs(m_numExponents) < 2)
         {
-                m_cumalativeProbability = m_cumalativeProbability + m_z * std::pow(m_max, m_numExponents);
+                m_cumalativeProbability +=  m_z * std::pow(m_max, m_numExponents);
         }
     }
 }
@@ -305,7 +304,7 @@ void RStatsUAA::processSumHypergeometric()
 void RStatsUAA::processFindBottomUpper()
 {
     m_kTop = m_k;
-    m_kSt = (m_universeSize * m_phat) + m_zValue * std::sqrt(m_term);
+    m_kSt = static_cast<RStatsInteger>((static_cast<RStatsFloat>(m_universeSize) * m_phat) + std::ceil(m_zValue * std::sqrt(m_term)));
     if (m_kSt > (.95 * m_universeSize))
     {
         m_kSt = m_universeSize;
@@ -333,16 +332,16 @@ void RStatsUAA::processFindBottomLower()
 {
     m_kTop = m_k;
     m_kSt = (m_universeSize * m_phat) - m_zValue * std::sqrt(m_term);
-    if (m_kSt < 0 || RStatsUtils::isEqual(m_kSt,0.))
+    if (m_kSt <= 0)
     {
         m_kSt = 0;
     }
 
     m_k = m_kSt;
 
-    for (int i = 0; i <  11; ++i)
+    for (int i = 1; i <=  11; ++i)
     {
-        m_kSub = (m_kSt * m_phat) * .1 * ((i+1)% - 1);
+        m_kSub = (static_cast<RStatsFloat>(m_kSt * m_phat) * .1) * (i% - 1);
         m_k = m_kSt - m_kSub;
         if (m_k < 0)
         {
@@ -366,11 +365,11 @@ void RStatsUAA::processFindBottomLower()
 
 void RStatsUAA::processCloseInUpper()
 {
-    if (RStatsUtils::isEqual(m_kTop - m_kBottom,1.))
+    if (m_kTop - m_kBottom == 1)
     {
         processFinalUpper();
     }
-    m_k = m_kBottom + (m_kTop - m_kBottom) / 2.;
+    m_k = m_kBottom + (m_kTop - m_kBottom) / 2;
     processSumHypergeometric();
     m_sSum = m_cumalativeProbability - m_tail;
     if (m_sSum < 0 || RStatsUtils::isEqual(m_sSum,0.))
@@ -385,10 +384,12 @@ void RStatsUAA::processCloseInUpper()
     if (m_iter > 100)
     {
         //THROW_GENERIC_EXCEPTION("Number of Iterations is greater than 100. Exiting");
-        processExit();
+        //processExit();
+        return;
     }
     m_kOld = m_k;
     m_sumNew = m_sSum;
+    processCloseInUpper();
 }
 
 void RStatsUAA::processCloseInLower()
