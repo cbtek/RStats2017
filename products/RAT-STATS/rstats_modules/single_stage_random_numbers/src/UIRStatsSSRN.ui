@@ -702,7 +702,7 @@
   </widget>
   <action name="actionRecent">
    <property name="text">
-    <string>&amp;Recent</string>
+    <string>&amp;Recently Used</string>
    </property>
   </action>
   <action name="actionExit">

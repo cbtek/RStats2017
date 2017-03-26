@@ -72,6 +72,8 @@ public:
               const uint8_t & blue,
               const uint8_t & alpha=255);
 
+    void set(const std::string& htmlColor);
+
     void setRed(const uint8_t & red);
 
     void setGreen(const uint8_t & green);

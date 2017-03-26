@@ -22,8 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef _CBTEK_COMMON_UTILITY_XMLUTILS_H
-#define _CBTEK_COMMON_UTILITY_XMLUTILS_H
+#pragma once
 
 #include "XMLReader.h"
 #include "XMLDataElement.h"
@@ -53,6 +52,4 @@ public:
     static std::string getDecodedString(const std::string & xmlString);
 };
 
-}}}//namespace //_CBTEK_COMMON_UTILITY_XMLUTILS
-
-#endif
+}}}//namespace

@@ -119,6 +119,11 @@ std::string RStatsWorksheet::toTabDelimitedString() const
     return toString("","\t","");
 }
 
+std::string RStatsWorksheet::toEvenlySpacedString() const
+{
+    return toEvenlySpacedString("","","");
+}
+
 bool RStatsWorksheet::isEmpty() const
 {
     return (this->m_dataTable.size() == 0);
@@ -197,6 +202,42 @@ std::string RStatsWorksheet::toString(const std::string &prefix,
         {
             std::string data = getCell(r,c).text;
             out << prefix << data << postfix << ((c<(cols-1))?seperator:"\n");
+        }
+    }
+    return out.str();
+}
+
+std::string RStatsWorksheet::toEvenlySpacedString(const std::string &prefix,
+                                                  const std::string &seperator,
+                                                  const std::string &postfix) const
+{
+    size_t cols = getNumColumns();
+    size_t rows = getNumRows();
+    std::vector<size_t> columnWidths(cols);
+    for(size_t r = 0;r<rows;++r)
+    {
+        for(size_t c = 0;c<cols;++c)
+        {
+            std::string data = getCell(r,c).text;
+            if (columnWidths[c] < data.size()+4)
+            {
+                columnWidths[c]=data.size()+4;
+            }
+        }
+    }
+
+    std::ostringstream out;
+    for(size_t r = 0;r<rows;++r)
+    {
+        for(size_t c = 0;c<cols;++c)
+        {
+            std::string data = getCell(r,c).text;
+            std::string space;
+            if (columnWidths[c] > data.size())
+            {
+                space = StringUtils::repeat(" ", (columnWidths[c] - data.size()));
+            }
+            out <<space << prefix << data << postfix << ((c<(cols-1))?seperator:"\n");
         }
     }
     return out.str();

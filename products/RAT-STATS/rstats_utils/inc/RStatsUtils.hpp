@@ -41,6 +41,7 @@ SOFTWARE.
 #include "utility/inc/FileUtils.hpp"
 #include "utility/inc/SystemUtils.hpp"
 #include "utility/inc/StringUtils.hpp"
+#include "utility/inc/VBRoundUtils.hpp"
 
 namespace oig {
 namespace ratstats {
@@ -97,7 +98,7 @@ namespace RStatsUtils
      * @return
      */
     template <typename Integer>
-    static Integer ipow(Integer base, Integer exp)
+    inline Integer ipow(Integer base, Integer exp)
     {
         Integer result = 1;
         while (exp)
@@ -118,7 +119,7 @@ namespace RStatsUtils
      * @return
      */
     template <typename Float>
-    static bool isEqual(Float value1, Float value2)
+    inline bool isEqual(Float value1, Float value2)
     {
         return (value1 - value2) < FLT_EPSILON;
     }
@@ -130,7 +131,7 @@ namespace RStatsUtils
      * @return
      */
     template <typename Number>
-    static Number getSum(const RStatsObjectList<Number>& values,
+    inline Number getSum(const RStatsObjectList<Number>& values,
                          size_t dimension = 0)
     {
         Number sum = 0.;
@@ -150,7 +151,7 @@ namespace RStatsUtils
      * @return
      */
     template <typename Float>
-    static Float getSumRaisedTo(const RStatsObjectList<Float>& values,
+    inline Float getSumRaisedTo(const RStatsObjectList<Float>& values,
                                 Float power,
                                 size_t dimension = 0)
     {
@@ -172,7 +173,7 @@ namespace RStatsUtils
      * @return
      */
     template <typename Number>    
-    static size_t getNumItemsThatMatchCondition(RStatsConditionalOperatorType condition,
+    inline size_t getNumItemsThatMatchCondition(RStatsConditionalOperatorType condition,
                                                 const RStatsObjectList<Number>& values,
                                                 Number value,
                                                 size_t dimension = 0)
@@ -224,7 +225,7 @@ namespace RStatsUtils
      * @param dimension
      */
     template<typename Number>    
-    static void calculate(const RStatsObjectList<Number>& input1,
+    inline void calculate(const RStatsObjectList<Number>& input1,
                           const RStatsObjectList<Number>& input2,
                           RStatsObjectList<Number> &result,
                           RStatsCalculationType calculation,
@@ -288,7 +289,7 @@ namespace RStatsUtils
      * @return
      */
     template<typename Number>    
-    static RStatsObjectList<Number> getNumbersAdded(const RStatsObjectList<Number>& input1,
+    inline RStatsObjectList<Number> getNumbersAdded(const RStatsObjectList<Number>& input1,
                                                     const RStatsObjectList<Number>& input2,
                                                     size_t dimension = 0)
     {
@@ -305,7 +306,7 @@ namespace RStatsUtils
      * @return
      */
     template<typename Number>    
-    static RStatsObjectList<Number> getNumbersSubtracted(const RStatsObjectList<Number>& input1,
+    inline RStatsObjectList<Number> getNumbersSubtracted(const RStatsObjectList<Number>& input1,
                                                          const RStatsObjectList<Number>& input2,
                                                          size_t dimension = 0)
     {
@@ -322,7 +323,7 @@ namespace RStatsUtils
      * @return
      */
     template<typename Number>    
-    static RStatsObjectList<Number> getNumbersMultiplied(const RStatsObjectList<Number>& input1,
+    inline RStatsObjectList<Number> getNumbersMultiplied(const RStatsObjectList<Number>& input1,
                                                          const RStatsObjectList<Number>& input2,
                                                          size_t dimension = 0)
     {
@@ -339,7 +340,7 @@ namespace RStatsUtils
      * @return
      */
     template<typename Number>    
-    static RStatsObjectList<Number> getNumbersDivided(const RStatsObjectList<Number>& input1,
+    inline RStatsObjectList<Number> getNumbersDivided(const RStatsObjectList<Number>& input1,
                                                       const RStatsObjectList<Number>& input2,
                                                       size_t dimension = 0)
     {
@@ -353,7 +354,7 @@ namespace RStatsUtils
      * @param path
      * @return
      */
-    static std::string getValidPath(const std::string & pathToValidate)
+    inline std::string getValidPath(const std::string & pathToValidate)
     {
         std::string path1,path2,path3,path;        
 
@@ -406,7 +407,7 @@ namespace RStatsUtils
      * @brief getModulePropertiesPath
      * @return
      */
-    static std::string getModulePropertiesPath()
+    inline std::string getModulePropertiesPath()
     {
         return getValidPath("config/.rstats_module_properties");
     }
@@ -415,7 +416,7 @@ namespace RStatsUtils
      * @brief getConfigPath
      * @return
      */
-    static std::string getConfigPath()
+    inline std::string getConfigPath()
     {
         return getValidPath("config");
     }
@@ -424,7 +425,7 @@ namespace RStatsUtils
      * @brief getContribPath
      * @return
      */
-    static std::string getContribPath()
+    inline std::string getContribPath()
     {
         return getValidPath("contrib");
     }
@@ -433,7 +434,7 @@ namespace RStatsUtils
      * @brief getUnzipCommandPath
      * @return
      */
-    static std::string getUnzipCommandPath()
+    inline std::string getUnzipCommandPath()
     {
         std::string path;
         #ifdef __WIN32
@@ -450,17 +451,17 @@ namespace RStatsUtils
      * @brief getScriptProviderPropertiesPath
      * @return
      */
-    static std::string getScriptProviderPropertiesPath()
+    inline std::string getScriptProviderPropertiesPath()
     {
        return getValidPath("config/.rstats_script_provider_properties");
     }
 
-    static std::string getResourcePath()
+    inline std::string getResourcePath()
     {
         return getValidPath("resx");
     }
 
-    static std::string getThemeSettingsFilePath()
+    inline std::string getThemeSettingsFilePath()
     {
         return cbtek::common::utility::FileUtils::buildFilePath(RStatsUtils::getConfigPath(),".theme_settings");
     }
@@ -469,7 +470,7 @@ namespace RStatsUtils
      * @brief getModulePropertiesList
      * @return
      */
-    static std::vector<RStatsModuleProperties> getModulePropertiesList()
+    inline std::vector<RStatsModuleProperties> getModulePropertiesList()
     {
         std::vector<RStatsModuleProperties>propsList;
         std::string path = getModulePropertiesPath();
@@ -498,7 +499,7 @@ namespace RStatsUtils
      * @brief getModuleCategories
      * @return
      */
-    static std::vector<std::string> getModuleCategories()
+    inline std::vector<std::string> getModuleCategories()
     {
         std::set<std::string> categorySet;
         std::string path = getModulePropertiesPath();
@@ -531,7 +532,7 @@ namespace RStatsUtils
      * @brief getScriptProviderPropertiesList
      * @return
      */
-    static std::vector<RStatsScriptProviderProperties> getScriptProviderPropertiesList()
+    inline std::vector<RStatsScriptProviderProperties> getScriptProviderPropertiesList()
     {
         std::vector<RStatsScriptProviderProperties>propsList;
         std::string path = getScriptProviderPropertiesPath();
@@ -555,16 +556,15 @@ namespace RStatsUtils
         return propsList;
     }
 
-
     /**
      * @brief RStatsWorksheet::getColumnIndexFromLabel
      * @param columnLabel
      * @return
      */
-    static size_t getColumnIndexFromLabel(const std::string &columnLabel)
+    inline size_t getColumnIndexFromLabel(const std::string &columnLabel)
     {
-        int sum = 0;
-        for (int i = 0; i < columnLabel.size(); i++)
+        size_t sum = 0;
+        for (size_t i = 0; i < columnLabel.size(); i++)
         {
             sum *= 26;
             sum += (std::toupper(columnLabel[i]) - 'A');
@@ -577,9 +577,9 @@ namespace RStatsUtils
      * @param columnIndex
      * @return
      */
-    static std::string getColumnLabelFromIndex(size_t columnIndex)
+    inline std::string getColumnLabelFromIndex(size_t columnIndex)
     {
-        int div = (int)columnIndex+1;
+        int div = static_cast<int>(columnIndex+1);
         std::string colLetter;
         int mod = 0;
         while (div > 0)
@@ -591,7 +591,12 @@ namespace RStatsUtils
         return colLetter;
     }
 
-    static std::pair<size_t,size_t> getCellIndexFromAddress(const std::string& cellAddress)
+    /**
+     * @brief getCellIndexFromAddress
+     * @param cellAddress
+     * @return
+     */
+    inline std::pair<size_t,size_t> getCellIndexFromAddress(const std::string& cellAddress)
     {
         std::string label;
         std::string number;
@@ -606,15 +611,18 @@ namespace RStatsUtils
                 number.push_back(cellAddress[a1]);
             }
         }
-        size_t row = cbtek::common::utility::StringUtils::toInt(number);
+        size_t row = static_cast<size_t>(cbtek::common::utility::StringUtils::toInt(number));
         if (row >0)row--;
         size_t col = getColumnIndexFromLabel(label);
         std::pair<size_t,size_t> cellIndex = std::make_pair(row,col);
         return cellIndex;
     }
 
-
-    static void createValidPath(const std::string& pathToCreate)
+    /**
+     * @brief createValidPath
+     * @param pathToCreate
+     */
+    inline void createValidPath(const std::string& pathToCreate)
     {
 
         std::string path1,path2,path3,path,parentPath;
@@ -671,7 +679,11 @@ namespace RStatsUtils
     }
 
 
-    static std::string getValidSessionPath()
+    /**
+     * @brief getValidSessionPath
+     * @return
+     */
+    inline std::string getValidSessionPath()
     {
         std::string path = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserHomeDirectory(),".rstats_sessions");
         if (cbtek::common::utility::FileUtils::isDirectoryWritable(cbtek::common::utility::FileUtils::getDirPath(path)))
@@ -681,18 +693,34 @@ namespace RStatsUtils
         return path;
     }
 
-    static std::vector<std::string> getRecentSessions(const std::string& sessionExtension)
+    /**
+     * @brief getRecentSessions
+     * @param sessionExtension
+     * @return
+     */
+    inline std::vector<std::string> getRecentSessions(const std::string& sessionExtension)
     {
         return cbtek::common::utility::FileUtils::getFileEntries(getValidSessionPath(),sessionExtension);
     }
-    static void saveRecentSession(const std::string& sessionData, const std::string& sessionExtension)
+
+    /**
+     * @brief saveRecentSession
+     * @param sessionData
+     * @param sessionExtension
+     */
+    inline void saveRecentSession(const std::string& sessionData, const std::string& sessionExtension)
     {
         std::vector<std::string> sessions = getRecentSessions(sessionExtension);
         std::string path = getValidSessionPath();
         path = cbtek::common::utility::FileUtils::buildFilePath(path,"session"+std::to_string(sessions.size())+"."+sessionExtension);
         cbtek::common::utility::FileUtils::writeFileContents(path,sessionData);
     }
-    static void clearRecentSessions(const std::string& sessionExtension)
+
+    /**
+     * @brief clearRecentSessions
+     * @param sessionExtension
+     */
+    inline void clearRecentSessions(const std::string& sessionExtension)
     {
         std::vector<std::string> entries = cbtek::common::utility::FileUtils::getFileEntries(getValidSessionPath(),sessionExtension);
         for (const auto& entry : entries)
@@ -701,10 +729,106 @@ namespace RStatsUtils
         }
     }
 
-    static RStatsFloat divideValues(RStatsInteger value1, RStatsInteger value2)
+    /**
+     * @brief divideValues
+     * @param value1
+     * @param value2
+     * @return
+     */
+    inline RStatsFloat divideValues(RStatsInteger value1, RStatsInteger value2)
     {
         return (static_cast<RStatsFloat>(value1) / static_cast<RStatsFloat>(value2));
     }
+
+    template <class T>
+    inline RStatsInteger vbRound(T value)
+    {
+        T val1;
+        T decimals;
+
+        if (value >= 0.0)
+        {
+            decimals = value - floor(value);
+            if (decimals > 0.5)
+            {
+                val1 = ceil(value);
+            }
+            else if (decimals < 0.5)
+            {
+                val1 = floor(value);
+            } else
+            {
+                bool is_even = (static_cast<RStatsInteger>(value - decimals) % 2 == 0);
+                if (is_even)
+                {
+                    val1 = floor(value);
+                }
+                else
+                {
+                    val1 = ceil(value);
+                }
+            }
+        }
+        else
+        {
+            decimals = std::abs(value + floor(std::abs(value)));
+            if (decimals > 0.5)
+            {
+                val1 = floor(value);
+            }
+            else if (decimals < 0.5)
+            {
+                val1 = ceil(value);
+            }
+            else
+            {
+                bool is_even = (static_cast<RStatsInteger>(value + decimals) % 2 == 0);
+                if (is_even)
+                {
+                    val1 = ceil(value);
+                }
+                else
+                {
+                    val1 = floor(value);
+                }
+            }
+        }
+        return static_cast<RStatsInteger>(val1);
+    }
+
+    /**
+     * @brief vbDivide
+     * @param value1
+     * @param value2
+     * @return
+     */
+    inline RStatsInteger vbDivide(RStatsInteger value1, RStatsInteger value2)
+    {
+        RStatsFloat value = static_cast<RStatsFloat>(value1)/static_cast<RStatsFloat>(value2);
+        return ((value1%value2) != 0) ? static_cast<RStatsInteger>(cbtek::common::utility::VBRoundUtils::vbRound(value)) : static_cast<RStatsInteger>(value);
+    }
+
+    /**
+     * @brief getRandomAuditName
+     * @param moduleName
+     * @return
+     */
+    inline std::string getAuditName()
+    {
+        std::string userName = cbtek::common::utility::SystemUtils::getUserName();
+        std::string dateTime = std::to_string(cbtek::common::utility::TimeUtils::getSecondsNow());
+        return userName+"_audit_"+dateTime;
+    }
+
+//    /**
+//     * @brief vbRound
+//     * @param value
+//     * @return
+//     */
+//    inline RStatsFloat vbRound(RStatsFloat value)
+//    {
+//        return ::rounding::roundhalfeven(value);
+//    }
 }
 
 }}}//end namespace

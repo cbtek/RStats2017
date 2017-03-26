@@ -11,8 +11,10 @@
 
 #include "rstats_utils/inc/RStatsUtils.hpp"
 
-using namespace oig::ratstats::utils;
+#include "utility/inc/StringUtils.hpp"
 
+using namespace oig::ratstats::utils;
+using namespace cbtek::common::utility;
 namespace oig {
 namespace ratstats {
 namespace modules {
@@ -26,139 +28,18 @@ RStatsUAA & RStatsUAA::inst()
     return m_instance;
 }
 
-void RStatsUAA::execute(RStatsInteger sampleSize,
-                        RStatsInteger universeSize,
-                        RStatsInteger coiSize,
-                        bool computeOneSided)
+void RStatsUAA::saveToCSVFile(const std::string &filePath)
 {
-    reset();
-    m_sampleSize = sampleSize;
-    m_universeSize = universeSize;
-    m_numItems = coiSize;
+    RStatsWorksheet sheet;
+    saveToWorksheet(sheet);
+    FileUtils::writeFileContents(filePath,sheet.toCommaDelimitedString());
+}
 
-//    '*********************************************
-//    CALCULATESTATS:
-//    '*********************************************
-
-    int outputFlag = 7;
-
-    //if (computeOneSided && (m_numItems == 0 || m_numItems == m_sampleSize ))
-
-
-//       If NITEMS& = 0 Or NITEMS& = SAMPLESIZE& Then
-//          OutputFlag = MsgBox("Would you like to compute a one-sided confidence interval?  If you answer YES, a one-sided interval will be computed.  If you answer NO, the usual two-sided confidence interval will be computed.", vbYesNo)
-//       End If
-    m_isActive = true;
-    m_max = 1000000000000.;
-    m_min = 1 / m_max;
-    m_ratio = RStatsUtils::divideValues(m_numItems,m_sampleSize);
-    RStatsFloat currentRatio = m_ratio;
-    for (m_conditionLevel = 1; m_conditionLevel <= 3;++m_conditionLevel)
-    {
-        if (m_conditionLevel == 1)
-        {
-            m_zValue = 1.28155;
-            if (m_numItems == 0 || m_numItems == m_sampleSize)
-            {
-                if (outputFlag == 6)
-                {
-                    m_tail = 0.2;
-                }
-                else
-                {
-                    m_tail = 0.1;
-                }
-            }
-            else
-            {
-                m_tail = 0.1;
-            }
-        }
-        else if (m_conditionLevel == 2)
-        {
-            m_zValue = 1.64485;
-            if (m_numItems == 0 || m_numItems == m_sampleSize)
-            {
-                if (outputFlag == 6)
-                {
-                    m_tail = 0.1;
-                }
-                else
-                {
-                    m_tail = 0.05;
-                }
-            }
-            else
-            {
-                m_tail = 0.05;
-            }
-        }
-        else
-        {
-            m_zValue = 1.95996;
-            if (m_numItems == 0 || m_numItems == m_sampleSize)
-            {
-                if (outputFlag == 6)
-                {
-                    m_tail = 0.05;
-                }
-                else
-                {
-                    m_tail = 0.025;
-                }
-            }
-            else
-            {
-                m_tail = 0.025;
-            }
-        }
-        m_phat = RStatsUtils::divideValues(m_numItems,m_sampleSize);
-        m_term = m_phat * (1 - m_phat) * m_universeSize * (m_universeSize - m_sampleSize) / (m_sampleSize - 1);
-
-        std::cerr << "term:"<<m_term<<std::endl;
-
-        m_kOld = 0;
-        m_iter = 1;
-
-        //    '*
-        //    '*     FIND UPPER LIMIT
-        //    '*
-        if (m_numItems == m_sampleSize)
-        {
-            m_kUpper = m_universeSize;
-            processFindLower();
-        }
-        m_kSt = static_cast<RStatsInteger>((static_cast<RStatsFloat>(m_universeSize) * m_phat) + std::ceil(m_zValue * std::sqrt(m_term)));
-        if (m_kSt > (.95 * m_universeSize))
-        {
-            m_kSt = m_universeSize;
-        }
-        for (size_t i = 1; i <= 11; ++i)
-        {
-            m_kAdd = (m_universeSize - m_kSt) * .1 * (i - 1);
-            if (m_numItems == 0 || m_numItems == m_sampleSize)
-            {
-                m_kAdd = m_universeSize * .1 * (i - 1);
-            }
-            m_k = m_kSt + m_kAdd;
-            if (m_k > m_universeSize)
-            {
-                m_k = m_universeSize;
-            }
-            processSumHypergeometric();
-            if (m_cumalativeProbability < 1e-05)
-            {
-                m_cumalativeProbability = 0.;
-            }
-            m_sSum = m_cumalativeProbability - m_tail;
-            if (m_sSum < 0)
-            {
-                processFindBottomUpper();
-            }
-        }
-    }
-
-    int x = 0;
+void RStatsUAA::saveToTextFile(const std::string &filePath)
+{
+    RStatsWorksheet sheet;
+    saveToWorksheet(sheet);
+    FileUtils::writeFileContents(filePath,sheet.toEvenlySpacedString());
 }
 
 RStatsUAA::RStatsUAA()
@@ -171,49 +52,292 @@ RStatsUAA::~RStatsUAA()
 
 }
 
-void RStatsUAA::processFindLower()
+RStatsUAAOutputData RStatsUAA::execute(const std::string& auditName,
+                                       RStatsInteger sampleSize,
+                                       RStatsInteger universeSize,
+                                       RStatsInteger coiSize,
+                                       RStatsUAAConfidenceIntervalType type)
 {
-    if (m_numItems == m_sampleSize)
-    {
-        m_kLower = m_kTop;
-        processResults();
-    }
+    m_outputData.auditName = auditName;
+    m_confidenceIntervalType = type;
+    std::cout << "start:\n";
+    m_isFinished = false;
+    reset();
+    m_sampleSize = sampleSize;
+    m_universeSize = universeSize;
+    m_numItems = coiSize;
+    m_numItemsInSample = coiSize;
+    m_max = 1000000000000.;
+    m_min = 1 / m_max;
+    m_ratio = RStatsUtils::divideValues(m_numItems,m_sampleSize);    
+    m_conditionLevel = 1;
+    start();
+    RStatsFloat sampleSizeFloat = static_cast<RStatsFloat>(m_sampleSize);
+    m_outputData.sampleSize = m_sampleSize;
+    m_outputData.universeSize = m_universeSize;
+    m_outputData.coiSize = coiSize;
+    m_outputData.projectedTotal = m_ratio * static_cast<RStatsFloat>(m_universeSize);
+    m_outputData.projectedTotalPercent = 100. * m_ratio;
+    RStatsFloat fractional = sampleSizeFloat / static_cast<RStatsFloat>(m_universeSize);
+    m_outputData.variance = sampleSizeFloat * m_ratio * (1. - m_ratio) * (1. - fractional);
+    m_outputData.standardError = std::sqrt(m_outputData.variance);
+    RStatsFloat stdErr = m_outputData.standardError;
+    m_outputData.standardError = std::round((stdErr * (std::sqrt(sampleSizeFloat / static_cast<RStatsFloat>(m_sampleSize  - 1 ))) / fractional));
+    m_outputData.standardErrorPercent = 100. * (stdErr / (std::sqrt(sampleSizeFloat * (sampleSizeFloat - 1))));
 
-    m_kLower = m_kTop;
+    m_outputData.lowerLimitQuantityList(0) = m_lower80;
+    m_outputData.lowerLimitQuantityList(1) = m_lower90;
+    m_outputData.lowerLimitQuantityList(2) = m_lower95;
 
-    if (m_kLower < m_numItems)
+    m_outputData.upperLimitQuantityList(0) = m_upper80;
+    m_outputData.upperLimitQuantityList(1) = m_upper90;
+    m_outputData.upperLimitQuantityList(2) = m_upper95;
+
+    m_outputData.lowerLimitPercentList(0) = 100. * (static_cast<RStatsFloat>(m_lower80) / static_cast<RStatsFloat>(m_universeSize));
+    m_outputData.lowerLimitPercentList(1) = 100. * (static_cast<RStatsFloat>(m_lower90) / static_cast<RStatsFloat>(m_universeSize));
+    m_outputData.lowerLimitPercentList(2) = 100. * (static_cast<RStatsFloat>(m_lower95) / static_cast<RStatsFloat>(m_universeSize));
+
+    m_outputData.upperLimitPercentList(0) = 100. * (static_cast<RStatsFloat>(m_upper80) / static_cast<RStatsFloat>(m_universeSize));
+    m_outputData.upperLimitPercentList(1) = 100. * (static_cast<RStatsFloat>(m_upper90) / static_cast<RStatsFloat>(m_universeSize));
+    m_outputData.upperLimitPercentList(2) = 100. * (static_cast<RStatsFloat>(m_upper95) / static_cast<RStatsFloat>(m_universeSize));
+
+    return m_outputData;
+}
+
+void RStatsUAA::saveToWorksheet(RStatsWorksheet &worksheetOut)
+{
+    worksheetOut.setDefaultFont(Font("arial",13));
+    worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignRight);
+    worksheetOut("A2")= "Population size:";
+    worksheetOut("A3")= "Sample size:";
+    worksheetOut("A4")= "Characteristic of interest:";
+    worksheetOut("A5")= "Projected Total:";
+    worksheetOut("A6")= "Projected Percent:";
+    worksheetOut("A7")= "Standard Error(Total):";
+    worksheetOut("A8")= "Standard Error(Percent):";
+    worksheetOut.setDefaultFont(Font("arial",18,true));
+    worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
+    worksheetOut("B10")= "80%";
+    worksheetOut("B10").bgColor.set("#FFAAAA");
+    worksheetOut("C10")= "90%";
+    worksheetOut("C10").bgColor.set("#FFFFAA");
+    worksheetOut("D10")= "95%";
+    worksheetOut("D10").bgColor.set("#AAFFAA");
+    worksheetOut.resetDefaults();
+
+    worksheetOut.setDefaultFont(Font("arial",14,true));
+    worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignLeft);
+    worksheetOut("B2") = StringUtils::toString(m_outputData.universeSize);
+    worksheetOut("B3") = StringUtils::toString(m_outputData.sampleSize);
+    worksheetOut("B4") = StringUtils::toString(m_outputData.coiSize);
+    worksheetOut("B5") = StringUtils::toString(m_outputData.projectedTotal,0);
+    worksheetOut("B6") = StringUtils::toString(m_outputData.projectedTotalPercent,3)+"%";
+    worksheetOut("B7") = StringUtils::toString(m_outputData.standardError,0);
+    worksheetOut("B8") = StringUtils::toString(m_outputData.standardErrorPercent,3)+"%";
+    worksheetOut.resetDefaults();
+
+    if (m_confidenceIntervalType == RStatsUAAConfidenceIntervalType::TwoSided ||
+        m_confidenceIntervalType == RStatsUAAConfidenceIntervalType::OneSidedLower)
+        {
+            worksheetOut.setDefaultFont(Font("arial",14,true));
+            worksheetOut("A11")= "Lower Total:";
+            worksheetOut("A13")= "Lower Percent:";
+            worksheetOut("A11").alignment = RStatsTextAlignment::AlignRight;
+            worksheetOut("A13").alignment = RStatsTextAlignment::AlignRight;
+            worksheetOut.setDefaultFont(Font("arial",14));
+            worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
+            worksheetOut("B11") = StringUtils::toString(m_outputData.lowerLimitQuantityList(0),0);
+            worksheetOut("C11") = StringUtils::toString(m_outputData.lowerLimitQuantityList(1),0);
+            worksheetOut("D11") = StringUtils::toString(m_outputData.lowerLimitQuantityList(2),0);
+            worksheetOut("B13") = StringUtils::toString(m_outputData.lowerLimitPercentList(0),3)+"%";
+            worksheetOut("C13") = StringUtils::toString(m_outputData.lowerLimitPercentList(1),3)+"%";
+            worksheetOut("D13") = StringUtils::toString(m_outputData.lowerLimitPercentList(2),3)+"%";
+            worksheetOut.resetDefaults();
+        }
+        if (m_confidenceIntervalType == RStatsUAAConfidenceIntervalType::TwoSided ||
+            m_confidenceIntervalType == RStatsUAAConfidenceIntervalType::OneSidedUpper)
+        {
+            worksheetOut.setDefaultFont(Font("arial",14,true));
+            worksheetOut("A12")= "Upper Total:";
+            worksheetOut("A14")= "Upper Percent:";
+            worksheetOut("A12").alignment = RStatsTextAlignment::AlignRight;
+            worksheetOut("A14").alignment = RStatsTextAlignment::AlignRight;
+            worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
+            worksheetOut.setDefaultFont(Font("arial",14));
+            worksheetOut("B12") = StringUtils::toString(m_outputData.upperLimitQuantityList(0),0);
+            worksheetOut("C12") = StringUtils::toString(m_outputData.upperLimitQuantityList(1),0);
+            worksheetOut("D12") = StringUtils::toString(m_outputData.upperLimitQuantityList(2),0);
+            worksheetOut("B14") = StringUtils::toString(m_outputData.upperLimitPercentList(0),3)+"%";
+            worksheetOut("C14") = StringUtils::toString(m_outputData.upperLimitPercentList(1),3)+"%";
+            worksheetOut("D14") = StringUtils::toString(m_outputData.upperLimitPercentList(2),3)+"%";
+            worksheetOut.resetDefaults();
+        }
+}
+
+void RStatsUAA::start()
+{
+    while(m_conditionLevel <= 3)
     {
-        m_kLower = m_numItems;
+        m_numItems = m_numItemsInSample;
+        if (m_conditionLevel == 1)
+        {
+            m_zValue = 1.28155;
+            m_tail = (m_confidenceIntervalType == RStatsUAAConfidenceIntervalType::TwoSided) ? .1 : .2;
+        }
+        else if (m_conditionLevel == 2)
+        {
+            m_zValue = 1.64485;
+            m_tail = (m_confidenceIntervalType == RStatsUAAConfidenceIntervalType::TwoSided) ? .05 : .1;
+        }
+        else
+        {
+            m_zValue = 1.95996;
+            m_tail = (m_confidenceIntervalType == RStatsUAAConfidenceIntervalType::TwoSided) ? .025 : .05;
+        }
+
+        m_phat = (static_cast<RStatsFloat>(m_numItems) / static_cast<RStatsFloat>(m_sampleSize));
+        m_term = m_phat * (1 - m_phat) * m_universeSize * (m_universeSize - m_sampleSize) / (m_sampleSize - 1);
+        m_kOld = 0;
+        m_iter = 1;
+        processFindUpper();
+        if (m_isFinished)
+        {
+            return;
+        }
     }
 }
 
+void RStatsUAA::processFindUpper()
+{
+    std::cout << "Find Upper:\n";
+    if (m_numItems == m_sampleSize)
+    {
+        m_kUpper = m_universeSize;
+        processFindLower();
+    }
+
+    RStatsFloat univ = static_cast<RStatsFloat>(m_universeSize);
+    m_kSt = static_cast<RStatsInteger>((univ * m_phat) + std::round(m_zValue * std::sqrt(m_term)));
+    if (m_kSt > (.95 * m_universeSize))
+    {
+        m_kSt = m_universeSize;
+    }
+    for (size_t i = 1; i <= 11; ++i)
+    {
+        if (m_isFinished)
+        {
+            return;
+        }
+        RStatsFloat kst = static_cast<RStatsFloat>(m_kSt);
+        m_kAdd = static_cast<RStatsInteger>(RStatsUtils::vbRound((univ - kst) * .1 * (i - 1)));
+        if (m_numItems == 0 || m_numItems == m_sampleSize)
+        {
+            m_kAdd = static_cast<RStatsInteger>(univ * .1 * (i - 1));
+        }
+        m_k = m_kSt + m_kAdd;
+        if (m_k > m_universeSize)
+        {
+            m_k = m_universeSize;
+        }
+        processSumHypergeometric();
+        if (m_cumalativeProbability < 1e-05)
+        {
+            m_cumalativeProbability = 0.;
+        }
+        m_sSum = m_cumalativeProbability - m_tail;
+        if (m_sSum < 0)
+        {
+            processFindBottomUpper();
+        }
+    }
+}
+
+void RStatsUAA::processFindLower()
+{
+    std::cout << "FindLower:"<<std::endl;
+    --m_numItems;
+    m_kSt = static_cast<RStatsInteger>((static_cast<RStatsFloat>(m_universeSize) * m_phat) - std::ceil(m_zValue * std::sqrt(m_term)));
+    if (m_kSt < m_numItems)
+    {
+        m_kSt = m_numItems;
+    }
+
+    m_k = m_kSt;
+    for (int i = 1; i <= 11; ++i)
+    {
+        if (m_isFinished)
+        {
+            return;
+        }
+        RStatsFloat univ = static_cast<RStatsFloat>(m_universeSize);
+        RStatsFloat kst = static_cast<RStatsFloat>(m_kSt);
+        m_kAdd = static_cast<RStatsInteger>((univ * m_phat - kst) * .1 * (i - 1));
+
+        if (m_numItems == 0 || m_numItems == m_sampleSize)
+        {
+            m_kAdd = static_cast<RStatsInteger>(univ * .1 * (i - 1));
+        }
+
+        m_k = m_kSt + m_kAdd;
+
+        if (m_k > m_universeSize)
+        {
+            m_k = m_universeSize;
+        }
+
+        processSumHypergeometric();
+
+        if (m_cumalativeProbability < 1e-05)
+        {
+            m_cumalativeProbability = 0.;
+        }
+        m_sSum = 1 - m_cumalativeProbability - m_tail;
+
+        if (m_sSum > 0)
+        {
+            processFindBottomLower();
+        }
+    }
+}
+
+
+
 void RStatsUAA::processResults()
 {
+    std::cout << "Results:"<<std::endl;
     if (m_conditionLevel == 1)
     {
         m_lower80 = m_kLower;
         m_upper80 = m_kUpper;
+        ++m_conditionLevel;
+        start();
     }
     else if (m_conditionLevel == 2)
     {
         m_lower90 = m_kLower;
         m_upper90 = m_kUpper;
+        ++m_conditionLevel;
+        start();
     }
     else
     {
         m_lower95 = m_kLower;
         m_upper95 = m_kUpper;
-    }
+        m_isFinished = true;
+        ++m_conditionLevel;
+        start();
+    }    
 }
 
 void RStatsUAA::processSumHypergeometric()
-{
+{    
     m_numExponents = 0;
     m_popGood = m_universeSize - m_k;
     m_minBad = m_sampleSize - m_popGood;
     if (m_numItems < m_minBad)
     {
         m_cumalativeProbability = 0;
+        std::cout << "SumHyp:"<<m_cumalativeProbability<<std::endl;
         return;
     }
 
@@ -228,17 +352,18 @@ void RStatsUAA::processSumHypergeometric()
         {
             if (j < m_minBad)
             {
-               m_z = m_z * (m_k - j) / (m_universeSize - j);
+               m_z = m_z * static_cast<RStatsFloat>(m_k - j) / static_cast<RStatsFloat>(m_universeSize - j);
             }
             else
             {
-               m_z = m_z * (j + 1) / (m_universeSize - j);
+               m_z = m_z * static_cast<RStatsFloat>(j + 1) / static_cast<RStatsFloat>(m_universeSize - j);
             }
             if (m_z < m_min)
             {
                m_z = m_z * m_max;
+               --m_numExponents;
             }
-            if (m_z > m_max || RStatsUtils::isEqual(m_z,m_max))
+            if (m_z >= m_max)
             {
                m_z = m_z * m_min;
                ++m_numExponents;
@@ -249,7 +374,7 @@ void RStatsUAA::processSumHypergeometric()
    {
        for (int j = 0; j < m_sampleSize; ++j)
        {
-           m_z = m_z * (m_popGood - j) / (m_universeSize - j);
+           m_z = m_z * static_cast<RStatsFloat>(m_popGood - j) / static_cast<RStatsFloat>(m_universeSize - j);
            if (m_z < m_min)
            {
                m_z = m_z * m_max;
@@ -287,8 +412,9 @@ void RStatsUAA::processSumHypergeometric()
 
     for (int j = 1; j <= m_sb; ++j)
     {
-        m_z = m_z * (m_pb - j + 1) * (m_ss - j + 1);
-        m_z = m_z / ( (j + m_minBad) * (m_pg - m_sampleSize + j));
+        m_z = m_z * static_cast<RStatsFloat>(m_pb - j + 1) * static_cast<RStatsFloat>(m_ss - j + 1);
+        RStatsFloat denominator = (static_cast<RStatsFloat>(j + m_minBad) * static_cast<RStatsFloat>(m_pg - m_sampleSize + j));
+        m_z = m_z / denominator;
         if (m_z > m_max)
         {
             m_z = m_z / m_max;
@@ -296,22 +422,31 @@ void RStatsUAA::processSumHypergeometric()
         }
         if (std::abs(m_numExponents) < 2)
         {
-                m_cumalativeProbability +=  m_z * std::pow(m_max, m_numExponents);
+            m_cumalativeProbability +=  m_z * std::pow(m_max, m_numExponents);
         }
     }
+
+    std::cout << "SumHyp:"<<m_cumalativeProbability<<std::endl;
 }
 
 void RStatsUAA::processFindBottomUpper()
 {
+    std::cout << "FindBottomUpper:\n";
     m_kTop = m_k;
-    m_kSt = static_cast<RStatsInteger>((static_cast<RStatsFloat>(m_universeSize) * m_phat) + std::ceil(m_zValue * std::sqrt(m_term)));
+    RStatsFloat univ = static_cast<RStatsFloat>(m_universeSize);
+    m_kSt = static_cast<RStatsInteger>((univ* m_phat) + std::ceil(m_zValue * std::sqrt(m_term)));
     if (m_kSt > (.95 * m_universeSize))
     {
         m_kSt = m_universeSize;
     }
-    for (int i = 0; i <  11; ++i)
+    for (int i = 0; i <= 11; ++i)
     {
-        m_kSub = (m_kSt - m_universeSize * m_phat) * .1 * ((i+1)% - 1);
+        if (m_isFinished)
+        {
+            return;
+        }
+        RStatsFloat kst = static_cast<RStatsFloat>(m_kSt);
+        m_kSub = static_cast<RStatsInteger>((kst - univ * m_phat) * .1 * ((i+1) - 1));
         m_k = m_kSt - m_kSub;
         processSumHypergeometric();
         if (m_cumalativeProbability < 1e-05)
@@ -326,12 +461,15 @@ void RStatsUAA::processFindBottomUpper()
             processCloseInUpper();
         }
     }
+    processCloseInUpper();
 }
 
 void RStatsUAA::processFindBottomLower()
 {
+    std::cout << "FindBottomLower:\n";
     m_kTop = m_k;
-    m_kSt = (m_universeSize * m_phat) - m_zValue * std::sqrt(m_term);
+    RStatsFloat univ = static_cast<RStatsFloat>(m_universeSize);
+    m_kSt = static_cast<RStatsInteger>((univ * m_phat) - std::ceil(m_zValue * std::sqrt(m_term)));
     if (m_kSt <= 0)
     {
         m_kSt = 0;
@@ -341,7 +479,12 @@ void RStatsUAA::processFindBottomLower()
 
     for (int i = 1; i <=  11; ++i)
     {
-        m_kSub = (static_cast<RStatsFloat>(m_kSt * m_phat) * .1) * (i% - 1);
+        if (m_isFinished)
+        {
+            return;
+        }
+        RStatsFloat kst = static_cast<RStatsFloat>(m_kSt);
+        m_kSub = static_cast<RStatsInteger>((kst * .1) * (i - 1));
         m_k = m_kSt - m_kSub;
         if (m_k < 0)
         {
@@ -361,18 +504,36 @@ void RStatsUAA::processFindBottomLower()
             processCloseInLower();
         }
     }
+
 }
 
 void RStatsUAA::processCloseInUpper()
 {
+    std::cout << "CloseInUpper:"<< "kTop="<<m_kTop << " kBot="<<m_kBottom<<"\n";
+    if (m_iter == 8)
+    {
+        int x = 0;
+    }
+    if (m_kBottom == 171 && m_kTop == 254)
+    {
+        int x = 0;
+    }
     if (m_kTop - m_kBottom == 1)
     {
         processFinalUpper();
     }
-    m_k = m_kBottom + (m_kTop - m_kBottom) / 2;
+
+    if (m_isFinished)
+    {
+        return;
+    }
+
+    double value = (static_cast<RStatsFloat>(m_kTop) - static_cast<RStatsFloat>(m_kBottom)) / 2.0;
+    m_k = RStatsUtils::vbRound(static_cast<RStatsFloat>(m_kBottom) + value);
+
     processSumHypergeometric();
     m_sSum = m_cumalativeProbability - m_tail;
-    if (m_sSum < 0 || RStatsUtils::isEqual(m_sSum,0.))
+    if (m_sSum <= 0)
     {
         m_kTop = m_k;
     }
@@ -394,12 +555,19 @@ void RStatsUAA::processCloseInUpper()
 
 void RStatsUAA::processCloseInLower()
 {
-    if (m_kTop == m_kBottom)
+    std::cout << "CloseInLower:\n";
+    if ((m_kTop - m_kBottom) == 1)
     {
         processFinalLower();
+    }    
+
+    if (m_isFinished)
+    {
         return;
     }
-    m_k = m_kBottom + (m_kTop - m_kBottom) / 2;
+
+    double value = (static_cast<RStatsFloat>(m_kTop) - static_cast<RStatsFloat>(m_kBottom)) / 2.0;
+    m_k = RStatsUtils::vbRound(static_cast<RStatsFloat>(m_kBottom) + value);
     processSumHypergeometric();
     if (m_cumalativeProbability < 1e-05)
     {
@@ -408,7 +576,7 @@ void RStatsUAA::processCloseInLower()
 
     m_sSum = 1 - m_cumalativeProbability - m_tail;
 
-    if (m_sSum < 0 || RStatsUtils::isEqual(m_sSum,0.))
+    if (m_sSum <= 0)
     {
         m_kBottom = m_k;
     }
@@ -420,21 +588,26 @@ void RStatsUAA::processCloseInLower()
     if (m_iter  > 100)
     {
         //Print "NO. OF ITERATIONS > 100 -- EXITING"
-        processExit();
+        return;
     }
     m_kOld = m_k;
 //  SUM1NEW# = SSUM1#
-//  GoTo CloseInLower
     processCloseInLower();
 }
 
 void RStatsUAA::processFinalUpper()
 {
+    std::cout << "FinalUpper:\n";
     if (m_numItems == 0)
     {
         m_kUpper = m_kBottom;
         m_kLower = 0.;
         processResults();
+        return;
+    }
+
+    if (m_isFinished)
+    {
         return;
     }
 
@@ -444,14 +617,22 @@ void RStatsUAA::processFinalUpper()
     {
         m_kUpper = m_universeSize - m_sampleSize + m_numItems;
     }
+    processFindLower();
 }
 
 void RStatsUAA::processFinalLower()
 {
+    std::cout << "FinalLower:\n";
     if (m_numItems == m_sampleSize)
     {
         m_kLower = m_kTop;
         processResults();
+        return;
+    }
+
+    if (m_isFinished)
+    {
+        return;
     }
 
     m_kLower = m_kTop;
@@ -460,12 +641,7 @@ void RStatsUAA::processFinalLower()
     {
         m_kLower = m_numItems;
     }
-}
-
-
-void RStatsUAA::processExit()
-{
-    m_isActive = false;
+    processResults();
 }
 
 void RStatsUAA::reset()

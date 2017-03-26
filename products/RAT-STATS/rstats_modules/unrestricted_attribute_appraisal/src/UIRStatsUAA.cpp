@@ -8,7 +8,10 @@
 #include "UIRStatsUAA.h"
 #include "ui_UIRStatsUAA.h"
 
+#include "RStatsUAA.h"
+
 #include <QFileDialog>
+#include <QMessageBox>
 
 #include "rstats_ui/inc/UIRStatsUtils.hpp"
 #include "rstats_ui/inc/UIRStatsImportWorksheet.h"
@@ -16,6 +19,7 @@
 
 #include "utility/inc/TimeUtils.hpp"
 #include "utility/inc/DateUtils.hpp"
+#include "utility/inc/XMLUtils.h"
 
 using namespace cbtek::common::utility;
 using namespace oig::ratstats::ui;
@@ -27,6 +31,7 @@ namespace ratstats {
 namespace modules {
 namespace uaa {
 
+const static std::string c_RECENT_SESSION_EXTENSION = "uaa";
 
 UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
     QMainWindow(parent),
@@ -36,11 +41,219 @@ UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
     m_exitIcon = UIRStatsUtils::getIcon("img_exit.png");
     m_runIcon = UIRStatsUtils::getIcon("img_run.png");
     m_helpIcon = UIRStatsUtils::getIcon("img_help.png");
+    m_ui->m_btnContinue->setIcon(m_runIcon);
+    m_ui->m_btnExit->setIcon(m_exitIcon);
+    m_ui->m_btnHelp->setIcon(m_helpIcon);
+    connect(m_ui->m_btnContinue,SIGNAL(clicked()),this,SLOT(onContinue()));
+    connect(m_ui->m_btnExit,SIGNAL(clicked()),this,SLOT(onExit()));
+    connect(m_ui->m_btnHelp,SIGNAL(clicked()),this,SLOT(onHelp()));
+    connect(m_ui->m_spnSampleSize,SIGNAL(valueChanged(int)),this,SLOT(onUpdateSampleCount()));
+    connect(m_ui->m_spnUniverseSize,SIGNAL(valueChanged(int)),this,SLOT(onUpdateUniverseCount()));
+    m_ui->m_txtAuditName->setPlaceholderText(QString::fromStdString(RStatsUtils::getAuditName()));
+    m_ui->m_frmOutput->hide();
+    onUpdateUniverseCount();
+    onUpdateSampleCount();
+    updateRecentSessions();
 }
 
 UIRStatsUAA::~UIRStatsUAA()
 {
     delete m_ui;
+}
+
+void UIRStatsUAA::onUpdateSampleCount()
+{
+    m_ui->m_spnCOI->setMaximum(m_ui->m_spnSampleSize->value());
+}
+
+void UIRStatsUAA::onUpdateUniverseCount()
+{
+    m_ui->m_spnSampleSize->setMaximum(m_ui->m_spnUniverseSize->value());
+}
+
+void UIRStatsUAA::onHelp()
+{
+
+}
+
+void UIRStatsUAA::onContinue()
+{
+    RStatsInteger sampleSize = m_ui->m_spnSampleSize->value();
+    RStatsInteger universeSize = m_ui->m_spnUniverseSize->value();
+    RStatsInteger coiSize = m_ui->m_spnCOI->value();
+
+    std::string name = m_ui->m_txtAuditName->text().toStdString();
+    if (StringUtils::trimmed(name).empty())
+    {
+        name = m_ui->m_txtAuditName->placeholderText().toStdString();
+    }
+
+    RStatsUAAConfidenceIntervalType type = RStatsUAAConfidenceIntervalType::TwoSided;
+    if (coiSize == 0 || coiSize == sampleSize)
+    {
+        int answer = QMessageBox::question(this,"One or Two sided confidence?","Would you like to compute a one-sided confidence interval?");
+        if (answer == QMessageBox::Yes)
+        {
+            type = (coiSize == 0) ? RStatsUAAConfidenceIntervalType::OneSidedUpper : RStatsUAAConfidenceIntervalType::OneSidedLower;
+        }
+    }
+    RStatsUAA::inst().execute(name,sampleSize,universeSize,coiSize,type);
+    RStatsWorksheet output;
+    RStatsUAA::inst().saveToWorksheet(output);
+    UIRStatsUtils::bindSheetToUI(output,m_ui->m_tblOutput,false,0,0);
+    m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toCurrentShortDateString()));
+    m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::toCurrent12HourTimeString()));
+    m_ui->m_lblAudit->setText(QString::fromStdString(name));
+    m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    m_ui->m_tblOutput->horizontalHeader()->hide();
+    m_ui->m_frmOutput->show();
+    m_ui->m_lblNoData->hide();
+    m_ui->m_tblOutput->setSelectionMode(QAbstractItemView::NoSelection);
+
+    SessionData sessionData = getSessionData();
+    sessionData.dateValue = static_cast<RStatsInteger>(DateUtils::getCurrentDate().toDateInteger());
+    sessionData.timeValue = static_cast<RStatsInteger>(TimeUtils::getCurrentTime().toTimeInteger());
+    m_recentSessionsMap[QString::fromStdString(sessionData.name)]=sessionData;
+    RStatsUtils::saveRecentSession(sessionData.toString(),c_RECENT_SESSION_EXTENSION);
+    updateRecentSessions();
+}
+
+void UIRStatsUAA::onExit()
+{
+    this->close();
+}
+
+SessionData UIRStatsUAA::getSessionData() const
+{
+    QString text = m_ui->m_txtAuditName->text();
+    if (text.isEmpty())
+    {
+        text = m_ui->m_txtAuditName->placeholderText();
+    }
+    SessionData data;
+    data.name = text.toStdString();
+    data.samples = m_ui->m_spnSampleSize->value();
+    data.coi = m_ui->m_spnCOI->value();
+    data.universe = m_ui->m_spnUniverseSize->value();
+    return data;
+}
+
+void UIRStatsUAA::setSessionData(const SessionData &data)
+{
+    m_ui->m_txtAuditName->setText(QString::fromStdString(data.name));
+    m_ui->m_spnSampleSize->setValue(static_cast<int>(data.samples));
+    m_ui->m_spnCOI->setValue(static_cast<int>(data.coi));
+    m_ui->m_spnUniverseSize->setValue(static_cast<int>(data.universe));
+}
+
+void UIRStatsUAA::onClearRecentSessions()
+{
+    RStatsUtils::clearRecentSessions(c_RECENT_SESSION_EXTENSION);
+    updateRecentSessions();
+}
+
+void UIRStatsUAA::onSetTextFileOutput()
+{
+    QString fileToSave = QFileDialog::getSaveFileName(this,"Set text filename...","","*.txt");
+    if (!fileToSave.isEmpty())
+    {
+
+    }
+}
+
+void UIRStatsUAA::onSetCSVFileOutput()
+{
+    QString fileToSave = QFileDialog::getSaveFileName(this,"Set CSV filename...","","*.csv");
+    if (!fileToSave.isEmpty())
+    {
+
+    }
+}
+
+void UIRStatsUAA::onRecentSessionSelected(QAction* action)
+{
+    QString name = action->property("name").toString();
+    if (m_recentSessionsMap.contains(name))
+    {
+        SessionData data = m_recentSessionsMap[name];
+        setSessionData(data);
+    }
+}
+
+void UIRStatsUAA::updateRecentSessions()
+{
+    m_recentSessionsMap.clear();
+    std::vector<std::string> sessionUrls = RStatsUtils::getRecentSessions(c_RECENT_SESSION_EXTENSION);
+    if (sessionUrls.empty())
+    {
+        m_ui->actionRecentlyUsed->setDisabled(true);
+        return;
+    }
+
+    m_ui->actionRecentlyUsed->setDisabled(false);
+    m_recentSessionActionGroup = new QActionGroup(this);
+    connect(m_recentSessionActionGroup,SIGNAL(triggered(QAction*)),this,SLOT(onRecentSessionSelected(QAction*)));
+    QMenu* recentMenu = new QMenu(m_ui->menuFile);
+    for (const auto& url : sessionUrls)
+    {
+        SessionData data;
+        data.load(url);
+        m_recentSessionsMap[QString::fromStdString(data.name)] = data;
+        std::string dateTimeStr = DateTimeUtils::getDisplayTimeStamp(DateEntity(data.dateValue),TimeEntity(data.timeValue));
+        QAction* action = new QAction(QString::fromStdString(data.name+" "+dateTimeStr), recentMenu);
+        action->setProperty("name",QString::fromStdString(data.name));
+        m_recentSessionActionGroup->addAction(action);
+        recentMenu->addAction(action);
+    }
+    recentMenu->addSeparator();
+    QAction* clearRecentSessionsAction = new QAction(recentMenu);
+    clearRecentSessionsAction->setText("Clear History");
+    connect(clearRecentSessionsAction,SIGNAL(triggered(bool)),this,SLOT(onClearRecentSessions()));
+    recentMenu->addAction(clearRecentSessionsAction);
+    m_ui->actionRecentlyUsed->setMenu(recentMenu);
+
+}
+
+
+void SessionData::load(const std::string &url)
+{
+    if (!url.empty())
+    {
+        XMLReader reader;
+        reader.load(url);
+        XMLDataElement* session = reader.getElement("session");
+        if (session)
+        {
+            XMLDataElement* nameXML = session->getChild("name");
+            XMLDataElement* universeXML = session->getChild("universe");
+            XMLDataElement* samplesXML = session->getChild("samples");
+            XMLDataElement* coiXML = session->getChild("coi");
+            XMLDataElement* dateXML = session->getChild("date");
+            XMLDataElement* timeXML = session->getChild("time");
+            if (nameXML)this->name = XMLUtils::getDecodedString(nameXML->getElementData(true));
+            if (samplesXML)this->samples = samplesXML->getElementDataAsInteger();
+            if (universeXML)this->universe = universeXML->getElementDataAsInteger();
+            if (coiXML)this->coi = coiXML->getElementDataAsInteger();
+            if (dateXML)this->dateValue = dateXML->getElementDataAsInteger();
+            if (timeXML)this->timeValue = timeXML->getElementDataAsInteger();
+        }
+    }
+}
+
+std::string SessionData::toString() const
+{
+    std::ostringstream out;
+    XMLStreamWriter xml(out);
+    xml.writeStartDocument();
+    xml.writeStartElementNoAttributes("session");
+    xml.writeTextElement("name",XMLUtils::getEncodedString(name));
+    xml.writeTextElement("samples",StringUtils::toString(samples));
+    xml.writeTextElement("coi",StringUtils::toString(coi));
+    xml.writeTextElement("universe",StringUtils::toString(universe));
+    xml.writeTextElement("date",StringUtils::toString(dateValue));
+    xml.writeTextElement("time",StringUtils::toString(timeValue));
+    xml.writeEndElement("session");
+    return out.str();
 }
 }}}}//end namespace
 

@@ -94,6 +94,11 @@ void Color::set(const uint8_t &red, const uint8_t &green, const uint8_t &blue, c
     m_alpha=alpha;
 }
 
+void Color::set(const std::string &htmlColor)
+{
+    (*this)=ColorFactory::create(htmlColor);
+}
+
 uint8_t Color::getAlpha() const
 {
     return m_alpha;

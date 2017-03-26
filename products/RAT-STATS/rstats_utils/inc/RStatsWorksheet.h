@@ -195,6 +195,12 @@ public:
     std::string toTabDelimitedString() const;
 
     /**
+     * @brief toCommaDelimitedString
+     * @return
+     */
+    std::string toEvenlySpacedString() const;
+
+    /**
      * @brief isEmpty
      * @return
      */
@@ -210,7 +216,8 @@ private:
         size_t m_numRows;
         size_t m_numColumns;
         void parseCellAddress(const std::string& address, size_t& r, size_t& c);
-        std::string toString(const std::string& prefix,const std::string& seperator, const std::string& postfix) const;
+        std::string toString(const std::string& prefix,const std::string& seperator, const std::string& postfix) const;        
+        std::string toEvenlySpacedString(const std::string& prefix,const std::string& seperator, const std::string& postfix) const;
 
 };
 typedef std::shared_ptr<RStatsWorksheet> RStatsWorksheetPtr;

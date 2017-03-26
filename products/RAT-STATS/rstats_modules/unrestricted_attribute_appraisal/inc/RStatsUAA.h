@@ -7,11 +7,52 @@
 #pragma once
 
 #include "rstats_utils/inc/RStatsUtils.hpp"
+#include "rstats_utils/inc/RStatsWorksheet.h"
 
 namespace oig {
 namespace ratstats {
 namespace modules {
 namespace uaa {
+
+enum class RStatsUAAConfidenceIntervalType
+{
+    OneSidedUpper,
+    OneSidedLower,
+    TwoSided
+};
+
+struct RStatsUAAOutputData
+{
+    RStatsUAAOutputData()
+    {
+        universeSize = 0;
+        sampleSize = 0;
+        coiSize = 0;
+        projectedTotal = 0;
+        projectedTotalPercent = 0;
+        variance = 0;
+        standardError = 0;
+        standardErrorPercent = 0;
+        upperLimitPercentList.initialize(3);
+        lowerLimitQuantityList.initialize(3);
+        upperLimitQuantityList.initialize(3);
+        lowerLimitPercentList.initialize(3);
+    }
+    std::string auditName;
+    RStatsUAAConfidenceIntervalType confidenceIntervalType;
+    oig::ratstats::utils::RStatsInteger universeSize;
+    oig::ratstats::utils::RStatsInteger sampleSize;
+    oig::ratstats::utils::RStatsInteger coiSize;
+    oig::ratstats::utils::RStatsFloat projectedTotal;
+    oig::ratstats::utils::RStatsFloat projectedTotalPercent;
+    oig::ratstats::utils::RStatsFloat variance;
+    oig::ratstats::utils::RStatsFloat standardError;
+    oig::ratstats::utils::RStatsFloat standardErrorPercent;
+    oig::ratstats::utils::RStatsFloatList upperLimitPercentList;
+    oig::ratstats::utils::RStatsFloatList lowerLimitQuantityList;
+    oig::ratstats::utils::RStatsFloatList upperLimitQuantityList;
+    oig::ratstats::utils::RStatsFloatList lowerLimitPercentList;
+};
 
 class RStatsUAA 
 {
@@ -25,13 +66,42 @@ public:
 	//! Static instance method for this singleton
     static RStatsUAA & inst();
 
-    void execute(utils::RStatsInteger sampleSize, utils::RStatsInteger universeSize, utils::RStatsInteger coiSize, bool computeOneSided);
+    /**
+     * @brief execute
+     * @param sampleSize
+     * @param universeSize
+     * @param coiSize
+     * @param computeOneSided
+     * @return
+     */
+    RStatsUAAOutputData execute(const std::string& auditName,
+                                utils::RStatsInteger sampleSize,
+                                utils::RStatsInteger universeSize,
+                                utils::RStatsInteger coiSize,
+                                RStatsUAAConfidenceIntervalType type=RStatsUAAConfidenceIntervalType::TwoSided);
+
+    /**
+     * @brief saveToCSVWorksheetFile
+     * @param filePath
+     */
+    void saveToCSVFile(const std::string& filePath);
+
+    /**
+     * @brief saveToWorksheet
+     * @param sheet
+     * @param data
+     */
+    void saveToWorksheet(oig::ratstats::utils::RStatsWorksheet& worksheetOut);
+    /**
+     * @brief saveToTextFile
+     * @param filePath
+     */
+    void saveToTextFile(const std::string& filePath);
 	//! Destructor
 	~RStatsUAA();	
 
 private:
-    bool m_isActive;
-
+    RStatsUAAConfidenceIntervalType m_confidenceIntervalType;
     oig::ratstats::utils::RStatsInteger m_numCompare;
     oig::ratstats::utils::RStatsInteger m_coiSize;
     oig::ratstats::utils::RStatsInteger m_numExponents;
@@ -61,8 +131,7 @@ private:
     oig::ratstats::utils::RStatsInteger m_pb;
     oig::ratstats::utils::RStatsInteger m_pg;
     oig::ratstats::utils::RStatsInteger m_ss;
-    oig::ratstats::utils::RStatsInteger m_sb;
-
+    oig::ratstats::utils::RStatsInteger m_sb;    
 
     oig::ratstats::utils::RStatsFloat m_phat;
     oig::ratstats::utils::RStatsFloat m_term;
@@ -77,17 +146,21 @@ private:
     oig::ratstats::utils::RStatsFloat m_z;
 
 
-    void processFindLower();
+    bool m_isFinished;
+    RStatsUAAOutputData m_outputData;
+
     void processResults();
     void processSumHypergeometric();
+    void processFindLower();
+    void processFindUpper();
     void processFindBottomUpper();
     void processFindBottomLower();
     void processCloseInUpper();
-    void processCloseInLower();
+    void processCloseInLower();    
     void processFinalUpper();
-    void processFinalLower();
-    void processExit();
+    void processFinalLower();    
     void reset();
+    void start();
 
     static RStatsUAA m_instance;
     

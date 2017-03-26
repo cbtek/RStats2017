@@ -52,7 +52,7 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     onUpdateClock();
     m_clock.start(1000);
 
-    QString defaultAuditName = "NewAudit_"+QString::number(TimeUtils::getSecondsNow());
+    QString defaultAuditName = QString::fromStdString(RStatsUtils::getAuditName());
 
     m_ui->m_txtAuditName->setPlaceholderText(defaultAuditName);
     m_ui->m_grpOutput->hide();
@@ -317,7 +317,6 @@ void UIRStatsSSRN::updateRecentSessions()
     connect(clearRecentSessionsAction,SIGNAL(triggered(bool)),this,SLOT(onClearRecentSessions()));
     recentMenu->addAction(clearRecentSessionsAction);
     m_ui->actionRecent->setMenu(recentMenu);
-
 }
 
 void UIRStatsSSRN::onSeedBoxToggled(bool toggle)

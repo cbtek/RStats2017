@@ -7,6 +7,10 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QActionGroup>
+#include <QAction>
+
+#include "rstats_utils/inc/RStatsUtils.hpp"
 
 class Ui_UIRStatsUAA;
 
@@ -15,6 +19,18 @@ namespace ratstats {
 namespace modules {
 namespace uaa {
 
+struct SessionData
+{
+    SessionData():dateValue(0),timeValue(0),universe(0),samples(0),coi(0){}
+    void load(const std::string& url);
+    std::string toString() const;
+    std::string name;
+    oig::ratstats::utils::RStatsInteger dateValue;
+    oig::ratstats::utils::RStatsInteger timeValue;
+    oig::ratstats::utils::RStatsInteger universe;
+    oig::ratstats::utils::RStatsInteger samples;
+    oig::ratstats::utils::RStatsInteger coi;
+};
 
 class UIRStatsUAA : public QMainWindow
 {
@@ -36,11 +52,28 @@ private:
     QIcon m_exitIcon;
     QIcon m_runIcon;
     QIcon m_helpIcon;
+    QActionGroup* m_recentSessionActionGroup;
+    QMap<QString,SessionData> m_recentSessionsMap;
+    SessionData getSessionData() const;
+    void setSessionData(const SessionData& data);
+    void updateRecentSessions();
+
     /** 
     * MOC generated ui class for this widget
     */
      Ui_UIRStatsUAA *m_ui;
-    
+
+private slots:
+     void onRecentSessionSelected(QAction* action);
+     void onUpdateSampleCount();
+     void onUpdateUniverseCount();
+     void onClearRecentSessions();
+     void onSetTextFileOutput();
+     void onSetCSVFileOutput();
+     void onHelp();
+     void onContinue();
+     void onExit();
+
 };
 
 }}}}//end namespace

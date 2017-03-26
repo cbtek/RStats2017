@@ -3,14 +3,18 @@
 #include "RStatsUAA.h"
 #include "UIRStatsUAA.h"
 
+#include "utility/inc/VBRoundUtils.hpp"
+
 using namespace oig::ratstats::modules::uaa;
+using namespace oig::ratstats::utils;
+
+using namespace cbtek::common::utility;
 
 int main(int argc, char ** argv)
 {
-    RStatsUAA::inst().execute(100,1000,12,false);
-    return 0;
     QApplication a(argc,argv);
     UIRStatsUAA form;
+    form.resize(1024,768);
     form.show();
     return a.exec();
 }
