@@ -81,7 +81,6 @@ public:
      */
     std::vector<std::string> getWorksheetNames() const;
 
-
 	//! Destructor
 	~RStatsWorkbook();	
 

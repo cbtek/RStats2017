@@ -38,6 +38,8 @@ struct RStatsUAAOutputData
         upperLimitQuantityList.initialize(3);
         lowerLimitPercentList.initialize(3);
     }
+    cbtek::common::utility::DateEntity createDate;
+    cbtek::common::utility::TimeEntity createTime;
     std::string auditName;
     RStatsUAAConfidenceIntervalType confidenceIntervalType;
     oig::ratstats::utils::RStatsInteger universeSize;

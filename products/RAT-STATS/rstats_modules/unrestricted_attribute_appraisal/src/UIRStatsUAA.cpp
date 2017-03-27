@@ -49,6 +49,8 @@ UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
     connect(m_ui->m_btnHelp,SIGNAL(clicked()),this,SLOT(onHelp()));
     connect(m_ui->m_spnSampleSize,SIGNAL(valueChanged(int)),this,SLOT(onUpdateSampleCount()));
     connect(m_ui->m_spnUniverseSize,SIGNAL(valueChanged(int)),this,SLOT(onUpdateUniverseCount()));
+    connect(m_ui->m_chkExcelAccessOutput,SIGNAL(toggled(bool)),this,SLOT(onSetCSVFileOutput()));
+    connect(m_ui->m_chkTextOutput,SIGNAL(toggled(bool)),this,SLOT(onSetTextFileOutput()));
     m_ui->m_txtAuditName->setPlaceholderText(QString::fromStdString(RStatsUtils::getAuditName()));
     m_ui->m_frmOutput->hide();
     onUpdateUniverseCount();
@@ -100,16 +102,37 @@ void UIRStatsUAA::onContinue()
     RStatsUAA::inst().execute(name,sampleSize,universeSize,coiSize,type);
     RStatsWorksheet output;
     RStatsUAA::inst().saveToWorksheet(output);
-    UIRStatsUtils::bindSheetToUI(output,m_ui->m_tblOutput,false,0,0);
+    UIRStatsUtils::bindSheetToUI(output,m_ui->m_tblOutput,false,0,1);
+
+    //Save CSV file (for Excel/Access) if applicable
+    if (m_ui->m_chkExcelAccessOutput->isChecked() &&
+       !m_ui->m_chkExcelAccessOutput->toolTip().isEmpty())
+    {
+        FileUtils::writeFileContents(m_ui->m_chkExcelAccessOutput->toolTip().toStdString(),
+                                     output.toCommaDelimitedString());
+    }
+
+    //Save Text file, if applicable
+    if (m_ui->m_chkTextOutput->isChecked() &&
+       !m_ui->m_chkTextOutput->toolTip().isEmpty())
+    {
+        FileUtils::writeFileContents(m_ui->m_chkTextOutput->toolTip().toStdString(),
+                                     output.toEvenlySpacedString());
+    }
+
+
     m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toCurrentShortDateString()));
     m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::toCurrent12HourTimeString()));
     m_ui->m_lblAudit->setText(QString::fromStdString(name));
-    m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     m_ui->m_tblOutput->horizontalHeader()->hide();
     m_ui->m_frmOutput->show();
     m_ui->m_lblNoData->hide();
     m_ui->m_tblOutput->setSelectionMode(QAbstractItemView::NoSelection);
+    m_ui->m_tblOutput->setGridStyle(Qt::NoPen);
 
+
+    //Save the session data
     SessionData sessionData = getSessionData();
     sessionData.dateValue = static_cast<RStatsInteger>(DateUtils::getCurrentDate().toDateInteger());
     sessionData.timeValue = static_cast<RStatsInteger>(TimeUtils::getCurrentTime().toTimeInteger());
@@ -154,30 +177,46 @@ void UIRStatsUAA::onClearRecentSessions()
 
 void UIRStatsUAA::onSetTextFileOutput()
 {
-    QString fileToSave = QFileDialog::getSaveFileName(this,"Set text filename...","","*.txt");
-    if (!fileToSave.isEmpty())
+    if (m_ui->m_chkTextOutput->isChecked())
     {
-
+        QString fileToSave = QFileDialog::getSaveFileName(this,"Set text filename...","","*.txt");
+        if (!fileToSave.isEmpty())
+        {
+            m_ui->m_chkTextOutput->setToolTip(fileToSave);
+        }
+    }
+    else
+    {
+        m_ui->m_chkTextOutput->setToolTip("");
     }
 }
 
 void UIRStatsUAA::onSetCSVFileOutput()
 {
-    QString fileToSave = QFileDialog::getSaveFileName(this,"Set CSV filename...","","*.csv");
-    if (!fileToSave.isEmpty())
+    if (m_ui->m_chkExcelAccessOutput->isChecked())
     {
-
+        QString fileToSave = QFileDialog::getSaveFileName(this,"Set CSV filename...","","*.csv");
+        if (!fileToSave.isEmpty())
+        {
+            m_ui->m_chkExcelAccessOutput->setToolTip(fileToSave);
+        }
+    }
+    else
+    {
+        m_ui->m_chkExcelAccessOutput->setToolTip("");
     }
 }
 
 void UIRStatsUAA::onRecentSessionSelected(QAction* action)
 {
+
     QString name = action->property("name").toString();
     if (m_recentSessionsMap.contains(name))
     {
         SessionData data = m_recentSessionsMap[name];
         setSessionData(data);
     }
+
 }
 
 void UIRStatsUAA::updateRecentSessions()

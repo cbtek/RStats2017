@@ -129,6 +129,31 @@ bool RStatsWorksheet::isEmpty() const
     return (this->m_dataTable.size() == 0);
 }
 
+void RStatsWorksheet::findDataRowsAndColumns(std::set<size_t> &rowsOut, std::set<size_t> &columnsOut) const
+{
+    size_t cols = getNumColumns();
+    size_t rows = getNumRows();
+    std::ostringstream out;
+    for(size_t r = 0;r<rows;++r)
+    {
+        bool hasData = false;
+        for(size_t c = 0;c<cols;++c)
+        {
+            std::string data = getCell(r,c).text;
+            if (!StringUtils::isEmpty(data))
+            {
+                hasData = true;
+                columnsOut.insert(c);
+            }
+        }
+
+        if (hasData)
+        {
+            rowsOut.insert(r);
+        }
+    }
+}
+
 RStatsCell& RStatsWorksheet::operator()(size_t row, size_t column)
 {
     if (row >= m_numRows)

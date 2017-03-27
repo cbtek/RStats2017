@@ -820,6 +820,11 @@ namespace RStatsUtils
         return userName+"_audit_"+dateTime;
     }
 
+    inline std::string getApplicationName()
+    {
+        return "RAT-STATS Statistical Software";
+    }
+
 //    /**
 //     * @brief vbRound
 //     * @param value

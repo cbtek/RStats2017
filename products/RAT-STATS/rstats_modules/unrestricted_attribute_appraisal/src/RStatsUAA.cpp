@@ -60,7 +60,7 @@ RStatsUAAOutputData RStatsUAA::execute(const std::string& auditName,
 {
     m_outputData.auditName = auditName;
     m_confidenceIntervalType = type;
-    std::cout << "start:\n";
+    //std::cout << "start:\n";
     m_isFinished = false;
     reset();
     m_sampleSize = sampleSize;
@@ -72,6 +72,9 @@ RStatsUAAOutputData RStatsUAA::execute(const std::string& auditName,
     m_ratio = RStatsUtils::divideValues(m_numItems,m_sampleSize);    
     m_conditionLevel = 1;
     start();
+    m_outputData.createDate = DateUtils::getCurrentDate();
+    m_outputData.createTime = TimeUtils::getCurrentTime();
+
     RStatsFloat sampleSizeFloat = static_cast<RStatsFloat>(m_sampleSize);
     m_outputData.sampleSize = m_sampleSize;
     m_outputData.universeSize = m_universeSize;
@@ -106,70 +109,108 @@ RStatsUAAOutputData RStatsUAA::execute(const std::string& auditName,
 
 void RStatsUAA::saveToWorksheet(RStatsWorksheet &worksheetOut)
 {
-    worksheetOut.setDefaultFont(Font("arial",13));
+    worksheetOut.setDefaultFont(Font("arial",12,true));
     worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignRight);
-    worksheetOut("A2")= "Population size:";
-    worksheetOut("A3")= "Sample size:";
-    worksheetOut("A4")= "Characteristic of interest:";
-    worksheetOut("A5")= "Projected Total:";
-    worksheetOut("A6")= "Projected Percent:";
-    worksheetOut("A7")= "Standard Error(Total):";
-    worksheetOut("A8")= "Standard Error(Percent):";
-    worksheetOut.setDefaultFont(Font("arial",18,true));
-    worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
-    worksheetOut("B10")= "80%";
-    worksheetOut("B10").bgColor.set("#FFAAAA");
-    worksheetOut("C10")= "90%";
-    worksheetOut("C10").bgColor.set("#FFFFAA");
-    worksheetOut("D10")= "95%";
-    worksheetOut("D10").bgColor.set("#AAFFAA");
+
+    worksheetOut("A1")= "Audit/Review:";
+    worksheetOut("A2")= "Applicaton:";
+    worksheetOut("A3")= "Module:";
+    worksheetOut("A4")= "Author:";
+    worksheetOut("A5")= "Date:";
+    worksheetOut("A6")= "Time:";
+    worksheetOut("A7")= "Population size:";
+    worksheetOut("A8")= "Sample size:";
+    worksheetOut("A9")= "Characteristic of interest:";
+    worksheetOut("A10")= "Projected Total:";
+    worksheetOut("A11")= "Projected Percent:";
+    worksheetOut("A12")= "Standard Error(Total):";
+    worksheetOut("A13")= "Standard Error(Percent):";
+
+    worksheetOut.setDefaultFont(Font("arial",12,true));
+    worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);    
+//    /worksheetOut("E5")= "Confidence Level";
+
+    worksheetOut("D6")= "80%";
+    worksheetOut("D6").bgColor.set("#FFAAAA");
+
+    worksheetOut("E6")= "90%";
+    worksheetOut("E6").bgColor.set("#FFFFAA");
+
+    worksheetOut("F6")= "95%";
+    worksheetOut("F6").bgColor.set("#AAFFAA");
     worksheetOut.resetDefaults();
 
-    worksheetOut.setDefaultFont(Font("arial",14,true));
+    worksheetOut.setDefaultFont(Font("arial",12));
     worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignLeft);
-    worksheetOut("B2") = StringUtils::toString(m_outputData.universeSize);
-    worksheetOut("B3") = StringUtils::toString(m_outputData.sampleSize);
-    worksheetOut("B4") = StringUtils::toString(m_outputData.coiSize);
-    worksheetOut("B5") = StringUtils::toString(m_outputData.projectedTotal,0);
-    worksheetOut("B6") = StringUtils::toString(m_outputData.projectedTotalPercent,3)+"%";
-    worksheetOut("B7") = StringUtils::toString(m_outputData.standardError,0);
-    worksheetOut("B8") = StringUtils::toString(m_outputData.standardErrorPercent,3)+"%";
+    worksheetOut("B1") = m_outputData.auditName;
+    worksheetOut("B2") = RStatsUtils::getApplicationName();
+    worksheetOut("B3") = "Unrestricted Attribute Appraisal";
+    worksheetOut("B4") = SystemUtils::getUserName();
+    worksheetOut("B5") = DateUtils::toLongDateString(m_outputData.createDate);
+    worksheetOut("B6") = TimeUtils::to12HourTimeString(m_outputData.createTime);
+    worksheetOut("B7") = StringUtils::toString(m_outputData.universeSize);
+    worksheetOut("B8") = StringUtils::toString(m_outputData.sampleSize);
+    worksheetOut("B9") = StringUtils::toString(m_outputData.coiSize);
+    worksheetOut("B10") = StringUtils::toString(m_outputData.projectedTotal,0);
+    worksheetOut("B11") = StringUtils::toString(m_outputData.projectedTotalPercent,3)+"%";
+    worksheetOut("B12") = StringUtils::toString(m_outputData.standardError,0);
+    worksheetOut("B13") = StringUtils::toString(m_outputData.standardErrorPercent,3)+"%";
     worksheetOut.resetDefaults();
 
-    if (m_confidenceIntervalType == RStatsUAAConfidenceIntervalType::TwoSided ||
-        m_confidenceIntervalType == RStatsUAAConfidenceIntervalType::OneSidedLower)
+        if (m_confidenceIntervalType == RStatsUAAConfidenceIntervalType::OneSidedLower)
         {
-            worksheetOut.setDefaultFont(Font("arial",14,true));
-            worksheetOut("A11")= "Lower Total:";
-            worksheetOut("A13")= "Lower Percent:";
-            worksheetOut("A11").alignment = RStatsTextAlignment::AlignRight;
-            worksheetOut("A13").alignment = RStatsTextAlignment::AlignRight;
-            worksheetOut.setDefaultFont(Font("arial",14));
+            worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignRight);
+            worksheetOut.setDefaultFont(Font("arial",12,true));
+            worksheetOut("C7")= "Lower Total";
+            worksheetOut("C8")= "Lower Percent";
+            worksheetOut.setDefaultFont(Font("arial",12));
             worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
-            worksheetOut("B11") = StringUtils::toString(m_outputData.lowerLimitQuantityList(0),0);
-            worksheetOut("C11") = StringUtils::toString(m_outputData.lowerLimitQuantityList(1),0);
-            worksheetOut("D11") = StringUtils::toString(m_outputData.lowerLimitQuantityList(2),0);
-            worksheetOut("B13") = StringUtils::toString(m_outputData.lowerLimitPercentList(0),3)+"%";
-            worksheetOut("C13") = StringUtils::toString(m_outputData.lowerLimitPercentList(1),3)+"%";
-            worksheetOut("D13") = StringUtils::toString(m_outputData.lowerLimitPercentList(2),3)+"%";
+            worksheetOut("D7") = StringUtils::toString(m_outputData.lowerLimitQuantityList(0),0);
+            worksheetOut("E7") = StringUtils::toString(m_outputData.lowerLimitQuantityList(1),0);
+            worksheetOut("F7") = StringUtils::toString(m_outputData.lowerLimitQuantityList(2),0);
+            worksheetOut("D8") = StringUtils::toString(m_outputData.lowerLimitPercentList(0),3)+"%";
+            worksheetOut("E8") = StringUtils::toString(m_outputData.lowerLimitPercentList(1),3)+"%";
+            worksheetOut("F8") = StringUtils::toString(m_outputData.lowerLimitPercentList(2),3)+"%";
             worksheetOut.resetDefaults();
         }
-        if (m_confidenceIntervalType == RStatsUAAConfidenceIntervalType::TwoSided ||
-            m_confidenceIntervalType == RStatsUAAConfidenceIntervalType::OneSidedUpper)
+        else if (m_confidenceIntervalType == RStatsUAAConfidenceIntervalType::OneSidedUpper)
         {
-            worksheetOut.setDefaultFont(Font("arial",14,true));
-            worksheetOut("A12")= "Upper Total:";
-            worksheetOut("A14")= "Upper Percent:";
-            worksheetOut("A12").alignment = RStatsTextAlignment::AlignRight;
-            worksheetOut("A14").alignment = RStatsTextAlignment::AlignRight;
+            worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignRight);
+            worksheetOut.setDefaultFont(Font("arial",12,true));
+            worksheetOut("C7")= "Upper Total:";
+            worksheetOut("C8")= "Upper Percent:";
+            worksheetOut.setDefaultFont(Font("arial",12));
             worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
-            worksheetOut.setDefaultFont(Font("arial",14));
-            worksheetOut("B12") = StringUtils::toString(m_outputData.upperLimitQuantityList(0),0);
-            worksheetOut("C12") = StringUtils::toString(m_outputData.upperLimitQuantityList(1),0);
-            worksheetOut("D12") = StringUtils::toString(m_outputData.upperLimitQuantityList(2),0);
-            worksheetOut("B14") = StringUtils::toString(m_outputData.upperLimitPercentList(0),3)+"%";
-            worksheetOut("C14") = StringUtils::toString(m_outputData.upperLimitPercentList(1),3)+"%";
-            worksheetOut("D14") = StringUtils::toString(m_outputData.upperLimitPercentList(2),3)+"%";
+            worksheetOut("D7") = StringUtils::toString(m_outputData.upperLimitQuantityList(0),0);
+            worksheetOut("E7") = StringUtils::toString(m_outputData.upperLimitQuantityList(1),0);
+            worksheetOut("F7") = StringUtils::toString(m_outputData.upperLimitQuantityList(2),0);
+            worksheetOut("D8") = StringUtils::toString(m_outputData.upperLimitPercentList(0),3)+"%";
+            worksheetOut("E8") = StringUtils::toString(m_outputData.upperLimitPercentList(1),3)+"%";
+            worksheetOut("F8") = StringUtils::toString(m_outputData.upperLimitPercentList(2),3)+"%";
+            worksheetOut.resetDefaults();
+        }
+        else
+        {
+            worksheetOut.setDefaultFont(Font("arial",12,true));
+            worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignRight);
+            worksheetOut("C7")= "Lower Total:";
+            worksheetOut("C8")= "Lower Percent:";
+            worksheetOut("C9")= "Upper Total:";
+            worksheetOut("C10")= "Upper Percent:";
+            worksheetOut.setDefaultFont(Font("arial",12));
+            worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
+            worksheetOut("D7") = StringUtils::toString(m_outputData.lowerLimitQuantityList(0),0);
+            worksheetOut("E7") = StringUtils::toString(m_outputData.lowerLimitQuantityList(1),0);
+            worksheetOut("F7") = StringUtils::toString(m_outputData.lowerLimitQuantityList(2),0);
+            worksheetOut("D8") = StringUtils::toString(m_outputData.lowerLimitPercentList(0),3)+"%";
+            worksheetOut("E8") = StringUtils::toString(m_outputData.lowerLimitPercentList(1),3)+"%";
+            worksheetOut("F8") = StringUtils::toString(m_outputData.lowerLimitPercentList(2),3)+"%";
+            worksheetOut("D9") = StringUtils::toString(m_outputData.upperLimitQuantityList(0),0);
+            worksheetOut("E9") = StringUtils::toString(m_outputData.upperLimitQuantityList(1),0);
+            worksheetOut("F9") = StringUtils::toString(m_outputData.upperLimitQuantityList(2),0);
+            worksheetOut("D10") = StringUtils::toString(m_outputData.upperLimitPercentList(0),3)+"%";
+            worksheetOut("E10") = StringUtils::toString(m_outputData.upperLimitPercentList(1),3)+"%";
+            worksheetOut("F10") = StringUtils::toString(m_outputData.upperLimitPercentList(2),3)+"%";
             worksheetOut.resetDefaults();
         }
 }
@@ -209,7 +250,7 @@ void RStatsUAA::start()
 
 void RStatsUAA::processFindUpper()
 {
-    std::cout << "Find Upper:\n";
+    //std::cout << "Find Upper:\n";
     if (m_numItems == m_sampleSize)
     {
         m_kUpper = m_universeSize;
@@ -254,7 +295,7 @@ void RStatsUAA::processFindUpper()
 
 void RStatsUAA::processFindLower()
 {
-    std::cout << "FindLower:"<<std::endl;
+    //std::cout << "FindLower:"<<std::endl;
     --m_numItems;
     m_kSt = static_cast<RStatsInteger>((static_cast<RStatsFloat>(m_universeSize) * m_phat) - std::ceil(m_zValue * std::sqrt(m_term)));
     if (m_kSt < m_numItems)
@@ -304,7 +345,7 @@ void RStatsUAA::processFindLower()
 
 void RStatsUAA::processResults()
 {
-    std::cout << "Results:"<<std::endl;
+    //std::cout << "Results:"<<std::endl;
     if (m_conditionLevel == 1)
     {
         m_lower80 = m_kLower;
@@ -337,7 +378,7 @@ void RStatsUAA::processSumHypergeometric()
     if (m_numItems < m_minBad)
     {
         m_cumalativeProbability = 0;
-        std::cout << "SumHyp:"<<m_cumalativeProbability<<std::endl;
+        //std::cout << "SumHyp:"<<m_cumalativeProbability<<std::endl;
         return;
     }
 
@@ -426,12 +467,12 @@ void RStatsUAA::processSumHypergeometric()
         }
     }
 
-    std::cout << "SumHyp:"<<m_cumalativeProbability<<std::endl;
+    //std::cout << "SumHyp:"<<m_cumalativeProbability<<std::endl;
 }
 
 void RStatsUAA::processFindBottomUpper()
 {
-    std::cout << "FindBottomUpper:\n";
+    //std::cout << "FindBottomUpper:\n";
     m_kTop = m_k;
     RStatsFloat univ = static_cast<RStatsFloat>(m_universeSize);
     m_kSt = static_cast<RStatsInteger>((univ* m_phat) + std::ceil(m_zValue * std::sqrt(m_term)));
@@ -466,7 +507,7 @@ void RStatsUAA::processFindBottomUpper()
 
 void RStatsUAA::processFindBottomLower()
 {
-    std::cout << "FindBottomLower:\n";
+    //std::cout << "FindBottomLower:\n";
     m_kTop = m_k;
     RStatsFloat univ = static_cast<RStatsFloat>(m_universeSize);
     m_kSt = static_cast<RStatsInteger>((univ * m_phat) - std::ceil(m_zValue * std::sqrt(m_term)));
@@ -509,7 +550,7 @@ void RStatsUAA::processFindBottomLower()
 
 void RStatsUAA::processCloseInUpper()
 {
-    std::cout << "CloseInUpper:"<< "kTop="<<m_kTop << " kBot="<<m_kBottom<<"\n";
+    //std::cout << "CloseInUpper:"<< "kTop="<<m_kTop << " kBot="<<m_kBottom<<"\n";
     if (m_iter == 8)
     {
         int x = 0;
@@ -555,7 +596,7 @@ void RStatsUAA::processCloseInUpper()
 
 void RStatsUAA::processCloseInLower()
 {
-    std::cout << "CloseInLower:\n";
+    //std::cout << "CloseInLower:\n";
     if ((m_kTop - m_kBottom) == 1)
     {
         processFinalLower();
@@ -597,7 +638,7 @@ void RStatsUAA::processCloseInLower()
 
 void RStatsUAA::processFinalUpper()
 {
-    std::cout << "FinalUpper:\n";
+    //std::cout << "FinalUpper:\n";
     if (m_numItems == 0)
     {
         m_kUpper = m_kBottom;
@@ -622,7 +663,7 @@ void RStatsUAA::processFinalUpper()
 
 void RStatsUAA::processFinalLower()
 {
-    std::cout << "FinalLower:\n";
+    //std::cout << "FinalLower:\n";
     if (m_numItems == m_sampleSize)
     {
         m_kLower = m_kTop;

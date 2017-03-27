@@ -206,8 +206,20 @@ public:
      */
     bool isEmpty() const;
 
+
+    /**
+     * @brief findDataRowsAndColumns
+     * @param rowsOut
+     * @param columnsOut
+     */
+    void findDataRowsAndColumns(std::set<size_t>& rowsOut,
+                                std::set<size_t>& columnsOut) const;
+
+
     //! Destructor
 	~RStatsWorksheet();	
+
+
 
 private:
         RStatsCell m_emptyCell;

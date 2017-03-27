@@ -42,6 +42,7 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     m_iconExit = UIRStatsUtils::getIcon("img_exit.png");
     m_iconSave = UIRStatsUtils::getIcon("img_save.png");
     m_iconRun = UIRStatsUtils::getIcon("img_run.png");
+    m_iconAdd = UIRStatsUtils::getIcon("img_add.png");
 
     int buttonHeight = 32;
     UIRStatsUtils::setButtonStyle(m_ui->m_btnExit,this->font(),m_iconExit,buttonHeight);
@@ -50,12 +51,35 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     UIRStatsUtils::setButtonStyle(m_ui->m_btnImportSampleSizeData,this->font(),m_iconFolder,buttonHeight);
     UIRStatsUtils::setButtonStyle(m_ui->m_btnImportSampleInputData,this->font(),m_iconFolder,buttonHeight);
 
-    connect(m_ui->m_btnImportSampleInputData,SIGNAL(clicked(bool)),this,SLOT(onImportSampleInputData()));
-    connect(m_ui->m_btnImportSampleSizeData,SIGNAL(clicked(bool)),this,SLOT(onImportSampleSizeData()));
+    UIRStatsUtils::setButtonStyle(m_ui->m_btnAddColumnSizeTable,this->font(),m_iconAdd,buttonHeight);
+    UIRStatsUtils::setButtonStyle(m_ui->m_btnAddColumnDataTable,this->font(),m_iconAdd,buttonHeight);
+    UIRStatsUtils::setButtonStyle(m_ui->m_btnAddRowSizeTable,this->font(),m_iconAdd,buttonHeight);
+    UIRStatsUtils::setButtonStyle(m_ui->m_btnAddRowDataTable,this->font(),m_iconAdd,buttonHeight);
+
+    m_ui->m_cmbDataInputSheets->addItem("No Sheets Available");
+    m_ui->m_cmbSizeInputSheets->addItem("No Sheets Available");
+    m_ui->m_cmbDataInputSheets->setEnabled(false);
+    m_ui->m_cmbSizeInputSheets->setEnabled(false);
+
+    connect(m_ui->m_btnAddRowDataTable,SIGNAL(clicked(bool)),this,SLOT(onAddNewRowToDataTable()));
+    connect(m_ui->m_btnAddColumnDataTable,SIGNAL(clicked(bool)),this,SLOT(onAddNewColumnToDataTable()));
+    connect(m_ui->m_btnAddRowSizeTable,SIGNAL(clicked(bool)),this,SLOT(onAddNewRowToSizeTable()));
+    connect(m_ui->m_btnAddColumnSizeTable,SIGNAL(clicked(bool)),this,SLOT(onAddNewColumnToSizeTable()));
+    connect(m_ui->m_btnImportSampleInputData,SIGNAL(clicked(bool)),this,SLOT(onImportDataInput()));
+    connect(m_ui->m_btnImportSampleSizeData,SIGNAL(clicked(bool)),this,SLOT(onImportSizeInput()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
     connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));
     connect(m_ui->m_btnContinue,SIGNAL(clicked(bool)),this,SLOT(onContinue()));    
-    connect(&m_clock,SIGNAL(timeout()),this,SLOT(onUpdateClock()));
+    connect(m_ui->m_cmbDataInputSheets,SIGNAL(currentIndexChanged(int)),this,SLOT(onComboDataInputSheetSelected(int)));
+    connect(m_ui->m_cmbSizeInputSheets,SIGNAL(currentIndexChanged(int)),this,SLOT(onComboSizeInputSheetSelected(int)));
+    connect(&m_clock,SIGNAL(timeout()),this,SLOT(onUpdateClock()));    
+    connect(m_ui->m_rdbAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
+    connect(m_ui->m_rdbExamined,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
+    connect(m_ui->m_rdbDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
+    connect(m_ui->m_rdbAuditedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
+    connect(m_ui->m_rdbExaminedAndAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
+    connect(m_ui->m_rdbExaminedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
+    m_ui->m_rdbExamined->setChecked(true);
 
     //m_ui->m_lblNoData->hide();
     m_ui->m_frmDateTime->hide();
@@ -69,16 +93,113 @@ UIRStatsSVA::~UIRStatsSVA()
     delete m_ui;
 }
 
-void UIRStatsSVA::onSampleSizeSheetSelected(const RStatsWorksheet &sheet)
+void UIRStatsSVA::populateWithColumns(const std::set<size_t>& columns,
+                                      QComboBox *comboBox)
 {
-    UIRStatsUtils::bindSheetToUI(sheet,m_ui->m_tblSampleSizeData,true);
-    m_currentSizeSheet = sheet;
+    comboBox->clear();
+    for(const auto& column : columns)
+    {
+        std::string label = RStatsUtils::getColumnLabelFromIndex(column);
+        comboBox->addItem(QString::fromStdString(label));
+    }
 }
 
-void UIRStatsSVA::onSampleInputSheetSelected(const RStatsWorksheet &sheet)
+void UIRStatsSVA::populateWithRows(const std::set<size_t>& rows,
+                                   QComboBox *comboBox)
 {
-    UIRStatsUtils::bindSheetToUI(sheet,m_ui->m_tblSampleInputData,true);
-    m_currentInputSheet = sheet;
+    comboBox->clear();
+    for(const auto& row : rows)
+    {
+        comboBox->addItem(QString::number(row+1));
+    }
+}
+
+void UIRStatsSVA::onAddNewRowToDataTable()
+{
+    m_ui->m_tblData->setRowCount(m_ui->m_tblData->rowCount()+1);
+}
+
+void UIRStatsSVA::onAddNewRowToSizeTable()
+{
+    m_ui->m_tblSizes->setRowCount(m_ui->m_tblSizes->rowCount()+1);
+}
+
+void UIRStatsSVA::onAddNewColumnToDataTable()
+{
+    m_ui->m_tblData->setColumnCount(m_ui->m_tblData->columnCount()+1);
+    std::string headerLabel = RStatsUtils::getColumnLabelFromIndex(m_ui->m_tblData->columnCount()-1);
+    QTableWidgetItem * item = new QTableWidgetItem;
+    item->setText(QString::fromStdString(headerLabel));
+    m_ui->m_tblData->setHorizontalHeaderItem(m_ui->m_tblData->columnCount()-1,item);
+}
+
+void UIRStatsSVA::onAddNewColumnToSizeTable()
+{
+    m_ui->m_tblSizes->setColumnCount(m_ui->m_tblSizes->columnCount()+1);
+    std::string headerLabel = RStatsUtils::getColumnLabelFromIndex(m_ui->m_tblSizes->columnCount()-1);
+    QTableWidgetItem * item = new QTableWidgetItem;
+    item->setText(QString::fromStdString(headerLabel));
+    m_ui->m_tblSizes->setHorizontalHeaderItem(m_ui->m_tblSizes->columnCount()-1,item);
+}
+
+void UIRStatsSVA::onUpdateRowColumnExtentsForDataTable()
+{
+    std::set<size_t> rows,cols;
+    m_currentDataSheet.findDataRowsAndColumns(rows,cols);
+    populateWithColumns(cols,m_ui->m_cmbAuditedDataTable);
+    populateWithColumns(cols,m_ui->m_cmbExaminedDataTable);
+    populateWithColumns(cols,m_ui->m_cmbDifferenceDataTable);
+    populateWithRows(rows,m_ui->m_cmbDataRowStartDataTable);
+}
+
+void UIRStatsSVA::onUpdateRowColumnExtentsForSizeTable()
+{
+    std::set<size_t> rows,cols;
+    m_currentSizeSheet.findDataRowsAndColumns(rows,cols);
+    populateWithColumns(cols,m_ui->m_cmbAuditedSizeTable);
+    populateWithColumns(cols,m_ui->m_cmbExaminedSizeTable);
+    populateWithColumns(cols,m_ui->m_cmbDifferenceSizeTable);
+    populateWithRows(rows,m_ui->m_cmbDataRowStartSizeTable);
+}
+
+void UIRStatsSVA::onSampleSizeInputSheetSelected(const RStatsWorksheet &sheet)
+{
+    UIRStatsUtils::bindSheetToUI(sheet,m_ui->m_tblSizes,true);
+    m_currentSizeSheet = sheet;
+    onUpdateRowColumnExtentsForSizeTable();
+}
+
+void UIRStatsSVA::onSampleDataInputSheetSelected(const RStatsWorksheet &sheet)
+{
+    UIRStatsUtils::bindSheetToUI(sheet,m_ui->m_tblData,true);
+    m_currentDataSheet = sheet;
+    onUpdateRowColumnExtentsForDataTable();
+}
+
+void UIRStatsSVA::onComboSizeInputSheetSelected(int row)
+{
+    if (row < 0)
+    {
+        return;
+    }
+    size_t index = static_cast<size_t>(row);
+    if (index < m_currentSizeWorkbook.getNumWorksheets())
+    {
+        onSampleSizeInputSheetSelected(m_currentSizeWorkbook(index));
+    }
+}
+
+void UIRStatsSVA::onComboDataInputSheetSelected(int row)
+{
+    if (row < 0)
+    {
+        return;
+    }
+    size_t index = static_cast<size_t>(row);
+    if (index < m_currentDataWorkbook.getNumWorksheets())
+    {
+        onSampleDataInputSheetSelected(m_currentDataWorkbook(index));
+    }
 }
 
 void UIRStatsSVA::onUpdateClock()
@@ -97,58 +218,118 @@ void UIRStatsSVA::onExit()
     this->close();
 }
 
-void UIRStatsSVA::onImportSampleInputData()
+void UIRStatsSVA::onImportDataInput()
 {
     QString filename = QFileDialog::getOpenFileName(this,"Import Stratified Variable Appraisal Sample Input File...","","Input Files(*.dat *.csv *.txt *.xls *.xlsx)");
     if (!filename.isEmpty() && QFile::exists(filename))
     {
-        RStatsWorkbook workbook;
+        m_ui->m_cmbDataInputSheets->clear();
         try
         {
             std::string filePath = filename.toStdString();
-            workbook.load(filePath);
-        }
+            m_currentDataWorkbook.load(filePath);
+            if (m_currentDataWorkbook.getNumWorksheets() == 0)
+            {
+                THROW_GENERIC_EXCEPTION("No worksheets were found in \""+filePath+"\"")
+            }
+            m_ui->m_cmbDataInputSheets->setEnabled(true);
+            bool setOther = false;
+            if (m_currentSizeWorkbook.getNumWorksheets() == 0)
+            {
+                setOther = true;
+                m_currentSizeWorkbook = m_currentSizeWorkbook;
+            }
+
+            std::vector<std::string> worksheetNames = m_currentDataWorkbook.getWorksheetNames();
+            if (setOther)
+            {
+                m_ui->m_cmbSizeInputSheets->clear();
+                m_ui->m_cmbSizeInputSheets->setEnabled(true);
+            }
+            for(const auto& sheetName : worksheetNames)
+            {
+                if (setOther)
+                {
+                    m_ui->m_cmbSizeInputSheets->addItem(QString::fromStdString(sheetName));
+                }
+                m_ui->m_cmbDataInputSheets->addItem(QString::fromStdString(sheetName));
+            }
+            onUpdateRowColumnExtentsForDataTable();
+        }                        
         catch(const std::exception& exception)
         {
+            m_ui->m_cmbDataInputSheets->addItem("No Sheets Available");
+            m_ui->m_cmbDataInputSheets->setEnabled(false);
             QString title = "Error occured trying to import " + filename;
             QString message = QString(exception.what());
             UIRStatsErrorMessage(title,message).exec();
             return;
         }
-        UIRStatsImportWorksheet importUI(workbook);
-        connect(&importUI,
-                SIGNAL(sheetSelected(const oig::ratstats::utils::RStatsWorksheet &)),
-                this,
-                SLOT(onSampleInputSheetSelected(const oig::ratstats::utils::RStatsWorksheet &)));
+//        UIRStatsImportWorksheet importUI(workbook);
+//        connect(&importUI,
+//                SIGNAL(sheetSelected(const oig::ratstats::utils::RStatsWorksheet &)),
+//                this,
+//                SLOT(onSampleDataInputSheetSelected(const oig::ratstats::utils::RStatsWorksheet &)));
 
-        importUI.exec();
+//        importUI.exec();
     }
 }
 
-void UIRStatsSVA::onImportSampleSizeData()
+void UIRStatsSVA::onImportSizeInput()
 {
     QString filename = QFileDialog::getOpenFileName(this,"Import Stratified Variable Appraisal Universe/Sample Size Input File...","","Input Files(*.dat *.csv *.txt *.xls *.xlsx)");
     if (!filename.isEmpty() && QFile::exists(filename))
     {
-        RStatsWorkbook workbook;
+        m_ui->m_cmbSizeInputSheets->clear();
         try
         {
             std::string filePath = filename.toStdString();
-            workbook.load(filePath);
+            m_currentSizeWorkbook.load(filePath);
+            if (m_currentSizeWorkbook.getNumWorksheets() == 0)
+            {
+                THROW_GENERIC_EXCEPTION("No worksheets were found in \""+filePath+"\"")
+            }
+            m_ui->m_cmbSizeInputSheets->setEnabled(true);
+            bool setOther = false;
+            if (m_currentDataWorkbook.getNumWorksheets() == 0)
+            {
+                setOther = true;
+                m_currentDataWorkbook = m_currentSizeWorkbook;
+            }
+
+            std::vector<std::string> worksheetNames = m_currentSizeWorkbook.getWorksheetNames();
+
+            if (setOther)
+            {
+                m_ui->m_cmbDataInputSheets->clear();
+                m_ui->m_cmbDataInputSheets->setEnabled(true);
+            }
+
+            for(const auto& sheetName : worksheetNames)
+            {
+                if (setOther)
+                {
+                    m_ui->m_cmbDataInputSheets->addItem(QString::fromStdString(sheetName));
+                }
+                m_ui->m_cmbSizeInputSheets->addItem(QString::fromStdString(sheetName));
+            }
+            onUpdateRowColumnExtentsForSizeTable();
         }
         catch(const std::exception& exception)
         {
+            m_ui->m_cmbSizeInputSheets->addItem("No Sheets Available");
+            m_ui->m_cmbSizeInputSheets->setEnabled(false);
             QString title = "Error occured trying to import " + filename;
             QString message = QString(exception.what());
             UIRStatsErrorMessage(title,message).exec();
             return;
-        }
-        UIRStatsImportWorksheet importUI(workbook);
-        connect(&importUI,
-                SIGNAL(sheetSelected(const oig::ratstats::utils::RStatsWorksheet &)),
-                this,
-                SLOT(onSampleSizeSheetSelected(const oig::ratstats::utils::RStatsWorksheet &)));
-        importUI.exec();
+        }        
+//        UIRStatsImportWorksheet importUI(workbook);
+//        connect(&importUI,
+//                SIGNAL(sheetSelected(const oig::ratstats::utils::RStatsWorksheet &)),
+//                this,
+//                SLOT(onSampleSizeInputSheetSelected(const oig::ratstats::utils::RStatsWorksheet &)));
+//        importUI.exec();
     }
 }
 
@@ -169,10 +350,56 @@ void UIRStatsSVA::onSetPrinterOptions()
 
 void UIRStatsSVA::onSetStratum(int count)
 {
-    size_t rowCount = m_ui->m_tblSampleSizeData->rowCount();
+    size_t rowCount = m_ui->m_tblSizes->rowCount();
     if (count < rowCount)
     {
 
+    }
+}
+
+void UIRStatsSVA::onUpdateDataFormatSelection()
+{
+    m_ui->m_cmbAuditedDataTable->setEnabled(false);
+    m_ui->m_cmbExaminedDataTable->setEnabled(false);
+    m_ui->m_cmbDifferenceDataTable->setEnabled(false);
+    m_ui->m_cmbAuditedSizeTable->setEnabled(false);
+    m_ui->m_cmbExaminedSizeTable->setEnabled(false);
+    m_ui->m_cmbDifferenceSizeTable->setEnabled(false);
+    if (m_ui->m_rdbAudited->isChecked())
+    {
+        m_ui->m_cmbAuditedDataTable->setEnabled(true);
+        m_ui->m_cmbAuditedSizeTable->setEnabled(true);
+    }
+    else if (m_ui->m_rdbDifference->isChecked())
+    {
+        m_ui->m_cmbDifferenceDataTable->setEnabled(true);
+        m_ui->m_cmbDifferenceSizeTable->setEnabled(true);
+    }
+    else if (m_ui->m_rdbExamined->isChecked())
+    {
+        m_ui->m_cmbExaminedDataTable->setEnabled(true);
+        m_ui->m_cmbExaminedSizeTable->setEnabled(true);
+    }
+    else if (m_ui->m_rdbAuditedAndDifference->isChecked())
+    {
+        m_ui->m_cmbDifferenceDataTable->setEnabled(true);
+        m_ui->m_cmbDifferenceSizeTable->setEnabled(true);
+        m_ui->m_cmbAuditedDataTable->setEnabled(true);
+        m_ui->m_cmbAuditedSizeTable->setEnabled(true);
+    }
+    else if (m_ui->m_rdbExaminedAndDifference->isChecked())
+    {
+        m_ui->m_cmbDifferenceDataTable->setEnabled(true);
+        m_ui->m_cmbDifferenceSizeTable->setEnabled(true);
+        m_ui->m_cmbExaminedDataTable->setEnabled(true);
+        m_ui->m_cmbExaminedSizeTable->setEnabled(true);
+    }
+    else if (m_ui->m_rdbExaminedAndAudited->isChecked())
+    {
+        m_ui->m_cmbAuditedDataTable->setEnabled(true);
+        m_ui->m_cmbAuditedSizeTable->setEnabled(true);
+        m_ui->m_cmbExaminedDataTable->setEnabled(true);
+        m_ui->m_cmbExaminedSizeTable->setEnabled(true);
     }
 }
 
