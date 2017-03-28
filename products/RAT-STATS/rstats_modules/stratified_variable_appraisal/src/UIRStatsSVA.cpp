@@ -7,6 +7,7 @@
 
 #include "UIRStatsSVA.h"
 #include "ui_UIRStatsSVA.h"
+#include "RStatsSVA.h"
 
 #include <QFileDialog>
 
@@ -36,14 +37,17 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     m_ui->setupUi(this);
 
     //initialize default icons
-
     m_iconFolder = UIRStatsUtils::getIcon("img_folder.png");
     m_iconHelp = UIRStatsUtils::getIcon("img_help.png");
     m_iconExit = UIRStatsUtils::getIcon("img_exit.png");
     m_iconSave = UIRStatsUtils::getIcon("img_save.png");
     m_iconRun = UIRStatsUtils::getIcon("img_run.png");
     m_iconAdd = UIRStatsUtils::getIcon("img_add.png");
+    m_iconWarning = UIRStatsUtils::getIcon("img_warning.png");
+    m_iconError = UIRStatsUtils::getIcon("img_error.png");
+    m_iconOK = UIRStatsUtils::getIcon("img_ok.png");
 
+    m_ui->m_dockOptions->setTitleBarWidget(new QWidget());
     int buttonHeight = 32;
     UIRStatsUtils::setButtonStyle(m_ui->m_btnExit,this->font(),m_iconExit,buttonHeight);
     UIRStatsUtils::setButtonStyle(m_ui->m_btnHelp,this->font(),m_iconHelp,buttonHeight);
@@ -61,6 +65,8 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     m_ui->m_cmbDataInputSheets->setEnabled(false);
     m_ui->m_cmbSizeInputSheets->setEnabled(false);
 
+    connect(m_ui->m_chkTextOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveTextFile()));
+    connect(m_ui->m_chkCSVOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveCSVFile()));
     connect(m_ui->m_btnAddRowDataTable,SIGNAL(clicked(bool)),this,SLOT(onAddNewRowToDataTable()));
     connect(m_ui->m_btnAddColumnDataTable,SIGNAL(clicked(bool)),this,SLOT(onAddNewColumnToDataTable()));
     connect(m_ui->m_btnAddRowSizeTable,SIGNAL(clicked(bool)),this,SLOT(onAddNewRowToSizeTable()));
@@ -156,10 +162,78 @@ void UIRStatsSVA::onUpdateRowColumnExtentsForSizeTable()
 {
     std::set<size_t> rows,cols;
     m_currentSizeSheet.findDataRowsAndColumns(rows,cols);
-    populateWithColumns(cols,m_ui->m_cmbAuditedSizeTable);
-    populateWithColumns(cols,m_ui->m_cmbExaminedSizeTable);
-    populateWithColumns(cols,m_ui->m_cmbDifferenceSizeTable);
+    populateWithColumns(cols,m_ui->m_cmbSampleCountSizeTable);
+    populateWithColumns(cols,m_ui->m_cmbUniverseCountSizeTable);
     populateWithRows(rows,m_ui->m_cmbDataRowStartSizeTable);
+}
+
+bool UIRStatsSVA::onValidate()
+{
+    m_conditionLogger.clear();
+    m_ui->m_lstErrorConsole->clear();
+    m_conditionLogger.addWarning((
+                                   m_ui->m_rdbAuditedAndDifference->isChecked() ||
+                                   m_ui->m_rdbExaminedAndAudited->isChecked()) &&
+                                   m_ui->m_cmbAuditedDataTable->count() < 2,
+                                   ("There are NOT enough columns for this 'audit' data format.\n Please choose another data format or import a different worksheet."));
+
+
+    m_conditionLogger.addWarning((
+                                   m_ui->m_rdbAuditedAndDifference->isChecked() ||
+                                   m_ui->m_rdbExaminedAndDifference->isChecked()) &&
+                                   m_ui->m_cmbAuditedDataTable->count() < 2,
+                                   "There are NOT enough columns for this 'difference' data format.\n Please choose another data format or import a different worksheet.");
+
+     m_conditionLogger.addError((m_ui->m_tblData->rowCount() == 0),
+                                "You have NOT created/imported any content rows into the data table.");
+
+     m_conditionLogger.addError((m_ui->m_tblSizes->rowCount() == 0),
+                                "You have NOT created/imported any content rows into the universe/sample size table.");
+
+     m_conditionLogger.addError((m_ui->m_tblData->columnCount() == 0),
+                                "You have NOT created/imported any content columns into the data table.");
+
+     m_conditionLogger.addError((m_ui->m_tblSizes->columnCount() == 0),
+                                "You have NOT created/imported any content columns into the universe/sample size table.");
+
+     m_conditionLogger.addWarning((!m_ui->m_chkCSVOutput->isChecked() && !m_ui->m_chkTextOutput->isChecked()),
+                                "You have NOT selected an output file for the results.  Assuming screen display only.");
+
+     m_conditionLogger.addWarning(m_ui->m_txtAuditName->text().isEmpty(),
+                                  "You have not set the name for this audit.  Using auto-generated name: '"+m_ui->m_txtAuditName->placeholderText().toStdString()+"'");
+
+     if (!m_conditionLogger.hasMessages())
+     {
+         m_ui->m_btnContinue->setEnabled(true);
+         return true;
+     }
+     size_t index = 0;
+     for(const std::string & message : m_conditionLogger.getMessages())
+     {
+         QListWidgetItem * item = new QListWidgetItem;
+         item->setText(QString::fromStdString(message));
+         if (m_conditionLogger.isError(index))
+         {
+             item->setIcon(m_iconError);
+         }
+         else if (m_conditionLogger.isWarning(index))
+         {
+             item->setIcon(m_iconWarning);
+         }
+         else
+         {
+             item->setIcon(m_iconOK);
+         }
+         ++index;
+         m_ui->m_lstErrorConsole->addItem(item);
+     }
+
+     if (m_conditionLogger.hasError())
+     {
+         m_ui->m_btnContinue->setEnabled(false);
+     }
+     else m_ui->m_btnContinue->setEnabled(true);
+     return false;
 }
 
 void UIRStatsSVA::onSampleSizeInputSheetSelected(const RStatsWorksheet &sheet)
@@ -206,10 +280,65 @@ void UIRStatsSVA::onUpdateClock()
 {
     m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toCurrentShortDateString()));
     m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::toCurrent12HourTimeString()));
+    onValidate();
 }
 
 void UIRStatsSVA::onContinue()
 {
+    onValidate();
+    RStatsDataFormatTypeIndex dfIndex;
+    if (m_ui->m_rdbAudited->isChecked())
+    {
+        dfIndex.type = RStatsDataFormatType::Audit;
+        dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbAuditedDataTable->currentText().toStdString());
+    }
+    else if (m_ui->m_rdbDifference->isChecked())
+    {
+        dfIndex.type = RStatsDataFormatType::Difference;
+        dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbDifferenceDataTable->currentText().toStdString());
+    }
+    else if (m_ui->m_rdbExamined->isChecked())
+    {
+        dfIndex.type = RStatsDataFormatType::Examine;
+        dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbExaminedDataTable->currentText().toStdString());
+    }
+    else if (m_ui->m_rdbAuditedAndDifference->isChecked())
+    {
+        dfIndex.type = RStatsDataFormatType::AuditAndDifference;
+        dfIndex.secondaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbDifferenceDataTable->currentText().toStdString());
+        dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbAuditedDataTable->currentText().toStdString());
+    }
+    else if (m_ui->m_rdbExaminedAndDifference->isChecked())
+    {
+        dfIndex.type = RStatsDataFormatType::ExamineAndDifference;
+        dfIndex.secondaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbDifferenceDataTable->currentText().toStdString());
+        dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbExaminedDataTable->currentText().toStdString());
+    }
+    else if (m_ui->m_rdbExaminedAndAudited->isChecked())
+    {
+        dfIndex.type = RStatsDataFormatType::ExamineAndAudit;
+        dfIndex.secondaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbAuditedDataTable->currentText().toStdString());
+        dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbExaminedDataTable->currentText().toStdString());
+    }
+
+    size_t sizeSheetSampleColumn = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbSampleCountSizeTable->currentText().toStdString());
+    size_t sizeSheetUniverseColumn = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbUniverseCountSizeTable->currentText().toStdString());
+    size_t sizeSheetRowDataStart = m_ui->m_cmbDataRowStartSizeTable->currentText().toInt();
+
+
+    RStatsWorksheet worksheet;
+
+    if (StringUtils::isEmpty(m_currentTextFileOutput))
+    {
+        FileUtils::writeFileContents(m_currentTextFileOutput,
+                                     worksheet.toEvenlySpacedString());
+    }
+
+    if (StringUtils::isEmpty(m_currentCSVFileOutput))
+    {
+        FileUtils::writeFileContents(m_currentCSVFileOutput,
+                                     worksheet.toCommaDelimitedString());
+    }
 
 }
 
@@ -325,15 +454,20 @@ void UIRStatsSVA::onHelp()
 
 }
 
-void UIRStatsSVA::onSetOutputFolder()
+void UIRStatsSVA::onSaveCSVFile()
 {
-
+    m_currentCSVFileOutput = UIRStatsUtils::setOutputFile(m_ui->m_chkCSVOutput,
+                                                   "Save to CSV file...",
+                                                   "*.csv");
 }
 
-void UIRStatsSVA::onSetPrinterOptions()
+void UIRStatsSVA::onSaveTextFile()
 {
-
+    m_currentTextFileOutput = UIRStatsUtils::setOutputFile(m_ui->m_chkTextOutput,
+                              "Save to Text file...",
+                              "*.txt");
 }
+
 
 void UIRStatsSVA::onSetStratum(int count)
 {
@@ -349,44 +483,32 @@ void UIRStatsSVA::onUpdateDataFormatSelection()
     m_ui->m_cmbAuditedDataTable->setEnabled(false);
     m_ui->m_cmbExaminedDataTable->setEnabled(false);
     m_ui->m_cmbDifferenceDataTable->setEnabled(false);
-    m_ui->m_cmbAuditedSizeTable->setEnabled(false);
-    m_ui->m_cmbExaminedSizeTable->setEnabled(false);
-    m_ui->m_cmbDifferenceSizeTable->setEnabled(false);
     if (m_ui->m_rdbAudited->isChecked())
     {
         m_ui->m_cmbAuditedDataTable->setEnabled(true);
-        m_ui->m_cmbAuditedSizeTable->setEnabled(true);
     }
     else if (m_ui->m_rdbDifference->isChecked())
     {
         m_ui->m_cmbDifferenceDataTable->setEnabled(true);
-        m_ui->m_cmbDifferenceSizeTable->setEnabled(true);
     }
     else if (m_ui->m_rdbExamined->isChecked())
     {
         m_ui->m_cmbExaminedDataTable->setEnabled(true);
-        m_ui->m_cmbExaminedSizeTable->setEnabled(true);
     }
     else if (m_ui->m_rdbAuditedAndDifference->isChecked())
     {
         m_ui->m_cmbDifferenceDataTable->setEnabled(true);
-        m_ui->m_cmbDifferenceSizeTable->setEnabled(true);
         m_ui->m_cmbAuditedDataTable->setEnabled(true);
-        m_ui->m_cmbAuditedSizeTable->setEnabled(true);
     }
     else if (m_ui->m_rdbExaminedAndDifference->isChecked())
     {
         m_ui->m_cmbDifferenceDataTable->setEnabled(true);
-        m_ui->m_cmbDifferenceSizeTable->setEnabled(true);
         m_ui->m_cmbExaminedDataTable->setEnabled(true);
-        m_ui->m_cmbExaminedSizeTable->setEnabled(true);
     }
     else if (m_ui->m_rdbExaminedAndAudited->isChecked())
     {
         m_ui->m_cmbAuditedDataTable->setEnabled(true);
-        m_ui->m_cmbAuditedSizeTable->setEnabled(true);
         m_ui->m_cmbExaminedDataTable->setEnabled(true);
-        m_ui->m_cmbExaminedSizeTable->setEnabled(true);
     }
 }
 

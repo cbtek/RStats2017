@@ -8,6 +8,11 @@
 #include "UIRStatsUVA.h"
 #include "ui_UIRStatsUVA.h"
 
+#include "rstats_ui/inc/UIRStatsUtils.hpp"
+
+using namespace oig::ratstats::ui;
+using namespace oig::ratstats::utils;
+
 namespace oig {
 namespace ratstats {
 namespace modules {
@@ -19,8 +24,17 @@ UIRStatsUVA::UIRStatsUVA(QWidget *parent) :
     m_ui(new Ui_UIRStatsUVA)
 {
     m_ui->setupUi(this);
+    QIcon exitIcon = UIRStatsUtils::getIcon("img_exit.png");
+    QIcon runIcon = UIRStatsUtils::getIcon("img_run.png");
+    QIcon helpIcon = UIRStatsUtils::getIcon("img_help.png");
+    m_ui->m_dockOptions->setTitleBarWidget(new QWidget());
+    m_ui->m_btnGenerate->setIcon(runIcon);
+    m_ui->m_btnExit->setIcon(exitIcon);
+    m_ui->m_btnHelp->setIcon(helpIcon);
+    connect(m_ui->m_btnGenerate,SIGNAL(clicked()),this,SLOT(onContinue()));
+    connect(m_ui->m_btnExit,SIGNAL(clicked()),this,SLOT(onExit()));
+    connect(m_ui->m_btnHelp,SIGNAL(clicked()),this,SLOT(onHelp()));
 }
-
 
 UIRStatsUVA::~UIRStatsUVA()
 {

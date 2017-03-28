@@ -102,10 +102,14 @@ RStatsSVAOutputDataList RStatsSVA::execute(RStatsDataFormatType dataFormatType,
     return summaryDataList;
 }
 
-RStatsSVAOutputDataList RStatsSVA::execute(const RStatsWorksheet &sizeSheet,
+RStatsSVAOutputDataList RStatsSVA::execute(
                                            const RStatsWorksheet &inputSheet,
-                                           size_t numStratum,
-                                           RStatsDataFormatType dataFormatType)
+                                           const RStatsWorksheet &sizeSheet,
+                                           const RStatsDataFormatTypeIndex & dataSheetIndex,
+                                           size_t dataSheetRowStart,
+                                           size_t sizeSheetSampleSizeColumn,
+                                           size_t sizeSheetUniverseSizeColumn,
+                                           size_t sizeSheetRowStart)
 {
     std::pair<size_t,size_t> sizeSheetRowColMax = sizeSheet.getLastDataRowAndColumn();
     std::pair<size_t,size_t> inputSheetRowColMax = inputSheet.getLastDataRowAndColumn();

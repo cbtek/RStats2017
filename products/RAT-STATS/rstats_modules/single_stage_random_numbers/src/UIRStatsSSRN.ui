@@ -602,7 +602,7 @@
             <number>16</number>
            </property>
            <item>
-            <widget class="QCheckBox" name="m_chkAccessExcelOutput">
+            <widget class="QCheckBox" name="m_chkCSVOutput">
              <property name="text">
               <string>Access / Excel File</string>
              </property>
@@ -630,7 +630,7 @@
      <x>0</x>
      <y>0</y>
      <width>983</width>
-     <height>20</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -728,12 +728,20 @@
   </action>
  </widget>
  <tabstops>
+  <tabstop>m_txtAuditName</tabstop>
+  <tabstop>m_chkCustomSeed</tabstop>
+  <tabstop>m_spnSeed</tabstop>
   <tabstop>m_spnOrder</tabstop>
+  <tabstop>m_spnSpares</tabstop>
+  <tabstop>m_spnLowNumber</tabstop>
+  <tabstop>m_spnHighNumber</tabstop>
+  <tabstop>m_chkCSVOutput</tabstop>
   <tabstop>m_chkTextOutput</tabstop>
-  <tabstop>m_chkAccessExcelOutput</tabstop>
-  <tabstop>m_btnExit</tabstop>
-  <tabstop>m_btnHelp</tabstop>
   <tabstop>m_tblOutput</tabstop>
+  <tabstop>m_btnExit</tabstop>
+  <tabstop>m_btnGenerate</tabstop>
+  <tabstop>m_btnHelp</tabstop>
+  <tabstop>m_lstErrorConsole</tabstop>
  </tabstops>
  <resources/>
  <connections/>

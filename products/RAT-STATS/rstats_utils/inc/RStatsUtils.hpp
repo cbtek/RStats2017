@@ -78,6 +78,12 @@ enum class RStatsDataFormatType
     AuditAndDifference
 };
 
+struct RStatsDataFormatTypeIndex
+{
+    RStatsDataFormatType type;
+    size_t primaryIndex,secondaryIndex;
+};
+
 
 enum class RStatsConditionalOperatorType
 {

@@ -11,6 +11,7 @@
 #include <QComboBox>
 
 #include "rstats_utils/inc/RStatsWorkbook.h"
+#include "rstats_utils/inc/RStatsConditionLogger.h"
 
 class Ui_UIRStatsSVA;
 
@@ -46,12 +47,19 @@ private:
      QIcon m_iconExit;
      QIcon m_iconRun;
      QIcon m_iconAdd;
+     QIcon m_iconError;
+     QIcon m_iconWarning;
+     QIcon m_iconOK;
+
      QTimer m_clock;
 
+     std::string m_currentTextFileOutput;
+     std::string m_currentCSVFileOutput;
      oig::ratstats::utils::RStatsWorksheet m_currentDataSheet;
      oig::ratstats::utils::RStatsWorksheet m_currentSizeSheet;
      oig::ratstats::utils::RStatsWorkbook m_currentDataWorkbook;
      oig::ratstats::utils::RStatsWorkbook m_currentSizeWorkbook;
+     oig::ratstats::utils::RStatsConditionLogger m_conditionLogger;
 
      void populateWithColumns(const std::set<size_t> &columns, QComboBox* comboBox);
      void populateWithRows(const std::set<size_t> &rows, QComboBox* comboBox);
@@ -62,7 +70,7 @@ protected slots:
      void onAddNewColumnToSizeTable();
      void onUpdateRowColumnExtentsForDataTable();
      void onUpdateRowColumnExtentsForSizeTable();
-
+     bool onValidate();
      void onUpdateClock();
      void onContinue();
      void onExit();     
@@ -73,8 +81,8 @@ protected slots:
      void onImportDataInput();
      void onImportSizeInput();
      void onHelp();
-     void onSetOutputFolder();
-     void onSetPrinterOptions();
+     void onSaveCSVFile();
+     void onSaveTextFile();
      void onSetStratum(int count);
      void onUpdateDataFormatSelection();
 };

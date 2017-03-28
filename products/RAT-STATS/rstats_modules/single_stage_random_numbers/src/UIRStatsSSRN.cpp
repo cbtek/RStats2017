@@ -47,7 +47,7 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     connect(m_ui->m_spnLowNumber,SIGNAL(valueChanged(int)),this,SLOT(onValidateForm()));
     connect(m_ui->m_spnSpares,SIGNAL(valueChanged(int)),this,SLOT(onValidateForm()));
     connect(m_ui->m_spnOrder,SIGNAL(valueChanged(int)),this,SLOT(onValidateForm()));
-    connect(m_ui->m_chkAccessExcelOutput,SIGNAL(clicked(bool)),this,SLOT(onSaveAccessExcelFile()));
+    connect(m_ui->m_chkCSVOutput,SIGNAL(clicked(bool)),this,SLOT(onSaveCSVFile()));
     connect(m_ui->m_chkTextOutput,SIGNAL(clicked(bool)),this,SLOT(onSaveTextFile()));    
     connect(m_ui->m_chkCustomSeed,SIGNAL(toggled(bool)),this,SLOT(onSeedBoxToggled(bool)));
     onUpdateClock();    
@@ -148,34 +148,20 @@ void UIRStatsSSRN::onValidateForm()
     else m_ui->m_btnGenerate->setEnabled(true);
 }
 
-void UIRStatsSSRN::onSaveAccessExcelFile()
+void UIRStatsSSRN::onSaveCSVFile()
 {
-    QString file = QFileDialog::getSaveFileName(this,"Save to Access/Excel CSV File...","","*.csv");
-
-    if (FileUtils::fileExists(file.toStdString()))
-    {
-        m_currentAccessExcelFileOutput = file;
-        m_ui->m_chkAccessExcelOutput->setToolTip(file);
-    }
-    else
-    {
-        m_ui->m_chkAccessExcelOutput->setChecked(false);
-    }
+    m_currenCSVOutput = UIRStatsUtils::setOutputFile(this,
+                                                   m_ui->m_chkCSVOutput,
+                                                   "Save to CSV file...",
+                                                   "*.csv");
 }
 
 void UIRStatsSSRN::onSaveTextFile()
 {
-    QString file = QFileDialog::getSaveFileName(this,"Save to Text File...","","*.txt");
-
-    if (FileUtils::fileExists(file.toStdString()))
-    {
-        m_currentTextFileOutput = file;
-        m_ui->m_chkTextOutput->setToolTip(file);
-    }
-    else
-    {
-        m_ui->m_chkTextOutput->setChecked(false);
-    }
+    m_currentTextFileOutput = UIRStatsUtils::setOutputFile(this,
+                              m_ui->m_chkTextOutput,
+                              "Save to Text file...",
+                              "*.txt");
 }
 
 void UIRStatsSSRN::onUpdateClock()
@@ -203,6 +189,18 @@ void UIRStatsSSRN::onGenerate()
     RStatsWorksheet worksheet;
     RStatsSSRN::inst().saveToWorksheet(worksheet);
     UIRStatsUtils::bindSheetToUI(worksheet,m_ui->m_tblOutput,false,0,0);
+
+    if (StringUtils::isEmpty(m_currentTextFileOutput))
+    {
+        FileUtils::writeFileContents(m_currentTextFileOutput,
+                                     worksheet.toEvenlySpacedString());
+    }
+
+    if (StringUtils::isEmpty(m_currentCSVFileOutput))
+    {
+        FileUtils::writeFileContents(m_currentCSVFileOutput,
+                                     worksheet.toCommaDelimitedString());
+    }
 
     m_ui->m_tblOutput->resizeColumnsToContents();
     m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);

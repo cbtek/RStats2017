@@ -41,6 +41,7 @@ UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
     m_exitIcon = UIRStatsUtils::getIcon("img_exit.png");
     m_runIcon = UIRStatsUtils::getIcon("img_run.png");
     m_helpIcon = UIRStatsUtils::getIcon("img_help.png");
+    m_ui->m_dockOptions->setTitleBarWidget(new QWidget());
     m_ui->m_btnContinue->setIcon(m_runIcon);
     m_ui->m_btnExit->setIcon(m_exitIcon);
     m_ui->m_btnHelp->setIcon(m_helpIcon);

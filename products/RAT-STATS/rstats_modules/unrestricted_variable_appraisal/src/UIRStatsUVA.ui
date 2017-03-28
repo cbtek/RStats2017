@@ -185,6 +185,43 @@
       </property>
      </widget>
     </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="leftMargin">
+       <number>4</number>
+      </property>
+      <property name="topMargin">
+       <number>4</number>
+      </property>
+      <property name="rightMargin">
+       <number>4</number>
+      </property>
+      <property name="bottomMargin">
+       <number>4</number>
+      </property>
+      <item>
+       <widget class="QPushButton" name="m_btnHelp">
+        <property name="text">
+         <string>Help</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="m_btnGenerate">
+        <property name="text">
+         <string>Generate</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="m_btnExit">
+        <property name="text">
+         <string>Exit</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
    </layout>
   </widget>
   <widget class="QDockWidget" name="m_dockOptions">
@@ -476,6 +513,25 @@
    </widget>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>m_spnUniverseSize</tabstop>
+  <tabstop>m_cmbDataInputSheets</tabstop>
+  <tabstop>m_btnImportSampleInputData</tabstop>
+  <tabstop>m_rdbExamined</tabstop>
+  <tabstop>m_rdbExaminedAndAudited</tabstop>
+  <tabstop>m_rdbAudited</tabstop>
+  <tabstop>m_rdbAuditedAndDifference</tabstop>
+  <tabstop>m_rdbDifference</tabstop>
+  <tabstop>m_rdbExaminedAndDifference</tabstop>
+  <tabstop>m_cmbDataRowStartDataTable</tabstop>
+  <tabstop>m_cmbExaminedDataTable</tabstop>
+  <tabstop>m_cmbAuditedDataTable</tabstop>
+  <tabstop>m_cmbDifferenceDataTable</tabstop>
+  <tabstop>m_btnAddRowDataTable</tabstop>
+  <tabstop>m_btnAddColumnDataTable</tabstop>
+  <tabstop>m_tblData</tabstop>
+  <tabstop>m_tblOutput</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

@@ -95,9 +95,7 @@ public:
      * @param dataFormatType
      * @return
      */
-    RStatsSVAOutputDataList execute(const oig::ratstats::utils::RStatsWorksheet& sizeSheet,
-                                    const oig::ratstats::utils::RStatsWorksheet& inputSheet, size_t numStratum,
-                                    oig::ratstats::utils::RStatsDataFormatType dataFormatType);
+    RStatsSVAOutputDataList execute(const oig::ratstats::utils::RStatsWorksheet& inputSheet, const oig::ratstats::utils::RStatsWorksheet& sizeSheet, const utils::RStatsDataFormatTypeIndex &dataSheetIndex, size_t dataSheetRowStart, size_t sizeSheetSampleSizeColumn, size_t sizeSheetUniverseSizeColumn, size_t sizeSheetRowStart);
 
     /**
      * @brief populateWorkbookFromOutput

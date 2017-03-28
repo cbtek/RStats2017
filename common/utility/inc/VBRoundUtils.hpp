@@ -29,46 +29,46 @@ namespace VBRoundUtils {
         inline std::int32_t qbr_double_to_long(double f){if (f<0) return(f-0.5f); else return(f+0.5f);}
         #else
         //QBASIC compatible rounding via FPU:
-        #ifdef __WIN32
-        inline std::int64_t qbr(long double f){
-          std::int64_t i; int temp=0;
-          if (f>9223372036854775807) {temp=1;f=f-9223372036854775808u;} //if it's too large for a signed std::int64_t, make it an unsigned std::int64_t and return that value if possible.
-          __asm{
-              fld   f
-              fistp i
-              }
-          if (temp) return i|0x8000000000000000;//+9223372036854775808;
-          return i;
-        }
-        inline std::uint64_t qbr_longdouble_to_uint64(long double f)
-        {
-          std::uint64_t i;
-          __asm{
-            fld   f
-              fistp i
-              }
-          return i;
-        }
+//        #ifdef __WIN32
+//        inline std::int64_t qbr(long double f){
+//          std::int64_t i; int temp=0;
+//          if (f>9223372036854775807) {temp=1;f=f-9223372036854775808u;} //if it's too large for a signed std::int64_t, make it an unsigned std::int64_t and return that value if possible.
+//          __asm{
+//              fld   f
+//              fistp i
+//              }
+//          if (temp) return i|0x8000000000000000;//+9223372036854775808;
+//          return i;
+//        }
+//        inline std::uint64_t qbr_longdouble_to_uint64(long double f)
+//        {
+//          std::uint64_t i;
+//          __asm{
+//            fld   f
+//              fistp i
+//              }
+//          return i;
+//        }
 
-        inline std::int32_t qbr_float_to_long(float f)
-        {
-          int32 i;
-          __asm{
-            fld   f
-              fistp i
-              }
-          return i;
-        }
-        inline std::int32_t qbr_double_to_long(double f)
-        {
-          std::int32_t i;
-          __asm{
-            fld   f
-              fistp i
-              }
-          return i;
-        }
-        #else
+//        inline std::int32_t qbr_float_to_long(float f)
+//        {
+//          int32 i;
+//          __asm{
+//            fld   f
+//              fistp i
+//              }
+//          return i;
+//        }
+//        inline std::int32_t qbr_double_to_long(double f)
+//        {
+//          std::int32_t i;
+//          __asm{
+//            fld   f
+//              fistp i
+//              }
+//          return i;
+//        }
+//        #else
             //FLDS=load single
             //FLDL=load double
             //FLDT=load long double
@@ -117,7 +117,7 @@ namespace VBRoundUtils {
                        );
               return i;
             }
-            #endif
+            //#endif
         #endif //x86 support
     }
 

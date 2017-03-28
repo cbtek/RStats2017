@@ -13,6 +13,8 @@
 #include <QStyleFactory>
 #include <QFile>
 #include <QTableWidget>
+#include <QFileDialog>
+#include <QCheckBox>
 
 #include "rstats_utils/inc/RStatsUtils.hpp"
 #include "rstats_utils/inc/RStatsWorkbook.h"
@@ -172,6 +174,24 @@ namespace UIRStatsUtils
             table->setItem(index.first,index.second,item);
         }
         table->show();
+    }
+
+    static inline std::string setOutputFile(QCheckBox * checkBox,
+                              const QString& title,
+                              const QString& extension)
+    {
+        QString file = QFileDialog::getSaveFileName(nullptr,title,"",extension);
+
+        if (!cbtek::common::utility::StringUtils::isEmpty(file.toStdString()))
+        {
+            checkBox->setToolTip(file);
+            return file.toStdString();
+        }
+        else
+        {
+            checkBox->setChecked(false);
+        }
+        return "";
     }
 }
 

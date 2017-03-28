@@ -58,7 +58,7 @@ private:
     Ui_UIRStatsSSRN *m_ui;
     oig::ratstats::utils::RStatsConditionLogger m_logger;
 
-    QString m_currentAccessExcelFileOutput;
+    QString m_currentCSVFileOutput;
     QString m_currentTextFileOutput;
 
     QIcon m_iconEdit,  m_iconHelp,  m_iconModule,m_iconRun,
@@ -80,7 +80,7 @@ private slots:
      void onGenerate();
      void onHelp();
      void onValidateForm();
-     void onSaveAccessExcelFile();
+     void onSaveCSVFile();
      void onSaveTextFile();
      void onUpdateClock();
 };
