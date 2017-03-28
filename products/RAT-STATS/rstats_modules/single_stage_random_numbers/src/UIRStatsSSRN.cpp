@@ -38,6 +38,8 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     m_ui(new Ui_UIRStatsSSRN)
 {
     m_ui->setupUi(this);
+    m_ui->m_dockOptions->setTitleBarWidget(new QWidget());
+    m_ui->m_dockOutput->setTitleBarWidget(new QWidget());
     connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));
     connect(m_ui->m_btnGenerate,SIGNAL(clicked(bool)),this,SLOT(onGenerate()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
@@ -46,11 +48,9 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     connect(m_ui->m_spnSpares,SIGNAL(valueChanged(int)),this,SLOT(onValidateForm()));
     connect(m_ui->m_spnOrder,SIGNAL(valueChanged(int)),this,SLOT(onValidateForm()));
     connect(m_ui->m_chkAccessExcelOutput,SIGNAL(clicked(bool)),this,SLOT(onSaveAccessExcelFile()));
-    connect(m_ui->m_chkTextOutput,SIGNAL(clicked(bool)),this,SLOT(onSaveTextFile()));
-    connect(&m_clock,SIGNAL(timeout()),this,SLOT(onUpdateClock()));
-    connect(m_ui->m_grpSeed,SIGNAL(toggled(bool)),this,SLOT(onSeedBoxToggled(bool)));
-    onUpdateClock();
-    m_clock.start(1000);
+    connect(m_ui->m_chkTextOutput,SIGNAL(clicked(bool)),this,SLOT(onSaveTextFile()));    
+    connect(m_ui->m_chkCustomSeed,SIGNAL(toggled(bool)),this,SLOT(onSeedBoxToggled(bool)));
+    onUpdateClock();    
 
     QString defaultAuditName = QString::fromStdString(RStatsUtils::getAuditName());
 
@@ -60,8 +60,9 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     m_ui->m_frmTotals->hide();
 
     m_ui->m_spnSeed->setMaximum(std::numeric_limits<double>::max());
-    m_ui->m_spnSeed->setMinimum(std::numeric_limits<double>::min());
-    m_ui->m_spnSeed->setValue(TimeUtils::getMillisecondsNow());
+    m_ui->m_spnSeed->setMinimum(std::numeric_limits<double>::min());    
+    m_ui->m_spnSeed->setValue(static_cast<RStatsFloat>(TimeUtils::getSecondsNow()) /
+                              static_cast<RStatsFloat>(m_rnd.next(10,1000)));
 
     m_ui->m_btnGenerate->setEnabled(false);
 
@@ -86,6 +87,8 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     UIRStatsUtils::setButtonStyle(m_ui->m_btnGenerate,this->font(),m_iconRun,buttonHeight);
     UIRStatsUtils::setButtonStyle(m_ui->m_btnHelp,this->font(),m_iconHelp,buttonHeight);
     updateRecentSessions();
+    onSeedBoxToggled(false);
+
 }
 
 UIRStatsSSRN::~UIRStatsSSRN()
@@ -179,9 +182,10 @@ void UIRStatsSSRN::onUpdateClock()
 {
     m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::to12HourTimeString(TimeUtils::getCurrentTime())));
     m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toShortDateString(DateUtils::getCurrentDate())));
-    if (!m_ui->m_grpSeed->isChecked())
-    {
-        m_ui->m_spnSeed->setValue(TimeUtils::getMillisecondsNow());
+    if (!m_ui->m_chkCustomSeed->isChecked())
+    {        
+        m_ui->m_spnSeed->setValue(static_cast<RStatsFloat>(TimeUtils::getSecondsNow()) /
+                                  static_cast<RStatsFloat>(m_rnd.next(10,1000)));
     }
 }
 
@@ -189,48 +193,41 @@ void UIRStatsSSRN::onGenerate()
 {
 
     onUpdateClock();
-    RStatsSSRNOutputData outputData = RStatsSSRN::inst().generateRandomNumbers(m_ui->m_txtAuditName->text().toStdString(),
-                                                                     m_ui->m_spnSeed->value(),
-                                                                     m_ui->m_spnOrder->value(),
-                                                                     m_ui->m_spnSpares->value(),
-                                                                     m_ui->m_spnLowNumber->value(),
-                                                                     m_ui->m_spnHighNumber->value());
+    RStatsSSRNOutputData outputData = RStatsSSRN::inst().execute(m_ui->m_txtAuditName->text().toStdString(),
+                                                                 m_ui->m_spnSeed->value(),
+                                                                 m_ui->m_spnOrder->value(),
+                                                                 m_ui->m_spnSpares->value(),
+                                                                 m_ui->m_spnLowNumber->value(),
+                                                                 m_ui->m_spnHighNumber->value());
 
-    m_ui->m_tblOutput->clear();
-    m_ui->m_tblOutput->setRowCount(outputData.values.size());
-    m_ui->m_tblOutput->setColumnCount(3);
-    m_ui->m_tblOutput->setHorizontalHeaderLabels(QStringList()<<"Index"<<"Value"<<"Type");
-    int row = 0;
-    for (const auto& value : outputData.values)
-    {
-        QTableWidgetItem * itemLabel = new QTableWidgetItem;
-        QTableWidgetItem * rowLabel = new QTableWidgetItem;
-        QTableWidgetItem * typeLabel = new QTableWidgetItem;
-        typeLabel->setText(value.orderType==RStatsSSRNOrderType::RandomlyOrdered?"(Random)":"(Spare)");
-        itemLabel->setText(QString::number(value.value));
-        rowLabel->setText(QString::number(value.orderIndex+1));
-        m_ui->m_tblOutput->setItem(row,0,rowLabel);
-        m_ui->m_tblOutput->setItem(row,1,itemLabel);
-        m_ui->m_tblOutput->setItem(row,2,typeLabel);
-        ++row;
-    }
+    RStatsWorksheet worksheet;
+    RStatsSSRN::inst().saveToWorksheet(worksheet);
+    UIRStatsUtils::bindSheetToUI(worksheet,m_ui->m_tblOutput,false,0,0);
 
-    m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(2,QHeaderView::Stretch);
+    m_ui->m_tblOutput->resizeColumnsToContents();
+    m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     m_ui->m_grpOutput->show();
     m_ui->m_line->show();
     m_ui->m_frmTotals->show();
     m_ui->m_lblNoData->hide();
-    m_ui->m_lblTotalRandomNumbersValue->setText(QString::number(m_ui->m_spnOrder->value()+m_ui->m_spnSpares->value()));
-    m_ui->m_lblTotalFrameSizeValue->setText(QString::number((m_ui->m_spnHighNumber->value()-m_ui->m_spnLowNumber->value())+1));
-    m_ui->m_lblOutputSummationValue->setText(QString::number(outputData.sum));
+
+    std::string totalStr = StringUtils::toString(m_ui->m_spnOrder->value()+m_ui->m_spnSpares->value(),true);
+    std::string frameSizeStr = StringUtils::toString((m_ui->m_spnHighNumber->value()-m_ui->m_spnLowNumber->value())+1,true);
+    std::string sumStr = StringUtils::toString(outputData.sum,true);
+
+    m_ui->m_lblTotalRandomNumbersValue->setText(QString::fromStdString(totalStr));
+    m_ui->m_lblTotalFrameSizeValue->setText(QString::fromStdString(frameSizeStr));
+    m_ui->m_lblOutputSummationValue->setText(QString::fromStdString(sumStr));
+
+    m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::to12HourTimeString(outputData.createTime)));
+    m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toShortDateString(outputData.createDate)));
 
     SessionData sessionData = getSessionData();
     sessionData.dateValue = DateUtils::getCurrentDate().toDateInteger();
     sessionData.timeValue = TimeUtils::getCurrentTime().toTimeInteger();
     m_recentSessionsMap[QString::fromStdString(sessionData.name)]=sessionData;
     RStatsUtils::saveRecentSession(sessionData.toString(),c_RECENT_SESSION_EXTENSION);
-    updateRecentSessions();
-    m_clock.stop();
+    updateRecentSessions();    
 }
 
 void UIRStatsSSRN::onHelp()
@@ -263,12 +260,15 @@ SessionData UIRStatsSSRN::getSessionData() const
 
 void UIRStatsSSRN::setSessionData(const SessionData &data)
 {
+    m_ui->m_chkCustomSeed->setEnabled(true);
     m_ui->m_txtAuditName->setText(QString::fromStdString(data.name));
     m_ui->m_spnSeed->setValue(data.seed);
+    m_ui->m_spnSeed->setEnabled(true);
     m_ui->m_spnHighNumber->setValue(data.high);
     m_ui->m_spnLowNumber->setValue(data.low);
     m_ui->m_spnSpares->setValue(data.spares);
     m_ui->m_spnOrder->setValue(data.order);
+
 }
 void UIRStatsSSRN::onClearRecentSessions()
 {
@@ -323,11 +323,13 @@ void UIRStatsSSRN::onSeedBoxToggled(bool toggle)
 {
     if (toggle)
     {
+        m_ui->m_spnSeed->setEnabled(true);
         m_ui->m_spnSeed->clear();
-        m_ui->m_spnSeed->setFocus();
+        m_ui->m_spnSeed->setFocus();        
     }
     else
     {
+        m_ui->m_spnSeed->setEnabled(false);
         onUpdateClock();
     }
 

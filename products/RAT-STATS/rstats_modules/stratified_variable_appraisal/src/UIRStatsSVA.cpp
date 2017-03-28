@@ -265,13 +265,6 @@ void UIRStatsSVA::onImportDataInput()
             UIRStatsErrorMessage(title,message).exec();
             return;
         }
-//        UIRStatsImportWorksheet importUI(workbook);
-//        connect(&importUI,
-//                SIGNAL(sheetSelected(const oig::ratstats::utils::RStatsWorksheet &)),
-//                this,
-//                SLOT(onSampleDataInputSheetSelected(const oig::ratstats::utils::RStatsWorksheet &)));
-
-//        importUI.exec();
     }
 }
 
@@ -324,12 +317,6 @@ void UIRStatsSVA::onImportSizeInput()
             UIRStatsErrorMessage(title,message).exec();
             return;
         }        
-//        UIRStatsImportWorksheet importUI(workbook);
-//        connect(&importUI,
-//                SIGNAL(sheetSelected(const oig::ratstats::utils::RStatsWorksheet &)),
-//                this,
-//                SLOT(onSampleSizeInputSheetSelected(const oig::ratstats::utils::RStatsWorksheet &)));
-//        importUI.exec();
     }
 }
 

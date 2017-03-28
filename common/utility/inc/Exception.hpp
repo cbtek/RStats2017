@@ -23,8 +23,7 @@ SOFTWARE.
 
 */
 
-#ifndef _CBTEK_COMMON_UTILITY_EXCEPTION_HPP_
-#define _CBTEK_COMMON_UTILITY_EXCEPTION_HPP_
+#pragma once
 
 #include <exception>
 #include <sstream>
@@ -97,5 +96,3 @@ CREATE_EXCEPTION(InvalidCastException,"Invalid Cast Exception")
 #define THROW_GENERIC_EXCEPTION(MESSAGE) throw cbtek::common::utility::GenericException(EXCEPTION_TAG_LINE+MESSAGE);
 
 }}}//namespace
-
-#endif // _CBTEK_COMMON_UTILITY_EXCEPTION_HPP_

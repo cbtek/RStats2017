@@ -132,12 +132,15 @@ void RStatsUAA::saveToWorksheet(RStatsWorksheet &worksheetOut)
 
     worksheetOut("D6")= "80%";
     worksheetOut("D6").bgColor.set("#FFAAAA");
+    worksheetOut("D6").fgColor.set("#101001");
 
     worksheetOut("E6")= "90%";
     worksheetOut("E6").bgColor.set("#FFFFAA");
+    worksheetOut("E6").fgColor.set("#101001");
 
     worksheetOut("F6")= "95%";
     worksheetOut("F6").bgColor.set("#AAFFAA");
+    worksheetOut("F6").fgColor.set("#101001");
     worksheetOut.resetDefaults();
 
     worksheetOut.setDefaultFont(Font("arial",12));

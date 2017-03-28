@@ -60,19 +60,20 @@ private:
 
     QString m_currentAccessExcelFileOutput;
     QString m_currentTextFileOutput;
-    QTimer m_clock;
+
     QIcon m_iconEdit,  m_iconHelp,  m_iconModule,m_iconRun,
           m_iconFolder,m_iconRemove,m_iconExit,  m_iconSettings,
           m_iconObject,m_iconAbout, m_iconAdd,   m_iconWarning,
           m_iconError, m_iconOK;
 
+    cbtek::common::utility::Random m_rnd;
     QActionGroup * m_recentSessionActionGroup;
     QMap<QString,SessionData> m_recentSessionsMap;    
     SessionData getSessionData() const;
     void setSessionData(const SessionData& data);
     void updateRecentSessions();
 private slots:                    
-        void onSeedBoxToggled(bool toggle);
+     void onSeedBoxToggled(bool toggle);
      void onClearRecentSessions();
      void onRecentSessionSelected(QAction* action);
      void onExit();

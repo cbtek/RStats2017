@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1024</width>
+    <width>983</width>
     <height>768</height>
    </rect>
   </property>
@@ -305,8 +305,15 @@
          </property>
          <property name="font">
           <font>
-           <pointsize>18</pointsize>
+           <pointsize>28</pointsize>
           </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QLabel
+{
+	border:6px solid gray;
+	border-radius:10px;
+}</string>
          </property>
          <property name="text">
           <string>No Data to Display</string>
@@ -319,14 +326,104 @@
       </layout>
      </widget>
     </item>
+    <item>
+     <widget class="QFrame" name="frame">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <property name="spacing">
+        <number>4</number>
+       </property>
+       <property name="leftMargin">
+        <number>1</number>
+       </property>
+       <property name="topMargin">
+        <number>4</number>
+       </property>
+       <property name="rightMargin">
+        <number>1</number>
+       </property>
+       <property name="bottomMargin">
+        <number>4</number>
+       </property>
+       <item>
+        <widget class="QPushButton" name="m_btnExit">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Exit</string>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="m_btnGenerate">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Generate</string>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="m_btnHelp">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Help</string>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
    </layout>
   </widget>
-  <widget class="QDockWidget" name="dockWidget_2">
+  <widget class="QDockWidget" name="m_dockOptions">
+   <property name="features">
+    <set>QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetVerticalTitleBar</set>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::BottomDockWidgetArea|Qt::TopDockWidgetArea</set>
+   </property>
    <property name="windowTitle">
-    <string/>
+    <string>Options</string>
    </property>
    <attribute name="dockWidgetArea">
-    <number>1</number>
+    <number>4</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_2">
     <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -340,11 +437,11 @@
       <number>4</number>
      </property>
      <property name="bottomMargin">
-      <number>4</number>
+      <number>0</number>
      </property>
      <item>
       <widget class="QFrame" name="m_frmOptions">
-       <layout class="QVBoxLayout" name="verticalLayout_2">
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
         <property name="spacing">
          <number>11</number>
         </property>
@@ -361,72 +458,15 @@
          <number>2</number>
         </property>
         <item>
-         <widget class="QGroupBox" name="m_grpReviewName">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="title">
-           <string>Audit/Review Name:</string>
-          </property>
-          <layout class="QHBoxLayout" name="horizontalLayout">
-           <property name="leftMargin">
-            <number>4</number>
-           </property>
-           <property name="topMargin">
-            <number>16</number>
-           </property>
-           <property name="rightMargin">
-            <number>4</number>
-           </property>
-           <property name="bottomMargin">
-            <number>16</number>
-           </property>
-           <item>
-            <widget class="QLineEdit" name="m_txtAuditName"/>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="m_grpSeed">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="title">
-           <string>Custom Seed &amp;Number:</string>
-          </property>
-          <property name="checkable">
-           <bool>true</bool>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_3">
-           <property name="leftMargin">
-            <number>4</number>
-           </property>
-           <property name="topMargin">
-            <number>16</number>
-           </property>
-           <property name="rightMargin">
-            <number>4</number>
-           </property>
-           <property name="bottomMargin">
-            <number>16</number>
-           </property>
-           <item>
-            <widget class="QDoubleSpinBox" name="m_spnSeed"/>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
          <widget class="QGroupBox" name="m_grpNumberingOptions">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="title">
-           <string>Numbering Options:</string>
+           <string>Input Options:</string>
           </property>
           <layout class="QGridLayout" name="gridLayout">
            <property name="topMargin">
@@ -435,71 +475,97 @@
            <property name="bottomMargin">
             <number>16</number>
            </property>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_3">
-             <property name="text">
-              <string>Low Number:</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="label_4">
-             <property name="text">
-              <string>High Number:</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
+           <item row="0" column="3">
             <widget class="QLabel" name="label_2">
              <property name="text">
-              <string>Spares in Random Order:</string>
+              <string>Spares</string>
              </property>
              <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              <set>Qt::AlignCenter</set>
              </property>
             </widget>
            </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string>Sequential Order:</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QSpinBox" name="m_spnLowNumber">
-             <property name="maximum">
-              <number>100000</number>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QSpinBox" name="m_spnHighNumber">
+           <item row="1" column="2">
+            <widget class="QSpinBox" name="m_spnOrder">
              <property name="maximum">
               <number>100000</number>
              </property>
             </widget>
            </item>
            <item row="1" column="1">
+            <widget class="QDoubleSpinBox" name="m_spnSeed"/>
+           </item>
+           <item row="1" column="5">
+            <widget class="QSpinBox" name="m_spnHighNumber">
+             <property name="maximum">
+              <number>100000</number>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="4">
+            <widget class="QSpinBox" name="m_spnLowNumber">
+             <property name="maximum">
+              <number>100000</number>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>Sequential</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="4">
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Low</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="5">
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string>High</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
             <widget class="QSpinBox" name="m_spnSpares">
              <property name="maximum">
               <number>100000</number>
              </property>
             </widget>
            </item>
+           <item row="1" column="0">
+            <widget class="QLineEdit" name="m_txtAuditName"/>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_6">
+             <property name="text">
+              <string>Audit/Review Name</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
            <item row="0" column="1">
-            <widget class="QSpinBox" name="m_spnOrder">
-             <property name="maximum">
-              <number>100000</number>
+            <widget class="QCheckBox" name="m_chkCustomSeed">
+             <property name="text">
+              <string>Custom Seed Number</string>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
              </property>
             </widget>
            </item>
@@ -509,20 +575,20 @@
         <item>
          <widget class="QGroupBox" name="m_grpOutputOptions">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
           <property name="font">
            <font>
-            <pointsize>8</pointsize>
+            <pointsize>10</pointsize>
            </font>
           </property>
           <property name="title">
            <string>Output Options:</string>
           </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <layout class="QVBoxLayout" name="verticalLayout_2">
            <property name="leftMargin">
             <number>4</number>
            </property>
@@ -535,13 +601,6 @@
            <property name="bottomMargin">
             <number>16</number>
            </property>
-           <item>
-            <widget class="QCheckBox" name="m_chkTextOutput">
-             <property name="text">
-              <string>Text File</string>
-             </property>
-            </widget>
-           </item>
            <item>
             <widget class="QCheckBox" name="m_chkAccessExcelOutput">
              <property name="text">
@@ -549,87 +608,10 @@
              </property>
             </widget>
            </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="m_btnGenerate">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>Generate</string>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>32</width>
-            <height>32</height>
-           </size>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QFrame" name="frame">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
-           <property name="spacing">
-            <number>4</number>
-           </property>
-           <property name="leftMargin">
-            <number>1</number>
-           </property>
-           <property name="topMargin">
-            <number>4</number>
-           </property>
-           <property name="rightMargin">
-            <number>1</number>
-           </property>
-           <property name="bottomMargin">
-            <number>4</number>
-           </property>
            <item>
-            <widget class="QPushButton" name="m_btnExit">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
+            <widget class="QCheckBox" name="m_chkTextOutput">
              <property name="text">
-              <string>Exit</string>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>32</width>
-               <height>32</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="m_btnHelp">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>Help</string>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>32</width>
-               <height>32</height>
-              </size>
+              <string>Text File</string>
              </property>
             </widget>
            </item>
@@ -647,7 +629,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1024</width>
+     <width>983</width>
      <height>20</height>
     </rect>
    </property>
@@ -670,14 +652,38 @@
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QDockWidget" name="m_dockOutput">
+   <property name="maximumSize">
+    <size>
+     <width>524287</width>
+     <height>100</height>
+    </size>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetVerticalTitleBar</set>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::BottomDockWidgetArea|Qt::TopDockWidgetArea</set>
+   </property>
    <property name="windowTitle">
-    <string>Output Console:</string>
+    <string>Validation</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QVBoxLayout" name="verticalLayout_11">
+     <property name="leftMargin">
+      <number>4</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>4</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
      <item>
       <widget class="QListWidget" name="m_lstErrorConsole">
        <property name="sizePolicy">
@@ -722,16 +728,9 @@
   </action>
  </widget>
  <tabstops>
-  <tabstop>m_txtAuditName</tabstop>
-  <tabstop>m_grpSeed</tabstop>
-  <tabstop>m_spnSeed</tabstop>
   <tabstop>m_spnOrder</tabstop>
-  <tabstop>m_spnSpares</tabstop>
-  <tabstop>m_spnLowNumber</tabstop>
-  <tabstop>m_spnHighNumber</tabstop>
   <tabstop>m_chkTextOutput</tabstop>
   <tabstop>m_chkAccessExcelOutput</tabstop>
-  <tabstop>m_btnGenerate</tabstop>
   <tabstop>m_btnExit</tabstop>
   <tabstop>m_btnHelp</tabstop>
   <tabstop>m_tblOutput</tabstop>

@@ -31,6 +31,7 @@ SOFTWARE.
 #include "rstats_utils/inc/RStatsUtils.hpp"
 
 #include "utility/inc/Exception.hpp"
+#include "utility/inc/FileUtils.hpp"
 
 #include <bitset>
 #include <cmath>
@@ -40,16 +41,83 @@ SOFTWARE.
 #include <memory>
 #include <cstring>
 
+using namespace cbtek::common::utility;
+
 namespace oig {
 namespace ratstats {
 namespace modules {
 namespace ssrn {
 
-CREATE_EXCEPTION_NO_MSG(RStatsWarningException)
-CREATE_EXCEPTION_NO_MSG(RStatsErrorException)
-
 RStatsSSRN RStatsSSRN::m_instance = RStatsSSRN();
 
+
+void RStatsSSRN::saveToCSVFile(const std::string &filePath)
+{
+    RStatsWorksheet sheet;
+    saveToWorksheet(sheet);
+    FileUtils::writeFileContents(filePath,sheet.toCommaDelimitedString());
+}
+
+void RStatsSSRN::saveToWorksheet(RStatsWorksheet &worksheetOut)
+{
+    worksheetOut.setDefaultFont(Font("arial",12));
+    worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignRight);
+    worksheetOut("A1") = "Audit Name:";
+    worksheetOut("A2") = "Seed Used:";
+    worksheetOut("A3") = "Frame Size:";
+    worksheetOut("A4") = "Creation Date:";
+    worksheetOut("A5") = "Creation Time:";
+    worksheetOut("A6") = "Sequential Count:";
+    worksheetOut("A7") = "Random Order Count:";
+    worksheetOut("A8") = "Lower-Bound:";
+    worksheetOut("A9") = "Upper-Bound:";
+
+    worksheetOut.setDefaultFont(Font("arial",12,true));
+    worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignLeft);
+    worksheetOut("B1") = m_outputData.auditName;
+    worksheetOut("B2") = StringUtils::toString(m_outputData.seed,2,true);
+    worksheetOut("B3") = StringUtils::toString(m_outputData.frameSize,true);
+    worksheetOut("B4") = DateUtils::toLongDateString(m_outputData.createDate);
+    worksheetOut("B5") = TimeUtils::to12HourTimeString(m_outputData.createTime);
+    worksheetOut("B6") = StringUtils::toString(m_outputData.sequentialCount,true);
+    worksheetOut("B7") = StringUtils::toString(m_outputData.sparesCount,true);
+    worksheetOut("B8") = StringUtils::toString(m_outputData.lower,true);
+    worksheetOut("B9") = StringUtils::toString(m_outputData.upper,true);
+
+    worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
+    worksheetOut("A11") = "Number Type";
+    worksheetOut("B11") = "Selection Order";
+    worksheetOut("C11") = "Value";
+    worksheetOut.setDefaultFont(Font("arial",12,true));
+
+
+    size_t r = 11;
+    for (const RStatsSSRNValue& value : m_outputData.values)
+    {
+        std::string type = (value.orderType==RStatsSSRNOrderType::RandomlyOrdered?"(Random)":"(Spare)");
+        Color typeBg = (value.orderType==RStatsSSRNOrderType::RandomlyOrdered?Color(255,255,200):Color(200,255,255));
+        Color typeFg = Color(1,1,1);
+        worksheetOut(r,0) = type;
+        worksheetOut(r,0).fgColor = typeFg;
+        worksheetOut(r,0).bgColor = typeBg;
+
+        worksheetOut(r,1) = StringUtils::toString(value.orderIndex,true);
+        worksheetOut(r,1).fgColor = typeFg;
+        worksheetOut(r,1).bgColor = typeBg;
+
+        worksheetOut(r,2) = StringUtils::toString(value.value,true);
+        worksheetOut(r,2).fgColor = typeFg;
+        worksheetOut(r,2).bgColor = typeBg;
+        ++r;
+    }
+}
+
+void RStatsSSRN::saveToTextFile(const std::string &filePath)
+{
+    RStatsWorksheet sheet;
+    saveToWorksheet(sheet);
+    FileUtils::writeFileContents(filePath,sheet.toEvenlySpacedString());
+}
 
 RStatsSSRN & RStatsSSRN::inst()
 {
@@ -61,12 +129,12 @@ RStatsSSRN::RStatsSSRN()
 
 }
 
-RStatsSSRNOutputData RStatsSSRN::generateRandomNumbers(const std::string &auditName,
-                                                             RStatsInteger inputSeed,
-                                                             RStatsInteger sequentialOrder,
-                                                             RStatsInteger sparesInRandomOrder,
-                                                             RStatsInteger lowNumber,
-                                                             RStatsInteger highNumber)
+RStatsSSRNOutputData RStatsSSRN::execute(const std::string &auditName,
+                                         RStatsFloat inputSeed,
+                                         RStatsInteger sequentialOrder,
+                                         RStatsInteger sparesInRandomOrder,
+                                         RStatsInteger lowNumber,
+                                         RStatsInteger highNumber)
 {
     RStatsSSRNInputData vbRandOutput,vbRandOutputA,vbRandOutputB,vbRandOutputC;
     RStatsInteger currentSeed = this->vbRandInit(-1);
@@ -87,9 +155,15 @@ RStatsSSRNOutputData RStatsSSRN::generateRandomNumbers(const std::string &auditN
     RStatsIntegerList randomNumbers(sampleSize);
     RStatsInteger upperBound = highNumber;
     RStatsInteger lowerBound = lowNumber;
-    RStatsInteger frameSize = (upperBound - lowerBound)+1;
-    std::vector<RStatsInteger> repeatCheck(frameSize);
-    RStatsSSRNOutputData outputData;
+    RStatsInteger frameSize = (upperBound - lowerBound) + 1;
+    std::vector<RStatsInteger> repeatCheck(frameSize);    
+    m_outputData.auditName = auditName;
+    m_outputData.upper = upperBound;
+    m_outputData.lower = lowerBound;
+    m_outputData.frameSize = frameSize;
+    m_outputData.seed = inputSeed;
+    m_outputData.sequentialCount = sequentialOrder;
+    m_outputData.sparesCount = sparesInRandomOrder;
 
     for (size_t j = 0; j < sampleSize; ++j)
     {
@@ -97,7 +171,7 @@ RStatsSSRNOutputData RStatsSSRN::generateRandomNumbers(const std::string &auditN
         while(repeatFlag)
         {
             double term1 = std::floor(seedA / 177.0);
-            double term2 = seedA - (177*term1);
+            double term2 = seedA - (177 * term1);
             seedA = 171 * term2 - 2 * term1;
             if (seedA <= 0)
             {
@@ -121,9 +195,13 @@ RStatsSSRNOutputData RStatsSSRN::generateRandomNumbers(const std::string &auditN
             }
 
             double term4 = seedA/30269.0 + seedB/30307.0 + seedC/30323.0;
-            RStatsInteger value = std::floor((term4 - std::floor(term4)) * (upperBound-lowerBound+1))+lowerBound;
+            RStatsInteger value = std::floor((term4 - std::floor(term4)) * (upperBound-lowerBound+1)) + lowerBound;
             randomNumbers(j) = value;
-            int check = (value-lowerBound)-1;
+            if (value == 0)
+            {
+                int x = 0;
+            }
+            int check = (value - lowerBound);
             if (check >=0 && check < repeatCheck.size())
             {
                 if (repeatCheck[check] == 0)
@@ -152,6 +230,8 @@ RStatsSSRNOutputData RStatsSSRN::generateRandomNumbers(const std::string &auditN
     //values[1] = 6
     //values[0] = 10
     //values[3] = 13
+    m_outputData.createDate = DateUtils::getCurrentDate();
+    m_outputData.createTime = TimeUtils::getCurrentTime();
 
     size_t index = 0;
     std::map<RStatsInteger, RStatsSSRNValue> sequentialOrderMap;
@@ -161,7 +241,7 @@ RStatsSSRNOutputData RStatsSSRN::generateRandomNumbers(const std::string &auditN
     {
         RStatsSSRNValue ssrnValue;
         ssrnValue.value = value;
-        ssrnValue.orderIndex = index;
+        ssrnValue.orderIndex = index + 1;
         sum += value;
         if (this->m_sequentialCount > 0)
         {
@@ -172,7 +252,7 @@ RStatsSSRNOutputData RStatsSSRN::generateRandomNumbers(const std::string &auditN
         else if (this->m_sparesCount > 0)
         {
             ssrnValue.orderType = RStatsSSRNOrderType::RandomlyOrdered;
-            randomOrderMap[index] = ssrnValue;
+            randomOrderMap[index + 1] = ssrnValue;
             m_sparesCount--;
         }
         ++index;
@@ -181,15 +261,15 @@ RStatsSSRNOutputData RStatsSSRN::generateRandomNumbers(const std::string &auditN
 
     for (const auto& it : sequentialOrderMap)
     {
-        outputData.values.push_back(it.second);
+        m_outputData.values.push_back(it.second);
     }
 
     for (const auto& it : randomOrderMap)
     {
-        outputData.values.push_back(it.second);
+        m_outputData.values.push_back(it.second);
     }
-    outputData.sum = sum;
-    return outputData;
+    m_outputData.sum = sum;
+    return m_outputData;
 }
 
 RStatsInteger RStatsSSRN::vbRandInit(float initVariable)

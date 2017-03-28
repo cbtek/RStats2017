@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Unrestricted Attribute Appraisel</string>
+   <string>Unrestricted Attribute Appraisal</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="windowTitle">
@@ -207,6 +207,87 @@
       </property>
      </widget>
     </item>
+    <item>
+     <widget class="QWidget" name="widget" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <property name="leftMargin">
+        <number>1</number>
+       </property>
+       <property name="topMargin">
+        <number>1</number>
+       </property>
+       <property name="rightMargin">
+        <number>1</number>
+       </property>
+       <property name="bottomMargin">
+        <number>1</number>
+       </property>
+       <item>
+        <widget class="QPushButton" name="m_btnHelp">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Help</string>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>16</width>
+           <height>16</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="m_btnContinue">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Generate</string>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>16</width>
+           <height>16</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="m_btnExit">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Exit</string>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>16</width>
+           <height>16</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QDockWidget" name="dockWidget">
@@ -220,246 +301,203 @@
     <string/>
    </property>
    <attribute name="dockWidgetArea">
-    <number>8</number>
+    <number>4</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QVBoxLayout" name="verticalLayout_8">
+     <property name="leftMargin">
+      <number>2</number>
+     </property>
+     <property name="topMargin">
+      <number>2</number>
+     </property>
+     <property name="rightMargin">
+      <number>2</number>
+     </property>
+     <property name="bottomMargin">
+      <number>2</number>
+     </property>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_3">
-       <property name="leftMargin">
-        <number>4</number>
-       </property>
-       <property name="topMargin">
-        <number>4</number>
-       </property>
-       <property name="rightMargin">
-        <number>4</number>
-       </property>
-       <property name="bottomMargin">
-        <number>4</number>
-       </property>
-       <item>
-        <widget class="QGroupBox" name="gridGroupBox_2">
-         <property name="title">
-          <string>Audit/Review Name:</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_2">
-          <property name="leftMargin">
-           <number>9</number>
-          </property>
-          <property name="topMargin">
-           <number>9</number>
-          </property>
-          <property name="rightMargin">
-           <number>9</number>
-          </property>
-          <property name="bottomMargin">
-           <number>9</number>
-          </property>
-          <property name="spacing">
-           <number>11</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="QLineEdit" name="m_txtAuditName">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="verticalGroupBox">
-         <property name="title">
-          <string>Universe Size:</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout">
-          <item>
-           <widget class="QSpinBox" name="m_spnUniverseSize">
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-            </property>
-            <property name="suffix">
-             <string/>
-            </property>
-            <property name="prefix">
-             <string/>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>2147483646</number>
-            </property>
-            <property name="value">
-             <number>10</number>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="verticalGroupBox_3">
-         <property name="title">
-          <string>Sample Size:</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_6">
-          <property name="leftMargin">
-           <number>9</number>
-          </property>
-          <property name="topMargin">
-           <number>9</number>
-          </property>
-          <property name="rightMargin">
-           <number>9</number>
-          </property>
-          <property name="bottomMargin">
-           <number>9</number>
-          </property>
-          <item>
-           <widget class="QSpinBox" name="m_spnSampleSize">
-            <property name="minimum">
-             <number>2</number>
-            </property>
-            <property name="maximum">
-             <number>2147483646</number>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="verticalGroupBox_5">
-         <property name="title">
-          <string>Number with COI:</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout">
-          <item row="0" column="0">
-           <widget class="QSpinBox" name="m_spnCOI">
-            <property name="maximum">
-             <number>2147483647</number>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="verticalGroupBox_4">
-         <property name="title">
-          <string>Output Options:</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_4">
-          <item>
-           <widget class="QFrame" name="frame">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_3">
-             <item>
-              <widget class="QCheckBox" name="m_chkExcelAccessOutput">
-               <property name="text">
-                <string>Excel / Access File</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="m_chkTextOutput">
-               <property name="text">
-                <string>Text File</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <widget class="QWidget" name="widget" native="true">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <layout class="QHBoxLayout" name="horizontalLayout">
+      <widget class="QFrame" name="m_frmOptions">
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
         <property name="leftMargin">
-         <number>1</number>
+         <number>4</number>
         </property>
         <property name="topMargin">
-         <number>1</number>
+         <number>4</number>
         </property>
         <property name="rightMargin">
-         <number>1</number>
+         <number>4</number>
         </property>
         <property name="bottomMargin">
-         <number>1</number>
+         <number>4</number>
         </property>
         <item>
-         <widget class="QPushButton" name="m_btnExit">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>Exit</string>
-          </property>
-          <property name="iconSize">
+         <widget class="QGroupBox" name="gridGroupBox_2">
+          <property name="minimumSize">
            <size>
-            <width>16</width>
-            <height>16</height>
+            <width>275</width>
+            <height>0</height>
            </size>
           </property>
+          <property name="maximumSize">
+           <size>
+            <width>275</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="title">
+           <string>Audit/Review Name:</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_2">
+           <property name="leftMargin">
+            <number>9</number>
+           </property>
+           <property name="topMargin">
+            <number>9</number>
+           </property>
+           <property name="rightMargin">
+            <number>9</number>
+           </property>
+           <property name="bottomMargin">
+            <number>9</number>
+           </property>
+           <property name="spacing">
+            <number>11</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLineEdit" name="m_txtAuditName">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="m_btnContinue">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
+         <widget class="QGroupBox" name="verticalGroupBox">
+          <property name="title">
+           <string>Universe Size:</string>
           </property>
-          <property name="text">
-           <string>Generate</string>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>16</width>
-            <height>16</height>
-           </size>
-          </property>
+          <layout class="QVBoxLayout" name="verticalLayout">
+           <item>
+            <widget class="QSpinBox" name="m_spnUniverseSize">
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+             </property>
+             <property name="suffix">
+              <string/>
+             </property>
+             <property name="prefix">
+              <string/>
+             </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <number>2147483646</number>
+             </property>
+             <property name="value">
+              <number>10</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="m_btnHelp">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
+         <widget class="QGroupBox" name="verticalGroupBox_3">
+          <property name="title">
+           <string>Sample Size:</string>
           </property>
-          <property name="text">
-           <string>Help</string>
+          <layout class="QVBoxLayout" name="verticalLayout_6">
+           <property name="leftMargin">
+            <number>9</number>
+           </property>
+           <property name="topMargin">
+            <number>9</number>
+           </property>
+           <property name="rightMargin">
+            <number>9</number>
+           </property>
+           <property name="bottomMargin">
+            <number>9</number>
+           </property>
+           <item>
+            <widget class="QSpinBox" name="m_spnSampleSize">
+             <property name="minimum">
+              <number>2</number>
+             </property>
+             <property name="maximum">
+              <number>2147483646</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="verticalGroupBox_5">
+          <property name="title">
+           <string>Number with COI:</string>
           </property>
-          <property name="iconSize">
+          <layout class="QGridLayout" name="gridLayout">
+           <item row="0" column="0">
+            <widget class="QSpinBox" name="m_spnCOI">
+             <property name="maximum">
+              <number>2147483647</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="verticalGroupBox_4">
+          <property name="minimumSize">
            <size>
-            <width>16</width>
-            <height>16</height>
+            <width>275</width>
+            <height>0</height>
            </size>
           </property>
+          <property name="maximumSize">
+           <size>
+            <width>275</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="title">
+           <string>Output Options:</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_4">
+           <item>
+            <widget class="QFrame" name="frame">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <item>
+               <widget class="QCheckBox" name="m_chkExcelAccessOutput">
+                <property name="text">
+                 <string>Excel / Access File</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="m_chkTextOutput">
+                <property name="text">
+                 <string>Text File</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
        </layout>
@@ -518,13 +556,10 @@
  </widget>
  <tabstops>
   <tabstop>m_txtAuditName</tabstop>
-  <tabstop>m_btnExit</tabstop>
-  <tabstop>m_btnHelp</tabstop>
   <tabstop>m_chkTextOutput</tabstop>
   <tabstop>m_spnUniverseSize</tabstop>
   <tabstop>m_spnSampleSize</tabstop>
   <tabstop>m_tblOutput</tabstop>
-  <tabstop>m_chkExcelAccessOutput</tabstop>
   <tabstop>m_spnCOI</tabstop>
  </tabstops>
  <resources/>

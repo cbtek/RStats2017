@@ -277,6 +277,32 @@ inline void printVector(std::ostream & out,
     }
 }
 
+inline std::string formatWithThousandsLabel(const std::string& numericString)
+{
+    std::string numberStr = numericString;
+    size_t decimalIndex = numberStr.find(".");
+    if (decimalIndex == std::string::npos)
+    {
+        decimalIndex = numberStr.size()-1;
+    }
+    else
+    {
+        decimalIndex--;
+    }
+
+    size_t counter = 0;
+    int count = static_cast<int>(decimalIndex);
+    for (int a1 = count; a1 >= 0; --a1)
+    {
+        counter++;
+        if (counter == 3 && a1 != 0)
+        {
+            counter = 0;
+            numberStr.insert(numberStr.begin() + a1, ',');
+        }
+    }
+    return numberStr;
+}
 
 /**
  * @brief toString
@@ -284,11 +310,38 @@ inline void printVector(std::ostream & out,
  * @return
  */
 template <typename T>
-inline std::string toString(T value)
+inline std::string toString(T value,
+                            bool addThousandsSeperator = false)
 {
     std::ostringstream out;
     out << value;
-    return out.str();
+    std::string numberStr = out.str();
+    if (addThousandsSeperator)
+    {
+        numberStr = formatWithThousandsLabel(numberStr);
+    }
+    return numberStr;
+}
+
+
+/**
+* @brief Converts floating point values to "x.xxxx" form
+* @param floatValue Floating point value
+* @param digitsAfterDecimal Number of digits to include after decimal
+* @return string of converted floating point value
+*/
+inline std::string toString(double floatValue,
+                            int digitsAfterDecimal = 6,
+                            bool addThousandsSeperator = false)
+{
+    std::ostringstream stream;
+    stream << std::fixed << std::setprecision(digitsAfterDecimal) << floatValue;
+    std::string numberStr = stream.str();
+    if (addThousandsSeperator)
+    {
+       numberStr = formatWithThousandsLabel(numberStr);
+    }
+    return numberStr;
 }
 
 /**
@@ -810,19 +863,6 @@ inline size_t indexOf(const std::string &str,
     throw InvalidOperationException(msg);
 }
 
-/**
-* @brief Converts floating point values to "x.xxxx" form
-* @param floatValue Floating point value
-* @param digitsAfterDecimal Number of digits to include after decimal
-* @return string of converted floating point value
-*/
-inline std::string toString(double floatValue,
-                            int digitsAfterDecimal)
-{
-    std::ostringstream stream;
-    stream << std::fixed << std::setprecision(digitsAfterDecimal) << floatValue;
-    return stream.str();
-}
 
 /**
 * @brief Find value and return all text after it(exclusive)
@@ -1579,5 +1619,6 @@ inline bool isNumeric(const std::string& potentialNumber)
 {
     return (isFloat(potentialNumber) || isSignedInteger(potentialNumber) || isUnsignedInteger(potentialNumber));
 }
+
 }}}} //namespace
 #endif //_CBTEK_COMMON_UTILITY_STRING_UTILS_HPP_

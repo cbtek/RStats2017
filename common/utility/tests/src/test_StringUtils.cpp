@@ -109,7 +109,19 @@ TEST_CASE("Testing StringUtils::eraseFromVector","[utility::StringUtils]")
 
 TEST_CASE("Testing StringUtils::removeNonAlphaNumeric","[utility::StringUtils]")
 {
-    std::string str ="~!@#$%^&T*()_+{}|\"{}|\\:;'\"<,>.?/-=\r\r\n\f\t~E!@#$%^&*()_+{}|\"{}|\\:;'\"<,>.?/-=\r\rS\n\fT\t";
+    std::string str = "~!@#$%^&T*()_+{}|\"{}|\\:;'\"<,>.?/-=\r\r\n\f\t~E!@#$%^&*()_+{}|\"{}|\\:;'\"<,>.?/-=\r\rS\n\fT\t";
     REQUIRE(StringUtils::removeNonAlphaNumeric(str) == "TEST");
 }
 
+TEST_CASE("Testing StringUtils::toString","[utility::StringUtils")
+{
+    double value1 = 122104432.23456789;
+    double value2 = 1.23;
+    std::uint64_t value3 = 99123456789;
+    std::uint64_t value4 = 72;
+
+    REQUIRE(StringUtils::toString(value1,2,true) == "122,104,432.23");
+    REQUIRE(StringUtils::toString(value2,1,true) == "1.2");
+    REQUIRE(StringUtils::toString(value3,true) == "99,123,456,789");
+    REQUIRE(StringUtils::toString(value4,true) == "72");
+}

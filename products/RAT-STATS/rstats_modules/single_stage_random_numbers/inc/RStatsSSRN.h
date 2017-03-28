@@ -30,6 +30,7 @@ SOFTWARE.
 #include <string>
 
 #include "rstats_utils/inc/RStatsUtils.hpp"
+#include "rstats_utils/inc/RStatsWorksheet.h"
 #include "rstats_utils/inc/RStatsObjectList.hpp"
 
 using namespace oig::ratstats::utils;
@@ -60,8 +61,17 @@ struct RStatsSSRNValue
  */
 struct RStatsSSRNOutputData
 {
+    std::string auditName;
     std::vector<RStatsSSRNValue> values;
     oig::ratstats::utils::RStatsInteger sum;
+    oig::ratstats::utils::RStatsInteger upper;
+    oig::ratstats::utils::RStatsInteger lower;
+    oig::ratstats::utils::RStatsFloat seed;
+    oig::ratstats::utils::RStatsInteger frameSize;
+    oig::ratstats::utils::RStatsInteger sparesCount;
+    oig::ratstats::utils::RStatsInteger sequentialCount;
+    cbtek::common::utility::DateEntity createDate;
+    cbtek::common::utility::TimeEntity createTime;
 };
 
 /**
@@ -90,12 +100,33 @@ public:
        * @param highNumber
        * @return
        */
-      RStatsSSRNOutputData generateRandomNumbers(const std::string & auditName,
-                                           oig::ratstats::utils::RStatsInteger inputSeed,
-                                           oig::ratstats::utils::RStatsInteger sequentialOrder,
-                                           oig::ratstats::utils::RStatsInteger sparesInRandomOrder,
-                                           oig::ratstats::utils::RStatsInteger lowNumber,
-                                           oig::ratstats::utils::RStatsInteger highNumber);
+      RStatsSSRNOutputData execute(const std::string & auditName,
+                                   RStatsFloat inputSeed,
+                                   oig::ratstats::utils::RStatsInteger sequentialOrder,
+                                   oig::ratstats::utils::RStatsInteger sparesInRandomOrder,
+                                   oig::ratstats::utils::RStatsInteger lowNumber,
+                                   oig::ratstats::utils::RStatsInteger highNumber);
+
+
+
+      /**
+       * @brief saveToCSVWorksheetFile
+       * @param filePath
+       */
+      void saveToCSVFile(const std::string& filePath);
+
+      /**
+       * @brief saveToWorksheet
+       * @param sheet
+       * @param data
+       */
+      void saveToWorksheet(oig::ratstats::utils::RStatsWorksheet& worksheetOut);
+
+      /**
+       * @brief saveToTextFile
+       * @param filePath
+       */
+      void saveToTextFile(const std::string& filePath);
 
 
 	//! Static instance method for this singleton
@@ -105,6 +136,8 @@ private:
 
     size_t m_sequentialCount;
     size_t m_sparesCount;
+    RStatsSSRNOutputData m_outputData;
+
     static RStatsSSRN m_instance;
 
     /**
