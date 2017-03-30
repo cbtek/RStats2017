@@ -846,8 +846,8 @@
   <widget class="QDockWidget" name="m_dockErrorConsole">
    <property name="minimumSize">
     <size>
-     <width>309</width>
-     <height>127</height>
+     <width>328</width>
+     <height>154</height>
     </size>
    </property>
    <property name="maximumSize">
@@ -911,6 +911,7 @@
     </layout>
    </widget>
   </widget>
+  <widget class="QStatusBar" name="m_statusBar"/>
  </widget>
  <tabstops>
   <tabstop>m_txtAuditName</tabstop>

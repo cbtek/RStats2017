@@ -50,8 +50,12 @@ UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
     connect(m_ui->m_btnHelp,SIGNAL(clicked()),this,SLOT(onHelp()));
     connect(m_ui->m_spnSampleSize,SIGNAL(valueChanged(int)),this,SLOT(onUpdateSampleCount()));
     connect(m_ui->m_spnUniverseSize,SIGNAL(valueChanged(int)),this,SLOT(onUpdateUniverseCount()));
-    connect(m_ui->m_chkExcelAccessOutput,SIGNAL(toggled(bool)),this,SLOT(onSetCSVFileOutput()));
+    connect(m_ui->m_chkCSVOutput,SIGNAL(toggled(bool)),this,SLOT(onSetCSVFileOutput()));
     connect(m_ui->m_chkTextOutput,SIGNAL(toggled(bool)),this,SLOT(onSetTextFileOutput()));
+
+    m_currentCSVFileOutputLabel = nullptr;
+    m_currentTextFileOutputLabel = nullptr;
+
     m_ui->m_txtAuditName->setPlaceholderText(QString::fromStdString(RStatsUtils::getAuditName()));
     m_ui->m_frmOutput->hide();
     onUpdateUniverseCount();
@@ -106,18 +110,16 @@ void UIRStatsUAA::onContinue()
     UIRStatsUtils::bindSheetToUI(output,m_ui->m_tblOutput,false,0,1);
 
     //Save CSV file (for Excel/Access) if applicable
-    if (m_ui->m_chkExcelAccessOutput->isChecked() &&
-       !m_ui->m_chkExcelAccessOutput->toolTip().isEmpty())
+    if (m_ui->m_chkCSVOutput->isChecked())
     {
-        FileUtils::writeFileContents(m_ui->m_chkExcelAccessOutput->toolTip().toStdString(),
+        FileUtils::writeFileContents(m_currentCSVFileOutput.toStdString(),
                                      output.toCommaDelimitedString());
     }
 
     //Save Text file, if applicable
-    if (m_ui->m_chkTextOutput->isChecked() &&
-       !m_ui->m_chkTextOutput->toolTip().isEmpty())
+    if (m_ui->m_chkTextOutput->isChecked())
     {
-        FileUtils::writeFileContents(m_ui->m_chkTextOutput->toolTip().toStdString(),
+        FileUtils::writeFileContents(m_currentTextFileOutput.toStdString(),
                                      output.toEvenlySpacedString());
     }
 
@@ -180,32 +182,53 @@ void UIRStatsUAA::onSetTextFileOutput()
 {
     if (m_ui->m_chkTextOutput->isChecked())
     {
-        QString fileToSave = QFileDialog::getSaveFileName(this,"Set text filename...","","*.txt");
-        if (!fileToSave.isEmpty())
+        m_currentTextFileOutput = UIRStatsUtils::setOutputFile(
+                                                               m_ui->m_chkTextOutput,
+                                                               "Save to Text file...",
+                                                               "*.txt");
+        if (!m_currentTextFileOutput.isEmpty())
         {
-            m_ui->m_chkTextOutput->setToolTip(fileToSave);
+            if (m_currentTextFileOutputLabel == nullptr)
+            {
+                m_currentTextFileOutputLabel = new QLabel;
+                m_currentTextFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+            }
+            m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
+            m_currentTextFileOutputLabel->setText("Text File: "+m_currentTextFileOutput);
+            m_ui->m_statusBar->addPermanentWidget(m_currentTextFileOutputLabel);
+            m_currentTextFileOutputLabel->show();
         }
+        else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
     }
-    else
-    {
-        m_ui->m_chkTextOutput->setToolTip("");
-    }
+    else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
+
 }
 
 void UIRStatsUAA::onSetCSVFileOutput()
 {
-    if (m_ui->m_chkExcelAccessOutput->isChecked())
+    if (m_ui->m_chkCSVOutput->isChecked())
     {
-        QString fileToSave = QFileDialog::getSaveFileName(this,"Set CSV filename...","","*.csv");
-        if (!fileToSave.isEmpty())
+        m_currentCSVFileOutput = UIRStatsUtils::setOutputFile(
+                                                              m_ui->m_chkCSVOutput,
+                                                              "Save to CSV file...",
+                                                              "*.csv");
+        if (!m_currentCSVFileOutput.isEmpty())
         {
-            m_ui->m_chkExcelAccessOutput->setToolTip(fileToSave);
+            if (m_currentCSVFileOutputLabel == nullptr)
+            {
+                m_currentCSVFileOutputLabel = new QLabel;
+
+                m_currentCSVFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+            }
+            m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
+            m_currentCSVFileOutputLabel->setText("CSV File: "+m_currentCSVFileOutput);
+            m_ui->m_statusBar->addPermanentWidget(m_currentCSVFileOutputLabel);
+            m_currentCSVFileOutputLabel->show();
         }
+
+        else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
     }
-    else
-    {
-        m_ui->m_chkExcelAccessOutput->setToolTip("");
-    }
+    else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
 }
 
 void UIRStatsUAA::onRecentSessionSelected(QAction* action)
@@ -217,7 +240,6 @@ void UIRStatsUAA::onRecentSessionSelected(QAction* action)
         SessionData data = m_recentSessionsMap[name];
         setSessionData(data);
     }
-
 }
 
 void UIRStatsUAA::updateRecentSessions()

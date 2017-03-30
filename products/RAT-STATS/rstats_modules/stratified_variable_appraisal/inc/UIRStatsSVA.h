@@ -10,6 +10,7 @@
 #include <QTimer>
 #include <QComboBox>
 #include <QKeyEvent>
+#include <QLabel>
 
 #include "rstats_utils/inc/RStatsWorkbook.h"
 #include "rstats_utils/inc/RStatsConditionLogger.h"
@@ -46,6 +47,10 @@ private:
     * MOC generated ui class for this widget
     */
      Ui_UIRStatsSVA *m_ui;
+
+     /**
+      * @brief Icons for varios buttons/menus
+      */
      QIcon m_iconFolder;
      QIcon m_iconSave;
      QIcon m_iconHelp;
@@ -55,20 +60,43 @@ private:
      QIcon m_iconError;
      QIcon m_iconWarning;
      QIcon m_iconOK;
+
+     /**
+      * @brief m_clock
+      */
      QTimer m_clock;
+
+     /**
+      * @brief Labels/Strings for output
+      */
      QString m_currentTextFileOutput;
      QString m_currentCSVFileOutput;
+     QLabel * m_currentTextFileOutputLabel;
+     QLabel * m_currentCSVFileOutputLabel;
+
+     /**
+      * @brief Current data sheets/workbooks for data/size tables
+      */
      oig::ratstats::utils::RStatsWorksheet m_currentDataSheet;
      oig::ratstats::utils::RStatsWorksheet m_currentSizeSheet;
      oig::ratstats::utils::RStatsWorkbook m_currentDataWorkbook;
      oig::ratstats::utils::RStatsWorkbook m_currentSizeWorkbook;
+
+     /**
+      * @brief Used by validation console
+      */
      oig::ratstats::utils::RStatsConditionLogger m_conditionLogger;
+
+     /**
+      * @brief View for Workbook object
+      */
      oig::ratstats::ui::UIRStatsWorkbook * m_outputWorkbook;
-     Qt::WindowStates m_currentWindowState;
-     Qt::WindowFlags m_currentWindowFlags;
+
      bool m_fullScreenToggle;
+
      void populateWithColumns(const std::set<size_t> &columns, QComboBox* comboBox);
      void populateWithRows(const std::set<size_t> &rows, QComboBox* comboBox);
+
 protected slots:     
      void onAddNewRowToDataTable();
      void onAddNewRowToSizeTable();

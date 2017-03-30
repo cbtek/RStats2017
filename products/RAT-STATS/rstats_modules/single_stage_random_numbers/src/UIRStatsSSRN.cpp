@@ -43,10 +43,10 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));
     connect(m_ui->m_btnGenerate,SIGNAL(clicked(bool)),this,SLOT(onGenerate()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
-    connect(m_ui->m_spnHighNumber,SIGNAL(valueChanged(int)),this,SLOT(onValidateForm()));
-    connect(m_ui->m_spnLowNumber,SIGNAL(valueChanged(int)),this,SLOT(onValidateForm()));
-    connect(m_ui->m_spnSpares,SIGNAL(valueChanged(int)),this,SLOT(onValidateForm()));
-    connect(m_ui->m_spnOrder,SIGNAL(valueChanged(int)),this,SLOT(onValidateForm()));
+    connect(m_ui->m_spnHighNumber,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
+    connect(m_ui->m_spnLowNumber,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
+    connect(m_ui->m_spnSpares,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
+    connect(m_ui->m_spnOrder,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
     connect(m_ui->m_chkCSVOutput,SIGNAL(clicked(bool)),this,SLOT(onSaveCSVFile()));
     connect(m_ui->m_chkTextOutput,SIGNAL(clicked(bool)),this,SLOT(onSaveTextFile()));    
     connect(m_ui->m_chkCustomSeed,SIGNAL(toggled(bool)),this,SLOT(onSeedBoxToggled(bool)));
@@ -66,6 +66,9 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
 
     m_ui->m_btnGenerate->setEnabled(false);
 
+    m_currentCSVFileOutputLabel = nullptr;
+    m_currentTextFileOutputLabel = nullptr;
+
     //initialize default icons
     m_iconFolder = UIRStatsUtils::getIcon("img_folder.png");
     m_iconModule = UIRStatsUtils::getIcon("img_module.png");
@@ -81,7 +84,7 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     m_iconWarning = UIRStatsUtils::getIcon("img_warning.png");
     m_iconError = UIRStatsUtils::getIcon("img_error.png");
     m_iconOK = UIRStatsUtils::getIcon("img_ok.png");
-    onValidateForm();
+    onValidate();
     RStatsInteger buttonHeight = 32;
     UIRStatsUtils::setButtonStyle(m_ui->m_btnExit,
                                   this->font(),
@@ -107,7 +110,7 @@ UIRStatsSSRN::~UIRStatsSSRN()
     delete m_ui;
 }
 
-void UIRStatsSSRN::onValidateForm()
+void UIRStatsSSRN::onValidate()
 {
     m_logger.clear();
     m_ui->m_lstErrorConsole->clear();
@@ -132,6 +135,13 @@ void UIRStatsSSRN::onValidateForm()
                         "The sampling frame is less than the total number of values to be generated!");
 
     size_t index = 0;
+    if (m_logger.hasMessages() == false)
+    {
+        m_ui->m_dockOutput->hide();
+        m_ui->m_btnGenerate->setEnabled(true);
+        return;
+    }
+    m_ui->m_dockOptions->show();
     for(const std::string & message : m_logger.getMessages())
     {
         QListWidgetItem * item = new QListWidgetItem;
@@ -161,25 +171,61 @@ void UIRStatsSSRN::onValidateForm()
 
 void UIRStatsSSRN::onSaveCSVFile()
 {
-    m_currentCSVFileOutput = UIRStatsUtils::setOutputFile(
-                                                          m_ui->m_chkCSVOutput,
-                                                          "Save to CSV file...",
-                                                          "*.csv");
+    if (m_ui->m_chkCSVOutput->isChecked())
+    {
+        m_currentCSVFileOutput = UIRStatsUtils::setOutputFile(
+                                                              m_ui->m_chkCSVOutput,
+                                                              "Save to CSV file...",
+                                                              "*.csv");
+        if (!m_currentCSVFileOutput.isEmpty())
+        {
+            if (m_currentCSVFileOutputLabel == nullptr)
+            {
+                m_currentCSVFileOutputLabel = new QLabel;
+
+                m_currentCSVFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+            }
+            m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
+            m_currentCSVFileOutputLabel->setText("CSV File: "+m_currentCSVFileOutput);
+            m_ui->m_statusBar->addPermanentWidget(m_currentCSVFileOutputLabel);
+            m_currentCSVFileOutputLabel->show();
+        }
+
+        else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
+    }
+    else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
 }
 
 void UIRStatsSSRN::onSaveTextFile()
 {
-    m_currentTextFileOutput = UIRStatsUtils::setOutputFile(
-                                                           m_ui->m_chkTextOutput,
-                                                           "Save to Text file...",
-                                                           "*.txt");
+    if (m_ui->m_chkTextOutput->isChecked())
+    {
+        m_currentTextFileOutput = UIRStatsUtils::setOutputFile(
+                                                               m_ui->m_chkTextOutput,
+                                                               "Save to Text file...",
+                                                               "*.txt");
+        if (!m_currentTextFileOutput.isEmpty())
+        {
+            if (m_currentTextFileOutputLabel == nullptr)
+            {
+                m_currentTextFileOutputLabel = new QLabel;
+                m_currentTextFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+            }
+            m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
+            m_currentTextFileOutputLabel->setText("Text File: "+m_currentTextFileOutput);
+            m_ui->m_statusBar->addPermanentWidget(m_currentTextFileOutputLabel);
+            m_currentTextFileOutputLabel->show();
+        }
+        else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
+    }
+    else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
 }
 
 void UIRStatsSSRN::onUpdateClock()
 {
     m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::to12HourTimeString(TimeUtils::getCurrentTime())));
     m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toShortDateString(DateUtils::getCurrentDate())));
-    if (!m_ui->m_chkCustomSeed->isChecked())
+    if (!m_ui->m_chkCustomSeed->isChecked() && !m_ui->m_spnSeed->isEnabled())
     {        
         m_ui->m_spnSeed->setValue(static_cast<RStatsFloat>(TimeUtils::getSecondsNow()) /
                                   static_cast<RStatsFloat>(m_rnd.next(10,1000)));
@@ -190,15 +236,22 @@ void UIRStatsSSRN::onGenerate()
 {
 
     onUpdateClock();
-    RStatsSSRNOutputData outputData = RStatsSSRN::inst().execute(m_ui->m_txtAuditName->text().toStdString(),
-                                                                 m_ui->m_spnSeed->value(),
-                                                                 m_ui->m_spnOrder->value(),
-                                                                 m_ui->m_spnSpares->value(),
-                                                                 m_ui->m_spnLowNumber->value(),
-                                                                 m_ui->m_spnHighNumber->value());
+    m_ui->m_tblOutput->clear();
+    RStatsSSRN ssrn;
+    std::string name = m_ui->m_txtAuditName->text().toStdString();
+    if (StringUtils::isEmpty(name))
+    {
+        name = m_ui->m_txtAuditName->placeholderText().toStdString();
+    }
+    RStatsSSRNOutputData outputData = ssrn.execute(name,
+                                                   m_ui->m_spnSeed->value(),
+                                                   m_ui->m_spnOrder->value(),
+                                                   m_ui->m_spnSpares->value(),
+                                                   m_ui->m_spnLowNumber->value(),
+                                                   m_ui->m_spnHighNumber->value());
 
     RStatsWorksheet worksheet;
-    RStatsSSRN::inst().saveToWorksheet(worksheet);
+    ssrn.saveToWorksheet(worksheet);
     UIRStatsUtils::bindSheetToUI(worksheet,m_ui->m_tblOutput,false,0,0);
 
     if (!StringUtils::isEmpty(m_currentTextFileOutput.toStdString()))
@@ -309,16 +362,31 @@ void UIRStatsSSRN::updateRecentSessions()
     m_recentSessionActionGroup = new QActionGroup(this);
     connect(m_recentSessionActionGroup,SIGNAL(triggered(QAction*)),this,SLOT(onRecentSessionSelected(QAction*)));
     QMenu * recentMenu = new QMenu(m_ui->menuFile);
+    std::map<std::uint64_t,SessionData> last10Sessions;
     for (const auto& url : sessionUrls)
     {
         SessionData data;
         data.load(url);
+        std::uint64_t value = DateTimeUtils::getTimeStampInteger(data.dateValue,data.timeValue);
+        last10Sessions[value] = data;
+    }
+
+    size_t sessionCount = 0;
+    for (auto it = last10Sessions.rbegin();it != last10Sessions.rend(); ++it)
+    {
+        SessionData data = it->second;
         m_recentSessionsMap[QString::fromStdString(data.name)] = data;
         std::string dateTimeStr = DateTimeUtils::getDisplayTimeStamp(DateEntity(data.dateValue),TimeEntity(data.timeValue));
-        QAction * action = new QAction(QString::fromStdString(data.name+" "+dateTimeStr), recentMenu);
+        QAction * action = new QAction(QString::fromStdString(data.name), recentMenu);
+        action->setToolTip("Created on "+QString::fromStdString(dateTimeStr));
         action->setProperty("name",QString::fromStdString(data.name));
         m_recentSessionActionGroup->addAction(action);
         recentMenu->addAction(action);
+        ++sessionCount;
+        if (sessionCount == 10)
+        {
+            break;
+        }
     }
     recentMenu->addSeparator();
     QAction * clearRecentSessionsAction = new QAction(recentMenu);

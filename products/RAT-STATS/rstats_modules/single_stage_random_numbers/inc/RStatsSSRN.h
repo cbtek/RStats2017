@@ -129,16 +129,11 @@ public:
       void saveToTextFile(const std::string& filePath);
 
 
-	//! Static instance method for this singleton
-    static RStatsSSRN & inst();
 
 private:
-
     size_t m_sequentialCount;
     size_t m_sparesCount;
     RStatsSSRNOutputData m_outputData;
-
-    static RStatsSSRN m_instance;
 
     /**
      * @brief vbRand
@@ -165,16 +160,6 @@ private:
      * @return
      */
     oig::ratstats::utils::RStatsInteger vbRandInit(float initVariable);
-
-    /**
-     * @brief RStatsSSRN constructor
-     */
-    RStatsSSRN();
-
-    /**
-     * @brief RStatsSSRN destructor
-     */
-    ~RStatsSSRN();
 };
 }}}}//end namespace
 

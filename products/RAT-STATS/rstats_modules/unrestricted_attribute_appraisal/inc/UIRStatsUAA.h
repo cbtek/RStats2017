@@ -9,6 +9,7 @@
 #include <QMainWindow>
 #include <QActionGroup>
 #include <QAction>
+#include <QLabel>
 
 #include "rstats_utils/inc/RStatsUtils.hpp"
 
@@ -57,6 +58,15 @@ private:
     SessionData getSessionData() const;
     void setSessionData(const SessionData& data);
     void updateRecentSessions();
+
+    /**
+     * @brief Labels/Strings for output
+     */
+    QString m_currentTextFileOutput;
+    QString m_currentCSVFileOutput;
+    QLabel * m_currentTextFileOutputLabel;
+    QLabel * m_currentCSVFileOutputLabel;
+
 
     /** 
     * MOC generated ui class for this widget

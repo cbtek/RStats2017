@@ -9,6 +9,7 @@
 #include <QMainWindow>
 #include <QTimer>
 #include <QActionGroup>
+#include <QLabel>
 
 #include "rstats_utils/inc/RStatsConditionLogger.h"
 #include "rstats_utils/inc/RStatsUtils.hpp"
@@ -68,8 +69,9 @@ private:
 
     cbtek::common::utility::Random m_rnd;
     QActionGroup * m_recentSessionActionGroup;
-    QMap<QString,SessionData> m_recentSessionsMap;    
-
+    QMap<QString,SessionData> m_recentSessionsMap;
+    QLabel * m_currentCSVFileOutputLabel;
+    QLabel * m_currentTextFileOutputLabel;
     SessionData getSessionData() const;
     void setSessionData(const SessionData& data);
     void updateRecentSessions();
@@ -80,7 +82,7 @@ private slots:
      void onExit();
      void onGenerate();
      void onHelp();
-     void onValidateForm();
+     void onValidate();
      void onSaveCSVFile();
      void onSaveTextFile();
      void onUpdateClock();

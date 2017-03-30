@@ -582,7 +582,7 @@
           </property>
           <property name="font">
            <font>
-            <pointsize>10</pointsize>
+            <pointsize>8</pointsize>
            </font>
           </property>
           <property name="title">
@@ -652,10 +652,16 @@
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QDockWidget" name="m_dockOutput">
+   <property name="minimumSize">
+    <size>
+     <width>112</width>
+     <height>85</height>
+    </size>
+   </property>
    <property name="maximumSize">
     <size>
      <width>524287</width>
-     <height>100</height>
+     <height>524287</height>
     </size>
    </property>
    <property name="features">
@@ -706,6 +712,7 @@
     </layout>
    </widget>
   </widget>
+  <widget class="QStatusBar" name="m_statusBar"/>
   <action name="actionRecent">
    <property name="text">
     <string>&amp;Recently Used</string>

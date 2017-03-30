@@ -48,7 +48,8 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     m_iconOK = UIRStatsUtils::getIcon("img_ok.png");
     m_fullScreenToggle = false;
     m_ui->m_txtAuditName->setPlaceholderText(QString::fromStdString(RStatsUtils::getAuditName()));
-
+    m_currentCSVFileOutputLabel = nullptr;
+    m_currentTextFileOutputLabel = nullptr;
     m_ui->m_dockOptions->setTitleBarWidget(new QWidget());
     int buttonHeight = 32;
     UIRStatsUtils::setButtonStyle(m_ui->m_btnExit,this->font(),m_iconExit,buttonHeight);
@@ -550,16 +551,55 @@ void UIRStatsSVA::onHelp()
 
 void UIRStatsSVA::onSaveCSVFile()
 {
-    m_currentCSVFileOutput = UIRStatsUtils::setOutputFile(m_ui->m_chkCSVOutput,
-                                                   "Save to CSV file...",
-                                                   "*.csv");
+    if (m_ui->m_chkCSVOutput->isChecked())
+    {
+        m_currentCSVFileOutput = UIRStatsUtils::setOutputFile(
+                                                              m_ui->m_chkCSVOutput,
+                                                              "Save to CSV file...",
+                                                              "*.csv");
+        if (!m_currentCSVFileOutput.isEmpty())
+        {
+            if (m_currentCSVFileOutputLabel == nullptr)
+            {
+                m_currentCSVFileOutputLabel = new QLabel;
+
+                m_currentCSVFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+            }
+            m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
+            m_currentCSVFileOutputLabel->setText("CSV File: "+m_currentCSVFileOutput);
+            m_ui->m_statusBar->addPermanentWidget(m_currentCSVFileOutputLabel);
+            m_currentCSVFileOutputLabel->show();
+        }
+
+        else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
+    }
+    else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
 }
 
 void UIRStatsSVA::onSaveTextFile()
 {
-    m_currentTextFileOutput = UIRStatsUtils::setOutputFile(m_ui->m_chkTextOutput,
-                              "Save to Text file...",
-                              "*.txt");
+    if (m_ui->m_chkTextOutput->isChecked())
+    {
+        m_currentTextFileOutput = UIRStatsUtils::setOutputFile(
+                                                               m_ui->m_chkTextOutput,
+                                                               "Save to Text file...",
+                                                               "*.txt");
+        if (!m_currentTextFileOutput.isEmpty())
+        {
+            if (m_currentTextFileOutputLabel == nullptr)
+            {
+                m_currentTextFileOutputLabel = new QLabel;
+                m_currentTextFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+            }
+            m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
+            m_currentTextFileOutputLabel->setText("Text File: "+m_currentTextFileOutput);
+            m_ui->m_statusBar->addPermanentWidget(m_currentTextFileOutputLabel);
+            m_currentTextFileOutputLabel->show();
+        }
+        else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
+    }
+    else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
+
 }
 
 

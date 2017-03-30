@@ -48,9 +48,6 @@ namespace ratstats {
 namespace modules {
 namespace ssrn {
 
-RStatsSSRN RStatsSSRN::m_instance = RStatsSSRN();
-
-
 void RStatsSSRN::saveToCSVFile(const std::string &filePath)
 {
     RStatsWorksheet sheet;
@@ -60,7 +57,7 @@ void RStatsSSRN::saveToCSVFile(const std::string &filePath)
 
 void RStatsSSRN::saveToWorksheet(RStatsWorksheet &worksheetOut)
 {
-    worksheetOut.setDefaultFont(Font("arial",12));
+    worksheetOut.setDefaultFont(Font("arial",10));
     worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignRight);
     worksheetOut("A1") = "Audit Name:";
     worksheetOut("A2") = "Seed Used:";
@@ -72,7 +69,7 @@ void RStatsSSRN::saveToWorksheet(RStatsWorksheet &worksheetOut)
     worksheetOut("A8") = "Lower-Bound:";
     worksheetOut("A9") = "Upper-Bound:";
 
-    worksheetOut.setDefaultFont(Font("arial",12,true));
+    worksheetOut.setDefaultFont(Font("arial",10,true));
     worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignLeft);
     worksheetOut("B1") = m_outputData.auditName;
     worksheetOut("B2") = StringUtils::toString(m_outputData.seed,2,true);
@@ -88,7 +85,7 @@ void RStatsSSRN::saveToWorksheet(RStatsWorksheet &worksheetOut)
     worksheetOut("A11") = "Number Type";
     worksheetOut("B11") = "Selection Order";
     worksheetOut("C11") = "Value";
-    worksheetOut.setDefaultFont(Font("arial",12,true));
+    worksheetOut.setDefaultFont(Font("arial",10,true));
 
 
     size_t r = 11;
@@ -117,16 +114,6 @@ void RStatsSSRN::saveToTextFile(const std::string &filePath)
     RStatsWorksheet sheet;
     saveToWorksheet(sheet);
     FileUtils::writeFileContents(filePath,sheet.toEvenlySpacedString());
-}
-
-RStatsSSRN & RStatsSSRN::inst()
-{
-    return m_instance;
-}
-
-RStatsSSRN::RStatsSSRN()
-{
-
 }
 
 RStatsSSRNOutputData RStatsSSRN::execute(const std::string &auditName,
@@ -358,12 +345,5 @@ RStatsInteger RStatsSSRN::vbRandomize(RStatsFloat startingPoint,
     }
     return finalBits32.to_ullong();
 }
-
-RStatsSSRN::~RStatsSSRN()
-{
-
-}
-
-
 }}}}//end namespace
 
