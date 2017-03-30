@@ -109,6 +109,11 @@ void RStatsWorksheet::resetDefaults()
     RStatsCell::ms_DefaultFloatingPointDecimals = 6;
 }
 
+std::set<RStatsCellFormat> RStatsWorksheet::getCellFormatSet() const
+{
+    return m_formatSet;
+}
+
 std::string RStatsWorksheet::toCommaDelimitedString() const
 {
     return toString("\"",",","\"");
@@ -129,7 +134,8 @@ bool RStatsWorksheet::isEmpty() const
     return (this->m_dataTable.size() == 0);
 }
 
-void RStatsWorksheet::findDataRowsAndColumns(std::set<size_t> &rowsOut, std::set<size_t> &columnsOut) const
+void RStatsWorksheet::findDataRowsAndColumns(std::set<size_t> &rowsOut,
+                                             std::set<size_t> &columnsOut) const
 {
     size_t cols = getNumColumns();
     size_t rows = getNumRows();
@@ -151,6 +157,19 @@ void RStatsWorksheet::findDataRowsAndColumns(std::set<size_t> &rowsOut, std::set
         {
             rowsOut.insert(r);
         }
+    }
+}
+
+void RStatsWorksheet::setFormatEnabled(RStatsCellFormat format,
+                                       bool flag)
+{
+    if (flag)
+    {
+        m_formatSet.insert(format);
+    }
+    else
+    {
+        m_formatSet.erase(format);
     }
 }
 
@@ -225,7 +244,9 @@ std::string RStatsWorksheet::toString(const std::string &prefix,
     {
         for(size_t c = 0;c<cols;++c)
         {
-            std::string data = getCell(r,c).text;
+            RStatsCell cell = getCell(r,c);
+            cell.applyFormat(this->m_formatSet);
+            std::string data = cell.text;
             out << prefix << data << postfix << ((c<(cols-1))?seperator:"\n");
         }
     }
@@ -243,7 +264,9 @@ std::string RStatsWorksheet::toEvenlySpacedString(const std::string &prefix,
     {
         for(size_t c = 0;c<cols;++c)
         {
-            std::string data = getCell(r,c).text;
+            RStatsCell cell = getCell(r,c);
+            cell.applyFormat(this->m_formatSet);
+            std::string data = cell.text;
             if (columnWidths[c] < data.size()+4)
             {
                 columnWidths[c]=data.size()+4;
@@ -256,7 +279,9 @@ std::string RStatsWorksheet::toEvenlySpacedString(const std::string &prefix,
     {
         for(size_t c = 0;c<cols;++c)
         {
-            std::string data = getCell(r,c).text;
+            RStatsCell cell = getCell(r,c);
+            cell.applyFormat(this->m_formatSet);
+            std::string data = cell.text;
             std::string space;
             if (columnWidths[c] > data.size())
             {

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1066</width>
+    <width>1103</width>
     <height>789</height>
    </rect>
   </property>
@@ -163,24 +163,11 @@
        <property name="bottomMargin">
         <number>11</number>
        </property>
-       <item>
-        <widget class="QTabWidget" name="m_tabOutput">
-         <property name="currentIndex">
-          <number>0</number>
-         </property>
-         <widget class="QWidget" name="m_tbSummary">
-          <attribute name="title">
-           <string>Summary</string>
-          </attribute>
-          <layout class="QHBoxLayout" name="horizontalLayout_4"/>
-         </widget>
-        </widget>
-       </item>
       </layout>
      </widget>
     </item>
     <item>
-     <widget class="QFrame" name="frame">
+     <widget class="QFrame" name="m_frmCommand">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
         <horstretch>0</horstretch>
@@ -562,7 +549,7 @@
         <bool>true</bool>
        </attribute>
        <attribute name="verticalHeaderVisible">
-        <bool>false</bool>
+        <bool>true</bool>
        </attribute>
       </widget>
      </item>
@@ -849,24 +836,24 @@
         <bool>true</bool>
        </attribute>
        <attribute name="verticalHeaderVisible">
-        <bool>false</bool>
+        <bool>true</bool>
        </attribute>
       </widget>
      </item>
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockWidget">
+  <widget class="QDockWidget" name="m_dockErrorConsole">
    <property name="minimumSize">
     <size>
-     <width>126</width>
-     <height>100</height>
+     <width>309</width>
+     <height>127</height>
     </size>
    </property>
    <property name="maximumSize">
     <size>
      <width>524287</width>
-     <height>100</height>
+     <height>524287</height>
     </size>
    </property>
    <property name="features">
@@ -876,13 +863,32 @@
     <set>Qt::BottomDockWidgetArea|Qt::TopDockWidgetArea</set>
    </property>
    <property name="windowTitle">
-    <string>Validation</string>
+    <string> Validation Console</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_4">
     <layout class="QVBoxLayout" name="verticalLayout_4">
+     <item>
+      <widget class="QLabel" name="m_lblErrorConsole">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>20</pointsize>
+         <italic>true</italic>
+        </font>
+       </property>
+       <property name="text">
+        <string>No Issues Detected</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
      <item>
       <widget class="QListWidget" name="m_lstErrorConsole">
        <property name="sizePolicy">
@@ -923,7 +929,6 @@
   <tabstop>m_btnAddRowSizeTable</tabstop>
   <tabstop>m_btnAddColumnSizeTable</tabstop>
   <tabstop>m_tblSizes</tabstop>
-  <tabstop>m_tabOutput</tabstop>
   <tabstop>m_cmbDataInputSheets</tabstop>
   <tabstop>m_btnImportSampleInputData</tabstop>
   <tabstop>m_cmbDataRowStartDataTable</tabstop>

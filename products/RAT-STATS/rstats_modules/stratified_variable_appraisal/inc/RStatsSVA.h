@@ -16,6 +16,7 @@ namespace ratstats {
 namespace modules {
 namespace sva {
 
+
 /**
  * @brief The RStatsSVAInputData struct
  */
@@ -25,12 +26,18 @@ struct RStatsSVAInputData
     oig::ratstats::utils::RStatsInteger universeSize;
     oig::ratstats::utils::RStatsInteger interestSize;
     oig::ratstats::utils::RStatsFloatList samples;
+    oig::ratstats::utils::RStatsDataFormatTypeIndex typeIndex;
+    oig::ratstats::utils::RStatsInteger count;
+    oig::ratstats::utils::RStatsInteger offset;
 };
 
 struct RStatsSVAOutputData
 {
     oig::ratstats::utils::RStatsDataFormatType type;
     bool isDisplaySummary;
+    cbtek::common::utility::DateEntity createDate;
+    cbtek::common::utility::TimeEntity createTime;
+    std::string auditName;
     oig::ratstats::utils::RStatsInteger populationSize;
     oig::ratstats::utils::RStatsInteger sampleSize;
     oig::ratstats::utils::RStatsInteger nonZeroCount;
@@ -39,6 +46,7 @@ struct RStatsSVAOutputData
     oig::ratstats::utils::RStatsFloat skewness;
     oig::ratstats::utils::RStatsFloat standardErrorMean;
     oig::ratstats::utils::RStatsFloat standardErrorTotal;
+    oig::ratstats::utils::RStatsFloat kurtosis;
     oig::ratstats::utils::RStatsFloat pointEstimate;
     oig::ratstats::utils::RStatsFloat lower80;
     oig::ratstats::utils::RStatsFloat lower90;
@@ -76,17 +84,7 @@ public:
 	/*!
 		Detailed description for RStatsSVA
 	*/
-	RStatsSVA();
-
-    /**
-     * @brief execute
-     * @param dataFormatType
-     * @param strataDataList
-     * @return
-     */
-    RStatsSVAOutputDataList execute(oig::ratstats::utils::RStatsDataFormatType dataFormatType,
-                                    const RStatsSVAInputDataList& strataDataList);
-    
+	RStatsSVA();    
 
     /**
      * @brief execute
@@ -95,15 +93,32 @@ public:
      * @param dataFormatType
      * @return
      */
-    RStatsSVAOutputDataList execute(const oig::ratstats::utils::RStatsWorksheet& inputSheet, const oig::ratstats::utils::RStatsWorksheet& sizeSheet, const utils::RStatsDataFormatTypeIndex &dataSheetIndex, size_t dataSheetRowStart, size_t sizeSheetSampleSizeColumn, size_t sizeSheetUniverseSizeColumn, size_t sizeSheetRowStart);
+    RStatsSVAOutputDataList execute(const oig::ratstats::utils::RStatsWorksheet& dataSheet,
+                                    const oig::ratstats::utils::RStatsWorksheet& sizeSheet,
+                                    const utils::RStatsDataFormatTypeIndex &dataSheetIndex,
+                                    size_t dataSheetRowStart,
+                                    size_t sizeSheetSampleSizeColumn,
+                                    size_t sizeSheetUniverseSizeColumn,
+                                    size_t sizeSheetRowStart);
 
     /**
-     * @brief populateWorkbookFromOutput
+     * @brief saveToWorkbook
      * @param outputList
      * @param workbookOut
      */
-    void populateWorkbookFromOutputList(RStatsSVAOutputDataList& outputList,
-                                    oig::ratstats::utils::RStatsWorkbook& workbookOut);
+    void saveToWorkbook(oig::ratstats::utils::RStatsWorkbook& workbookOut);
+
+    /**
+     * @brief saveToCSVFile
+     * @param filePath
+     */
+    void saveToCSVFile(const std::string& filePath);
+
+    /**
+     * @brief saveToTextFile
+     * @param filePath
+     */
+    void saveToTextFile(const std::string& filePath);
 
 	//! Static instance method for this singleton
     static RStatsSVA & inst();
@@ -112,6 +127,22 @@ public:
 	~RStatsSVA();	
 
 private:
+
+
+    /**
+     * @brief execute
+     * @param dataFormatType
+     * @param strataDataList
+     * @return
+     */
+    RStatsSVAInputDataList buildInputDataList(const oig::ratstats::utils::RStatsWorksheet& dataSheet,
+                                              const oig::ratstats::utils::RStatsWorksheet& sizeSheet,
+                                              const utils::RStatsDataFormatTypeIndex &dataSheetIndex,
+                                              size_t dataSheetRowStart,
+                                              size_t sizeSheetSampleSizeColumn,
+                                              size_t sizeSheetUniverseSizeColumn,
+                                              size_t sizeSheetRowStart);
+
     /**
      * @brief onReset
      */
@@ -254,6 +285,7 @@ private:
                         oig::ratstats::utils::RStatsDataFormatType type,
                         oig::ratstats::utils::RStatsInteger dataFormatIndex);
 
+
     static RStatsSVA m_instance;        
     oig::ratstats::utils::RStatsInteger m_auditZeroCount;
     oig::ratstats::utils::RStatsInteger m_conditionCount;
@@ -387,6 +419,6 @@ private:
     oig::ratstats::utils::RStatsFloatList m_outputVLowerLimit95;
     oig::ratstats::utils::RStatsFloatList m_outputVStdErr;
     RStatsSVAFlagList m_dataFormatTypeAvailableFlag;
-
+    RStatsSVAOutputDataList m_outputDataList;
 };
 }}}}//end namespace

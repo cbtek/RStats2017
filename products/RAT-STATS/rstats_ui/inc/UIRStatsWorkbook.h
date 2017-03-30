@@ -57,10 +57,11 @@ private:
      oig::ratstats::utils::RStatsWorksheet m_currentSheet;
      oig::ratstats::utils::RStatsWorkbook m_workbook;
 
-private slots:
+public slots:
      void onPopulateTable(const oig::ratstats::utils::RStatsWorksheet& sheet);
      void onSheetSelected(int index);
-     void onResizeToContents();
+     void onResizeToContents();     
+     void onStretchToContents();
 
 signals:
      void sheetSelected(const oig::ratstats::utils::RStatsWorksheet& sheet);

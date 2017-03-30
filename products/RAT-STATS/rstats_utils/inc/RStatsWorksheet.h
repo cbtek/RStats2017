@@ -26,6 +26,12 @@ enum class RStatsTextAlignment
     AlignMiddle,
     AlignRight
 };
+
+enum class RStatsCellFormat
+{
+    ThousandsSeperator
+};
+
 class RStatsWorksheet;
 struct RStatsCell
 {
@@ -33,12 +39,33 @@ struct RStatsCell
     static cbtek::common::utility::Color ms_DefaultBGColor;
     static cbtek::common::utility::Color ms_DefaultFGColor;
     static cbtek::common::utility::Font ms_DefaultFont;
+    static RStatsCellFormat ms_DefaultFormat;
     static size_t ms_DefaultFloatingPointDecimals;
     cbtek::common::utility::Font font;
     cbtek::common::utility::Color bgColor;
     cbtek::common::utility::Color fgColor;
     RStatsTextAlignment alignment;
     std::string text;
+
+    void applyFormat(const std::set<RStatsCellFormat>& formats)
+    {
+        for(const auto& format : formats)
+        {
+            switch(format)
+            {
+                case RStatsCellFormat::ThousandsSeperator:
+                {
+                    if (cbtek::common::utility::StringUtils::isNumeric(text))
+                    {
+                        text = cbtek::common::utility::StringUtils::formatWithThousandsLabel(text);
+                    }
+                }
+                break;
+                default: break;
+
+            }
+        }
+    }
 
     void operator=(const std::string& text)
     {
@@ -47,9 +74,9 @@ struct RStatsCell
 
     void operator=(RStatsFloat number)
     {
-        this->text = cbtek::common::utility::StringUtils::toString(number,
-                                                                   ms_DefaultFloatingPointDecimals);
+        this->text = cbtek::common::utility::StringUtils::toString(number,                                                                   ms_DefaultFloatingPointDecimals);
     }
+
     void operator=(RStatsInteger number)
     {
         this->text = cbtek::common::utility::StringUtils::toString(number);
@@ -181,7 +208,7 @@ public:
      */
     void resetDefaults();
 
-
+    std::set<RStatsCellFormat> getCellFormatSet() const;
     /**
      * @brief toCommaDelimitedString
      * @return
@@ -215,13 +242,20 @@ public:
     void findDataRowsAndColumns(std::set<size_t>& rowsOut,
                                 std::set<size_t>& columnsOut) const;
 
-
+    /**
+     * @brief setFormatEnabled
+     * @param format
+     * @param flag
+     */
+    void setFormatEnabled(RStatsCellFormat format,
+                          bool flag);
     //! Destructor
 	~RStatsWorksheet();	
 
 
 
 private:
+        std::set<RStatsCellFormat> m_formatSet;
         RStatsCell m_emptyCell;
         std::string m_worksheetTitle;
         std::map<std::pair<size_t,size_t>, RStatsCell> m_dataTable;

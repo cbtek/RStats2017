@@ -552,16 +552,7 @@ void RStatsUAA::processFindBottomLower()
 }
 
 void RStatsUAA::processCloseInUpper()
-{
-    //std::cout << "CloseInUpper:"<< "kTop="<<m_kTop << " kBot="<<m_kBottom<<"\n";
-    if (m_iter == 8)
-    {
-        int x = 0;
-    }
-    if (m_kBottom == 171 && m_kTop == 254)
-    {
-        int x = 0;
-    }
+{  
     if (m_kTop - m_kBottom == 1)
     {
         processFinalUpper();

@@ -69,6 +69,7 @@ private:
     cbtek::common::utility::Random m_rnd;
     QActionGroup * m_recentSessionActionGroup;
     QMap<QString,SessionData> m_recentSessionsMap;    
+
     SessionData getSessionData() const;
     void setSessionData(const SessionData& data);
     void updateRecentSessions();

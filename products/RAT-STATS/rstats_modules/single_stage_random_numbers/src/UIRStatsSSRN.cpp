@@ -82,10 +82,21 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     m_iconError = UIRStatsUtils::getIcon("img_error.png");
     m_iconOK = UIRStatsUtils::getIcon("img_ok.png");
     onValidateForm();
-    int buttonHeight = 32;
-    UIRStatsUtils::setButtonStyle(m_ui->m_btnExit,this->font(),m_iconExit,buttonHeight);
-    UIRStatsUtils::setButtonStyle(m_ui->m_btnGenerate,this->font(),m_iconRun,buttonHeight);
-    UIRStatsUtils::setButtonStyle(m_ui->m_btnHelp,this->font(),m_iconHelp,buttonHeight);
+    RStatsInteger buttonHeight = 32;
+    UIRStatsUtils::setButtonStyle(m_ui->m_btnExit,
+                                  this->font(),
+                                  m_iconExit,
+                                  buttonHeight);
+
+    UIRStatsUtils::setButtonStyle(m_ui->m_btnGenerate,
+                                  this->font(),
+                                  m_iconRun,
+                                  buttonHeight);
+
+    UIRStatsUtils::setButtonStyle(m_ui->m_btnHelp,
+                                  this->font(),
+                                  m_iconHelp,
+                                  buttonHeight);
     updateRecentSessions();
     onSeedBoxToggled(false);
 
@@ -150,18 +161,18 @@ void UIRStatsSSRN::onValidateForm()
 
 void UIRStatsSSRN::onSaveCSVFile()
 {
-    m_currenCSVOutput = UIRStatsUtils::setOutputFile(this,
-                                                   m_ui->m_chkCSVOutput,
-                                                   "Save to CSV file...",
-                                                   "*.csv");
+    m_currentCSVFileOutput = UIRStatsUtils::setOutputFile(
+                                                          m_ui->m_chkCSVOutput,
+                                                          "Save to CSV file...",
+                                                          "*.csv");
 }
 
 void UIRStatsSSRN::onSaveTextFile()
 {
-    m_currentTextFileOutput = UIRStatsUtils::setOutputFile(this,
-                              m_ui->m_chkTextOutput,
-                              "Save to Text file...",
-                              "*.txt");
+    m_currentTextFileOutput = UIRStatsUtils::setOutputFile(
+                                                           m_ui->m_chkTextOutput,
+                                                           "Save to Text file...",
+                                                           "*.txt");
 }
 
 void UIRStatsSSRN::onUpdateClock()
@@ -190,15 +201,15 @@ void UIRStatsSSRN::onGenerate()
     RStatsSSRN::inst().saveToWorksheet(worksheet);
     UIRStatsUtils::bindSheetToUI(worksheet,m_ui->m_tblOutput,false,0,0);
 
-    if (StringUtils::isEmpty(m_currentTextFileOutput))
+    if (!StringUtils::isEmpty(m_currentTextFileOutput.toStdString()))
     {
-        FileUtils::writeFileContents(m_currentTextFileOutput,
+        FileUtils::writeFileContents(m_currentTextFileOutput.toStdString(),
                                      worksheet.toEvenlySpacedString());
     }
 
-    if (StringUtils::isEmpty(m_currentCSVFileOutput))
+    if (!StringUtils::isEmpty(m_currentCSVFileOutput.toStdString()))
     {
-        FileUtils::writeFileContents(m_currentCSVFileOutput,
+        FileUtils::writeFileContents(m_currentCSVFileOutput.toStdString(),
                                      worksheet.toCommaDelimitedString());
     }
 
@@ -262,10 +273,10 @@ void UIRStatsSSRN::setSessionData(const SessionData &data)
     m_ui->m_txtAuditName->setText(QString::fromStdString(data.name));
     m_ui->m_spnSeed->setValue(data.seed);
     m_ui->m_spnSeed->setEnabled(true);
-    m_ui->m_spnHighNumber->setValue(data.high);
-    m_ui->m_spnLowNumber->setValue(data.low);
-    m_ui->m_spnSpares->setValue(data.spares);
-    m_ui->m_spnOrder->setValue(data.order);
+    m_ui->m_spnHighNumber->setValue(static_cast<int>(data.high));
+    m_ui->m_spnLowNumber->setValue(static_cast<int>(data.low));
+    m_ui->m_spnSpares->setValue(static_cast<int>(data.spares));
+    m_ui->m_spnOrder->setValue(static_cast<int>(data.order));
 
 }
 void UIRStatsSSRN::onClearRecentSessions()
@@ -356,8 +367,8 @@ void SessionData::load(const std::string &url)
             if (sparesXML)this->spares = sparesXML->getElementDataAsInteger();
             if (lowXML)this->low = lowXML->getElementDataAsInteger();
             if (highXML)this->high = highXML->getElementDataAsInteger();
-            if (dateXML)this->dateValue = dateXML->getElementDataAsInteger();
-            if (timeXML)this->timeValue = timeXML->getElementDataAsInteger();
+            if (dateXML)this->dateValue = static_cast<std::uint64_t>(dateXML->getElementDataAsInteger());
+            if (timeXML)this->timeValue = static_cast<std::uint64_t>(timeXML->getElementDataAsInteger());
         }
     }
 }

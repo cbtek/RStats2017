@@ -61,7 +61,7 @@ UIRStatsWorkbook::~UIRStatsWorkbook()
 void UIRStatsWorkbook::onPopulateTable(const RStatsWorksheet &sheet)
 {    
     m_currentSheet = sheet;
-    UIRStatsUtils::bindSheetToUI(sheet,m_ui->m_tblCurrentSheet);
+    UIRStatsUtils::bindSheetToUI(sheet,m_ui->m_tblCurrentSheet,false,0,0);
     emit sheetSelected(sheet);
     emit sheetSelected(m_ui->m_tblCurrentSheet);
 }
@@ -72,6 +72,7 @@ void UIRStatsWorkbook::onSheetSelected(int index)
     {
         onPopulateTable(m_workbook(index));
         onResizeToContents();
+        onStretchToContents();
     }
 }
 
@@ -79,13 +80,21 @@ void UIRStatsWorkbook::onSheetSelected(int index)
 void UIRStatsWorkbook::onResizeToContents()
 {
 
-    if (m_ui->m_tblCurrentSheet->columnCount() > 0)
-    {
-        m_ui->m_tblCurrentSheet->horizontalHeader()->setSectionResizeMode(m_ui->m_tblCurrentSheet->columnCount()-1,QHeaderView::ResizeToContents);
-    }
-    m_ui->m_tblCurrentSheet->resizeRowsToContents();
+//    if (m_ui->m_tblCurrentSheet->columnCount() > 0)
+//    {
+//        m_ui->m_tblCurrentSheet->horizontalHeader()->setSectionResizeMode(m_ui->m_tblCurrentSheet->columnCount()-1,QHeaderView::ResizeToContents);
+//    }
+
+    m_ui->m_tblCurrentSheet->resizeColumnsToContents();
+    m_ui->m_tblCurrentSheet->resizeRowsToContents();    
+    //m_ui->m_tblCurrentSheet->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     m_ui->m_tblCurrentSheet->update();
     this->update();
+}
+
+void UIRStatsWorkbook::onStretchToContents()
+{
+    m_ui->m_tblCurrentSheet->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 }
 }}}//end namespace
 

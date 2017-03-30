@@ -31,25 +31,25 @@ namespace ui {
 
 namespace UIRStatsUtils
 {
-    static void setButtonStyle(QAbstractButton * button,
+    inline void setButtonStyle(QAbstractButton * button,
                                  const QFont& font,
                                  const QIcon& icon,
-                                 size_t buttonHeight,
+                                 oig::ratstats::utils::RStatsInteger buttonHeight,
                                  bool squareButton = false)
     {
         button->setFont(font);
         button->setIcon(icon);
-        button->setIconSize(QSize(buttonHeight-8,buttonHeight-8));
-        button->setMaximumHeight(buttonHeight);
-        button->setMinimumHeight(buttonHeight);
+        button->setIconSize(QSize(static_cast<int>(buttonHeight-8),static_cast<int>(buttonHeight-8)));
+        button->setMaximumHeight(static_cast<int>(buttonHeight));
+        button->setMinimumHeight(static_cast<int>(buttonHeight));
         if (squareButton)
         {
-            button->setMaximumWidth(buttonHeight);
-            button->setMinimumWidth(buttonHeight);
+            button->setMaximumWidth(static_cast<int>(buttonHeight));
+            button->setMinimumWidth(static_cast<int>(buttonHeight));
         }
     }
 
-    static QIcon getIcon(const std::string & iconFileName)
+    inline QIcon getIcon(const std::string & iconFileName)
     {
         if (cbtek::common::utility::FileUtils::fileExists(iconFileName))
         {
@@ -66,7 +66,7 @@ namespace UIRStatsUtils
         return icon;
     }
 
-    static std::string getCurrentTheme()
+    inline std::string getCurrentTheme()
     {
         std::string path = utils::RStatsUtils::getThemeSettingsFilePath();
         cbtek::common::utility::XMLReader xmlReader;
@@ -81,7 +81,7 @@ namespace UIRStatsUtils
         return "DEFAULT";
     }
 
-    static void loadThemeSettings(QApplication * app)
+    inline void loadThemeSettings(QApplication * app)
     {
         std::string path = utils::RStatsUtils::getThemeSettingsFilePath();
         cbtek::common::utility::XMLReader xmlReader;
@@ -114,11 +114,12 @@ namespace UIRStatsUtils
      * @param padRows
      * @param padColumns
      */
-    static void bindSheetToUI(const oig::ratstats::utils::RStatsWorksheet &sheet, QTableWidget *table, bool checkableHeader = false,int padRows=10,int padColumns=10)
+    inline void bindSheetToUI(const oig::ratstats::utils::RStatsWorksheet &sheet, QTableWidget *table, bool checkableHeader = false,int padRows=10,int padColumns=10)
     {
         table->clear();
-        table->setColumnCount(sheet.getNumColumns()+padColumns);
-        table->setRowCount(sheet.getNumRows()+padRows);
+        table->setColumnCount(static_cast<int>(sheet.getNumColumns())+padColumns);
+        table->setRowCount(static_cast<int>(sheet.getNumRows())+padRows);
+
         for (size_t a1 = 0; a1 < table->columnCount();++a1)
         {
             QTableWidgetItem * header = new QTableWidgetItem;
@@ -128,7 +129,7 @@ namespace UIRStatsUtils
                 header->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable);
                 header->setCheckState(Qt::Unchecked);
             }
-            table->setHorizontalHeaderItem(a1,header);
+            table->setHorizontalHeaderItem(static_cast<int>(a1),header);
         }
 
         for(const auto& itNext : sheet.getCells())
@@ -136,8 +137,10 @@ namespace UIRStatsUtils
             std::pair<size_t,size_t> index = itNext.first;
             oig::ratstats::utils::RStatsCell cell = itNext.second;
             QTableWidgetItem * item = new QTableWidgetItem;
+
+            cell.applyFormat(sheet.getCellFormatSet());
             item->setText(QString::fromStdString(cell.text));
-            table->setRowHeight(index.first,30);
+            table->setRowHeight(static_cast<int>(index.first),30);
             //set colors
             int r,g,b,a;
             if (oig::ratstats::utils::RStatsCell::ms_DefaultBGColor != cell.bgColor)
@@ -163,20 +166,23 @@ namespace UIRStatsUtils
             font.setUnderline(cell.font.isUnderlined());
             font.setItalic(cell.font.isItalic());
             font.setFamily(QString::fromStdString(cell.font.getFontFamily()));
-            font.setPointSize(cell.font.getPointSize());
+            font.setPointSize(static_cast<int>(cell.font.getPointSize()));
             item->setFont(font);
             switch(cell.alignment)
             {
                 case oig::ratstats::utils::RStatsTextAlignment::AlignMiddle:item->setTextAlignment(Qt::AlignVCenter | Qt::AlignHCenter);break;
                 case oig::ratstats::utils::RStatsTextAlignment::AlignRight:item->setTextAlignment(Qt::AlignVCenter | Qt::AlignRight);break;
-                default:item->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);break;
+                case oig::ratstats::utils::RStatsTextAlignment::AlignLeft:item->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);break;
+                default:break;
             }
-            table->setItem(index.first,index.second,item);
+            table->setItem(static_cast<int>(index.first),
+                           static_cast<int>(index.second),
+                           item);
         }
         table->show();
     }
 
-    static inline std::string setOutputFile(QCheckBox * checkBox,
+    inline QString setOutputFile(QCheckBox * checkBox,
                               const QString& title,
                               const QString& extension)
     {
@@ -185,7 +191,7 @@ namespace UIRStatsUtils
         if (!cbtek::common::utility::StringUtils::isEmpty(file.toStdString()))
         {
             checkBox->setToolTip(file);
-            return file.toStdString();
+            return file;
         }
         else
         {

@@ -46,6 +46,8 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     m_iconWarning = UIRStatsUtils::getIcon("img_warning.png");
     m_iconError = UIRStatsUtils::getIcon("img_error.png");
     m_iconOK = UIRStatsUtils::getIcon("img_ok.png");
+    m_fullScreenToggle = false;
+    m_ui->m_txtAuditName->setPlaceholderText(QString::fromStdString(RStatsUtils::getAuditName()));
 
     m_ui->m_dockOptions->setTitleBarWidget(new QWidget());
     int buttonHeight = 32;
@@ -99,6 +101,14 @@ UIRStatsSVA::~UIRStatsSVA()
     delete m_ui;
 }
 
+void UIRStatsSVA::keyPressEvent(QKeyEvent *evt)
+{
+    if (evt->key() == Qt::Key_F11)
+    {
+        onToggleFullScreen();
+    }
+}
+
 void UIRStatsSVA::populateWithColumns(const std::set<size_t>& columns,
                                       QComboBox *comboBox)
 {
@@ -137,6 +147,7 @@ void UIRStatsSVA::onAddNewColumnToDataTable()
     QTableWidgetItem * item = new QTableWidgetItem;
     item->setText(QString::fromStdString(headerLabel));
     m_ui->m_tblData->setHorizontalHeaderItem(m_ui->m_tblData->columnCount()-1,item);
+
 }
 
 void UIRStatsSVA::onAddNewColumnToSizeTable()
@@ -200,12 +211,26 @@ bool UIRStatsSVA::onValidate()
                                 "You have NOT selected an output file for the results.  Assuming screen display only.");
 
      m_conditionLogger.addWarning(m_ui->m_txtAuditName->text().isEmpty(),
-                                  "You have not set the name for this audit.  Using auto-generated name: '"+m_ui->m_txtAuditName->placeholderText().toStdString()+"'");
+                                  "You have NOT set the name for this audit.  Using auto-generated name: '"+m_ui->m_txtAuditName->placeholderText().toStdString()+"'");
 
      if (!m_conditionLogger.hasMessages())
-     {
+     {         
+         if (!m_fullScreenToggle)
+         {
+            m_ui->m_dockErrorConsole->hide();
+            m_ui->m_lblErrorConsole->setVisible(true);
+            m_ui->m_lstErrorConsole->setVisible(false);
+         }
+
+
          m_ui->m_btnContinue->setEnabled(true);
          return true;
+     }     
+     if (!m_fullScreenToggle)
+     {
+        m_ui->m_dockErrorConsole->show();
+        m_ui->m_lblErrorConsole->setVisible(false);
+        m_ui->m_lstErrorConsole->setVisible(true);
      }
      size_t index = 0;
      for(const std::string & message : m_conditionLogger.getMessages())
@@ -237,17 +262,19 @@ bool UIRStatsSVA::onValidate()
 }
 
 void UIRStatsSVA::onSampleSizeInputSheetSelected(const RStatsWorksheet &sheet)
-{
-    UIRStatsUtils::bindSheetToUI(sheet,m_ui->m_tblSizes,true);
+{    
+    UIRStatsUtils::bindSheetToUI(sheet,m_ui->m_tblSizes,true,0,0);
     m_currentSizeSheet = sheet;
     onUpdateRowColumnExtentsForSizeTable();
+    m_ui->m_tblSizes->verticalHeader()->show();
 }
 
 void UIRStatsSVA::onSampleDataInputSheetSelected(const RStatsWorksheet &sheet)
 {
-    UIRStatsUtils::bindSheetToUI(sheet,m_ui->m_tblData,true);
+    UIRStatsUtils::bindSheetToUI(sheet,m_ui->m_tblData,true,0,0);
     m_currentDataSheet = sheet;
     onUpdateRowColumnExtentsForDataTable();
+    m_ui->m_tblData->verticalHeader()->show();
 }
 
 void UIRStatsSVA::onComboSizeInputSheetSelected(int row)
@@ -259,7 +286,9 @@ void UIRStatsSVA::onComboSizeInputSheetSelected(int row)
     size_t index = static_cast<size_t>(row);
     if (index < m_currentSizeWorkbook.getNumWorksheets())
     {
-        onSampleSizeInputSheetSelected(m_currentSizeWorkbook(index));
+        RStatsWorksheet sheet = m_currentSizeWorkbook(index);
+        sheet.setFormatEnabled(RStatsCellFormat::ThousandsSeperator,true);
+        onSampleSizeInputSheetSelected(sheet);
     }
 }
 
@@ -271,8 +300,10 @@ void UIRStatsSVA::onComboDataInputSheetSelected(int row)
     }
     size_t index = static_cast<size_t>(row);
     if (index < m_currentDataWorkbook.getNumWorksheets())
-    {
-        onSampleDataInputSheetSelected(m_currentDataWorkbook(index));
+    {        
+        RStatsWorksheet sheet = m_currentDataWorkbook(index);
+        sheet.setFormatEnabled(RStatsCellFormat::ThousandsSeperator,true);
+        onSampleDataInputSheetSelected(sheet);
     }
 }
 
@@ -323,28 +354,91 @@ void UIRStatsSVA::onContinue()
 
     size_t sizeSheetSampleColumn = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbSampleCountSizeTable->currentText().toStdString());
     size_t sizeSheetUniverseColumn = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbUniverseCountSizeTable->currentText().toStdString());
-    size_t sizeSheetRowDataStart = m_ui->m_cmbDataRowStartSizeTable->currentText().toInt();
+    size_t sizeSheetRowDataStart = static_cast<size_t>(m_ui->m_cmbDataRowStartSizeTable->currentText().toInt()-1);
+    size_t dataSheetRowDataStart = static_cast<size_t>(m_ui->m_cmbDataRowStartDataTable->currentText().toInt()-1);
+
+    RStatsSVA::inst().execute(m_currentDataSheet,
+                              m_currentSizeSheet,
+                              dfIndex,
+                              dataSheetRowDataStart,
+                              sizeSheetSampleColumn,
+                              sizeSheetUniverseColumn,
+                              sizeSheetRowDataStart);
 
 
-    RStatsWorksheet worksheet;
+    RStatsWorkbook workbook;
+    RStatsSVA::inst().saveToWorkbook(workbook);
 
-    if (StringUtils::isEmpty(m_currentTextFileOutput))
+    //Clear layout
+    QLayoutItem *item;
+    while ((item = m_ui->m_grpOutput->layout()->takeAt(0)))
     {
-        FileUtils::writeFileContents(m_currentTextFileOutput,
-                                     worksheet.toEvenlySpacedString());
+        delete item;
+    }
+    m_outputWorkbook = new UIRStatsWorkbook;
+    m_ui->m_grpOutput->layout()->addWidget(m_outputWorkbook);
+    m_outputWorkbook->setWorkbook(workbook);
+    m_outputWorkbook->onStretchToContents();
+    m_ui->m_lblNoData->hide();
+    m_ui->m_grpOutput->show();
+
+    if (StringUtils::isEmpty(m_currentTextFileOutput.toStdString()))
+    {
+        RStatsSVA::inst().saveToTextFile(m_currentTextFileOutput.toStdString());
     }
 
-    if (StringUtils::isEmpty(m_currentCSVFileOutput))
+    if (StringUtils::isEmpty(m_currentCSVFileOutput.toStdString()))
     {
-        FileUtils::writeFileContents(m_currentCSVFileOutput,
-                                     worksheet.toCommaDelimitedString());
+        RStatsSVA::inst().saveToTextFile(m_currentCSVFileOutput.toStdString());
     }
-
+    onToggleFullScreen();
 }
 
 void UIRStatsSVA::onExit()
 {
-    this->close();
+    if (m_fullScreenToggle)
+    {
+        onToggleFullScreen();
+    }
+    else
+    {
+        this->close();
+    }
+}
+
+void UIRStatsSVA::onToggleFullScreen()
+{
+    m_fullScreenToggle = !m_fullScreenToggle;
+    if (m_fullScreenToggle)
+    {
+        m_ui->m_dockErrorConsole->hide();
+        m_ui->m_dockOptions->hide();
+        m_ui->m_dockSampleDataInput->hide();
+        m_ui->m_dockSampleSizeInput->hide();
+        m_ui->m_btnHelp->hide();
+        m_ui->m_btnContinue->hide();
+        m_ui->m_btnExit->setText("Click here or press F11 to exit full-screen mode");
+        m_ui->m_grpOutput->setTitle("Output Data (Press F11 to exit full-screen mode)");
+        this->setWindowState(Qt::WindowMaximized);
+//        m_currentWindowState = this->windowState();
+//        m_currentWindowFlags = this->windowFlags();
+
+//        this->setWindowFlags(Qt::FramelessWindowHint);
+    }
+    else
+    {
+        m_ui->m_dockErrorConsole->show();
+        m_ui->m_dockOptions->show();
+        m_ui->m_dockSampleDataInput->show();
+        m_ui->m_dockSampleSizeInput->show();
+        m_ui->m_frmCommand->show();
+        m_ui->m_grpOutput->setTitle("Output Data:");
+        m_ui->m_btnHelp->show();
+        m_ui->m_btnContinue->show();
+        m_ui->m_btnExit->setText("Exit");
+//        this->setWindowState(m_currentWindowState);
+//        this->setWindowFlags(m_currentWindowFlags);
+    }
 }
 
 void UIRStatsSVA::onImportDataInput()
@@ -366,7 +460,7 @@ void UIRStatsSVA::onImportDataInput()
             if (m_currentSizeWorkbook.getNumWorksheets() == 0)
             {
                 setOther = true;
-                m_currentSizeWorkbook = m_currentSizeWorkbook;
+                m_currentSizeWorkbook = m_currentDataWorkbook;
             }
 
             std::vector<std::string> worksheetNames = m_currentDataWorkbook.getWorksheetNames();

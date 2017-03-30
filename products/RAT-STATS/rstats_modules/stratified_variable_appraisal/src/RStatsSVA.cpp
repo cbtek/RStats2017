@@ -36,11 +36,26 @@ namespace constants
 
 RStatsSVA RStatsSVA::m_instance = RStatsSVA();
 
-RStatsSVAOutputDataList RStatsSVA::execute(RStatsDataFormatType dataFormatType,
-                                           const RStatsSVAInputDataList &strataDataList)
+
+
+RStatsSVAOutputDataList RStatsSVA::execute(
+                                           const RStatsWorksheet &dataSheet,
+                                           const RStatsWorksheet &sizeSheet,
+                                           const RStatsDataFormatTypeIndex & dataSheetIndex,
+                                           size_t dataSheetRowStart,
+                                           size_t sizeSheetSampleSizeColumn,
+                                           size_t sizeSheetUniverseSizeColumn,
+                                           size_t sizeSheetRowStart)
 {
-    RStatsSVAOutputDataList summaryDataList;
-    RStatsInteger index = 0;
+    RStatsSVAInputDataList strataDataList = buildInputDataList(dataSheet,
+                                                               sizeSheet,
+                                                               dataSheetIndex,
+                                                               dataSheetRowStart,
+                                                               sizeSheetSampleSizeColumn,
+                                                               sizeSheetUniverseSizeColumn,
+                                                               sizeSheetRowStart);
+    RStatsDataFormatType dataFormatType;
+    RStatsInteger index = 0;    
     m_summaryTotalSum = 0.;
     m_summaryPopulationSize = 0;
     m_summarySampleSize = 0;
@@ -71,9 +86,10 @@ RStatsSVAOutputDataList RStatsSVA::execute(RStatsDataFormatType dataFormatType,
     for (const RStatsSVAInputData& inputData : strataDataList)
     {
         onReset();
-        m_currentNonZero = RStatsUtils::getNumItemsThatMatchCondition<RStatsFloat>(RStatsConditionalOperatorType::NotEqual,
+        dataFormatType = inputData.typeIndex.type;
+        m_currentNonZero = static_cast<RStatsInteger>(RStatsUtils::getNumItemsThatMatchCondition<RStatsFloat>(RStatsConditionalOperatorType::NotEqual,
                                                                                 inputData.samples,
-                                                                                0.);
+                                                                                0.));
         m_examValues.clear();
         m_auditValues.clear();
         m_differenceValues.clear();
@@ -92,61 +108,25 @@ RStatsSVAOutputDataList RStatsSVA::execute(RStatsDataFormatType dataFormatType,
         m_summaryTotalSum += RStatsUtils::getSum(m_outputSum);
         m_summaryPopulationSize += inputData.universeSize;
 
-        buildOutputData(summaryDataList,
+        buildOutputData(m_outputDataList,
                         inputData,
                         dataFormatType);
         ++index;
     }
 
-    processSummaryTotals(summaryDataList);
-    return summaryDataList;
+    processSummaryTotals(m_outputDataList);
+    return m_outputDataList;
 }
 
-RStatsSVAOutputDataList RStatsSVA::execute(
-                                           const RStatsWorksheet &inputSheet,
-                                           const RStatsWorksheet &sizeSheet,
-                                           const RStatsDataFormatTypeIndex & dataSheetIndex,
-                                           size_t dataSheetRowStart,
-                                           size_t sizeSheetSampleSizeColumn,
-                                           size_t sizeSheetUniverseSizeColumn,
-                                           size_t sizeSheetRowStart)
-{
-    std::pair<size_t,size_t> sizeSheetRowColMax = sizeSheet.getLastDataRowAndColumn();
-    std::pair<size_t,size_t> inputSheetRowColMax = inputSheet.getLastDataRowAndColumn();
 
-    RStatsSVAInputDataList svaInputList;
-    size_t colCount = sizeSheet.getNumColumns();
-    size_t dataRow = 0;
-    for (size_t r = 0; r < sizeSheet.getNumRows(); ++r)
-    {
-        RStatsSVAInputData data;
-
-        //Read size info for stratum
-        std::string lineCounter = sizeSheet(r, (size_t)0).text;
-        std::string universeSize = sizeSheet(r,(size_t)1).text;
-        std::string sampleSize = sizeSheet(r,(size_t)2).text;
-        data.universeSize = StringUtils::toInt(universeSize);
-        data.sampleSize = StringUtils::toInt(sampleSize);
-
-        //For each stratum lets grab the data samples
-        for (size_t a1 = dataRow; a1 < data.sampleSize;++a1)
-        {
-            if (a1 < inputSheet.getNumRows())
-            {
-                //inputSheet(a1,)
-            }
-        }
-    }
-
-}
-
-void RStatsSVA::populateWorkbookFromOutputList(RStatsSVAOutputDataList &outputList,
-                                               RStatsWorkbook &workbookOut)
-{
+void RStatsSVA::saveToWorkbook(RStatsWorkbook &workbookOut)
+{    
+    RStatsSVAOutputDataList &outputList = m_outputDataList;
     RStatsInteger counter = 1;
     for(const RStatsSVAOutputData& data : outputList)
     {
         RStatsWorksheet sheet;
+        sheet.setFormatEnabled(RStatsCellFormat::ThousandsSeperator,true);
         std::string title;
         if (data.isDisplaySummary)
         {
@@ -158,124 +138,130 @@ void RStatsSVA::populateWorkbookFromOutputList(RStatsSVAOutputDataList &outputLi
         }
         sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignRight);
         sheet.setWorksheetTitle(title);
-        sheet.setDefaultFont(cbtek::common::utility::Font("arial",12,true));
-        sheet("A1")="Population Size:";
-        sheet("A2")="Sample Size:";
-        sheet("A3")="Number of Nonzero Items:";
+        sheet.setDefaultFont(cbtek::common::utility::Font("arial",11,true));
+
+        sheet("A1")= "Audit Name:";
+        sheet("A2")= "Population Count:";
+        sheet("A3")= "Sample Count:";
+        sheet("A4")= "Nonzero Count:";
+        sheet("A5")= "Creation Date:";
+        sheet("A6")= "Creation Time:";
+        sheet("A7")= "Creation Author:";
+
+        sheet("C1")="Mean:";
+        sheet("C2")="Skewnewss:";
+        sheet("C3")="Kurtosis:";
+        sheet("C4")="Std. Err. Mean:";
+        sheet("C5")="Std. Err. Total:";
+        sheet("C6")="Point Est.:";
+
+        sheet("A11") = "Lower:";
+        sheet("A12") = "Upper:";
+        sheet("A13")="Precision Amount:";
+        sheet("A14")="Precision Percent:";
+
+        sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
+        sheet("C9") = "Confidence Levels";
+        sheet("B10") = "80%";
+        sheet("C10") = "90%";
+        sheet("D10") = "95%";
+        sheet("B10").bgColor.set(255,127,127);
+        sheet("C10").bgColor.set(255,255,127);
+        sheet("D10").bgColor.set(127,255,127);
+        sheet("B10").fgColor.set(1,1,1);
+        sheet("C10").fgColor.set(1,1,1);
+        sheet("D10").fgColor.set(1,1,1);
+        sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignLeft);
+        sheet("B1") = data.auditName;
+        sheet("B2") = data.populationSize;
+        sheet("B3") = data.sampleSize;
+        sheet("B4") = data.nonZeroCount;
+        sheet("B5") = DateUtils::toShortDateString(data.createDate);
+        sheet("B5").applyFormat(std::set<RStatsCellFormat>());
+        sheet("B6") = TimeUtils::to12HourTimeString(data.createTime);
+        sheet("B7") = SystemUtils::getUserName();
+
+        sheet("D1") = data.mean;
+        sheet("D2") = data.skewness;
+        sheet("D3") = data.kurtosis;
+        sheet("D4") = data.standardErrorTotal;
+        sheet("D5") = data.standardErrorMean;
+        sheet("D6") = data.pointEstimate;
+        sheet.resetDefaults();
+        sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
+        sheet.setDefaultFont(Font("arial",11));
+        sheet.setDefaultFloatingPointDecimals(2);
+        sheet.setDefaultFloatingPointDecimals(0);
 
         std::string percent80 = StringUtils::toString(data.precisionPercent80,2)+"%";
         std::string percent90 = StringUtils::toString(data.precisionPercent90,2)+"%";
         std::string percent95 = StringUtils::toString(data.precisionPercent95,2)+"%";
 
+        sheet("B11") = data.lower80;
+        sheet("C11") = data.lower90;
+        sheet("D11") = data.lower95;
+
+        sheet("B12") = data.upper80;
+        sheet("C12") = data.upper90;
+        sheet("D12") = data.upper95;
+
+        sheet("B13") = data.precisionAmount80;
+        sheet("C13") = data.precisionAmount90;
+        sheet("D13") = data.precisionAmount95;
+
+        sheet("B14") = percent80;
+        sheet("C14") = percent90;
+        sheet("D14") = percent95;
+
         if (data.isDisplaySummary)
         {
-            sheet("A4") = "Standard Error (Mean):";
-            sheet("A5") = "Standard Error (Total):";
-            sheet("A6") = "Point Estimate:";
-            sheet("D3") = "Lower Limit:";
-            sheet("D4") = "Upper Limit:";
-            sheet("D5") = "Precision Amount:";
-            sheet("D6") = "Precision Percent:";
-            sheet("D7") = "Z-Value Used:";
-            sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
-            sheet("F1") = "Confidence Levels";
-            sheet("E2") = "80%";
-            sheet("F2") = "90%";
-            sheet("G2") = "95%";
-            sheet("E2").bgColor.set(255,127,127);
-            sheet("F2").bgColor.set(255,255,127);
-            sheet("G2").bgColor.set(127,255,127);
-            sheet.resetDefaults();
-            sheet.setDefaultFloatingPointDecimals(2);
-            sheet("B1") = data.populationSize;
-            sheet("B2") = data.sampleSize;
-            sheet("B3") = data.nonZeroCount;
-            sheet("B4") = data.standardErrorMean;
-            sheet("B5") = data.standardErrorTotal;
 
-            sheet.setDefaultFloatingPointDecimals(0);
-            sheet("B6") = data.pointEstimate;
-            sheet("E3") = data.lower80;
-            sheet("F3") = data.lower90;
-            sheet("G3") = data.lower95;
+            sheet("C1")="";
+            sheet("C2")="";
+            sheet("C3")="";
+            sheet("D1")="";
+            sheet("D2")="";
+            sheet("D3")="";
+            sheet("C4")="Std. Err. Mean:";
+            sheet("C5")="Std. Err. Total:";
+            sheet("C6")="Point Est.:";
 
-            sheet("E4") = data.upper80;
-            sheet("F4") = data.upper90;
-            sheet("G4") = data.upper95;
-
-            sheet("E5") = data.precisionAmount80;
-            sheet("F5") = data.precisionAmount90;
-            sheet("G5") = data.precisionAmount95;
-
-            sheet("E6") = percent80;
-            sheet("F6") = percent90;
-            sheet("G6") = percent95;
-
+            sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignRight);
+            sheet.setDefaultFont(cbtek::common::utility::Font("arial",11,true));
+            sheet("A15") = "z-Value:";
             sheet.setDefaultFloatingPointDecimals(12);
-            sheet("E7") = data.tValue80;
-            sheet("F7") = data.tValue90;
-            sheet("G7") = data.tValue95;
+            sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
+            sheet("B15") = data.tValue80;
+            sheet("C15") = data.tValue90;
+            sheet("D15") = data.tValue95;
         }
         else
         {
-            sheet("A4")="Mean:";
-            sheet("A5")="Skew:";
-            sheet("A6")="Point Estimate:";
-            sheet("A7")="Standard Error (Mean):";
-            sheet("A8")="Standard Error (Total):";
-            sheet("A9")="Point Estimate:";
-            sheet("D4") = "Lower Limit:";
-            sheet("D5") = "Upper Limit:";
-            sheet("D6") = "Precision Amount:";
-            sheet("D7") = "Precision Percent:";
-            sheet("D8") = "t-Value Used:";
-            sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
-            sheet("F2") = "Confidence Levels";
-            sheet("E3") = "80%";
-            sheet("F3") = "90%";
-            sheet("G3") = "95%";
-            sheet("E3").bgColor.set(255,127,127);
-            sheet("F3").bgColor.set(255,255,127);
-            sheet("G3").bgColor.set(127,255,127);
-            sheet.resetDefaults();
-
-
-            sheet.setDefaultFloatingPointDecimals(2);
-            sheet("B1") = data.populationSize;
-            sheet("B2") = data.sampleSize;
-            sheet("B3") = data.nonZeroCount;
-            sheet("B4") = data.mean;
-            sheet("B5") = data.standardDeviation;
-            sheet("B6") = data.skewness;
-            sheet("B7") = data.standardErrorMean;
-            sheet("B8") = data.standardErrorTotal;
-
-            sheet.setDefaultFloatingPointDecimals(0);
-            sheet("B9") = data.pointEstimate;
-            sheet("E4") = data.lower80;
-            sheet("F4") = data.lower90;
-            sheet("G4") = data.lower95;
-
-            sheet("E5") = data.upper80;
-            sheet("F5") = data.upper90;
-            sheet("G5") = data.upper95;
-
-            sheet("E6") = data.precisionAmount80;
-            sheet("F6") = data.precisionAmount90;
-            sheet("G6") = data.precisionAmount95;
-
-            sheet("E7") = percent80;
-            sheet("F7") = percent90;
-            sheet("G7") = percent95;
-
+            sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignRight);
+            sheet.setDefaultFont(cbtek::common::utility::Font("arial",11,true));
+            sheet("A15") = "t-Value:";
             sheet.setDefaultFloatingPointDecimals(12);
-            sheet("E8") = data.tValue80;
-            sheet("F8") = data.tValue90;
-            sheet("G8") = data.tValue95;
+            sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
+            sheet("B15") = data.tValue80;
+            sheet("C15") = data.tValue90;
+            sheet("D15") = data.tValue95;
         }
         workbookOut.addWorksheet(sheet);
-        ++counter;
+        if (!data.isDisplaySummary)
+        {
+            ++counter;
+        }
     }
+}
+
+void RStatsSVA::saveToCSVFile(const std::string &filePath)
+{
+
+}
+
+void RStatsSVA::saveToTextFile(const std::string &filePath)
+{
+
 }
 
 void RStatsSVA::buildOutputData(RStatsSVAOutputDataList& outputDataList,
@@ -366,6 +352,60 @@ RStatsSVA::RStatsSVA()
 RStatsSVA::~RStatsSVA()
 {
 
+}
+
+RStatsSVAInputDataList RStatsSVA::buildInputDataList(const RStatsWorksheet &dataSheet,
+                                                     const RStatsWorksheet &sizeSheet,
+                                                     const RStatsDataFormatTypeIndex &dataSheetIndex,
+                                                     size_t dataSheetRowStart,
+                                                     size_t sizeSheetSampleSizeColumn,
+                                                     size_t sizeSheetUniverseSizeColumn,
+                                                     size_t sizeSheetRowStart)
+{
+
+    RStatsSVAInputDataList dataList;
+    size_t dataRowOffset = dataSheetRowStart;
+    for (size_t r = sizeSheetRowStart; r < sizeSheet.getNumRows(); ++r)
+    {
+        RStatsSVAInputData stratum;
+
+        //Read size info for stratum
+        std::string universeSize = sizeSheet(r,sizeSheetUniverseSizeColumn).text;
+        std::string sampleSize = sizeSheet(r,sizeSheetSampleSizeColumn).text;
+
+        stratum.universeSize = StringUtils::toInt(universeSize);
+        stratum.sampleSize = StringUtils::toInt(sampleSize);
+        stratum.offset = static_cast<RStatsInteger>(dataRowOffset);
+        stratum.typeIndex = dataSheetIndex;
+        bool isMultiDataFormat = (stratum.typeIndex.type == RStatsDataFormatType::AuditAndDifference ||
+                                  stratum.typeIndex.type == RStatsDataFormatType::ExamineAndAudit ||
+                                  stratum.typeIndex.type == RStatsDataFormatType::ExamineAndDifference);
+
+        stratum.samples.initialize(static_cast<size_t>(stratum.sampleSize),(isMultiDataFormat)?2:1);
+        size_t index = 0;
+        //For each stratum lets grab the data samples
+        for (RStatsInteger a1 = 0; a1 < stratum.sampleSize;++a1)
+        {
+            std::string value1 = dataSheet(static_cast<size_t>(a1+stratum.offset),
+                                           stratum.typeIndex.primaryIndex).text;
+            StringUtils::removeInPlace(value1,",");
+            StringUtils::removeInPlace(value1,"$");
+            stratum.samples(index,0) = StringUtils::toFloat64(value1);
+            std::string value2;
+            if (isMultiDataFormat)
+            {
+                value2 = dataSheet(static_cast<size_t>(a1+stratum.offset),
+                                   stratum.typeIndex.secondaryIndex).text;
+                StringUtils::removeInPlace(value2,",");
+                StringUtils::removeInPlace(value2,"$");
+                stratum.samples(index,1) = StringUtils::toFloat64(value2);
+            }
+            ++index;
+            ++dataRowOffset;
+        }
+        dataList.push_back(stratum);
+    }
+    return dataList;
 }
 
 void RStatsSVA::onReset()
