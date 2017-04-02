@@ -15,8 +15,14 @@
 #include <QTableWidget>
 #include <QFileDialog>
 #include <QCheckBox>
+#include <QMenu>
+#include <QAction>
+#include <QActionGroup>
+
+#include <map>
 
 #include "rstats_utils/inc/RStatsUtils.hpp"
+#include "rstats_utils/inc/RStatsModuleSessionDataImpl.h"
 #include "rstats_utils/inc/RStatsWorkbook.h"
 
 #include "rstats_utils/inc/RStatsSettingsManager.h"
@@ -108,19 +114,76 @@ namespace UIRStatsUtils
     }   
 
     /**
+     * @brief bindUIToSheet
+     * @param table
+     * @param sheetOut
+     */
+    inline void bindUIToSheet(QTableWidget * table,
+                              oig::ratstats::utils::RStatsWorksheet& sheetOut)
+    {
+        sheetOut.clear();
+        size_t rowCount = static_cast<size_t>(table->rowCount());
+        size_t columnCount = static_cast<size_t>(table->columnCount());
+        for (size_t r = 0; r < rowCount;++r)
+        {
+            for (size_t c = 0; c < columnCount;++c)
+            {
+                QTableWidgetItem * item = table->item(static_cast<int>(r),static_cast<int>(c));
+                if (item)
+                {
+                    sheetOut(r,c).text = item->text().toStdString();
+                    if (StringUtils::isNumeric(StringUtils::remove(sheetOut(r,c).text,",")))
+                    {
+                        sheetOut(r,c).text = StringUtils::remove(sheetOut(r,c).text,",");
+                    }
+
+                    std::uint8_t fgR = static_cast<std::uint8_t>(item->foreground().color().red());
+                    std::uint8_t fgG = static_cast<std::uint8_t>(item->foreground().color().green());
+                    std::uint8_t fgB = static_cast<std::uint8_t>(item->foreground().color().blue());
+
+                    std::uint8_t bgR = static_cast<std::uint8_t>(item->background().color().red());
+                    std::uint8_t bgG = static_cast<std::uint8_t>(item->background().color().green());
+                    std::uint8_t bgB = static_cast<std::uint8_t>(item->background().color().blue());
+                    sheetOut(r,c).fgColor.set(fgR,fgB,fgG);
+                    sheetOut(r,c).bgColor.set(bgR,bgB,bgG);
+                    sheetOut(r,c).font = Font(item->font().family().toStdString(),
+                                              static_cast<size_t>(item->font().pointSize()),
+                                              item->font().bold(),
+                                              item->font().italic(),
+                                              item->font().underline());
+                    if (item->textAlignment() == Qt::AlignHCenter)
+                    {
+                        sheetOut(r,c).alignment = utils::RStatsTextAlignment::AlignMiddle;
+                    }
+                    else if (item->textAlignment() == Qt::AlignLeft)
+                    {
+                        sheetOut(r,c).alignment = utils::RStatsTextAlignment::AlignLeft;
+                    }
+                    else
+                    {
+                        sheetOut(r,c).alignment = utils::RStatsTextAlignment::AlignRight;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * @brief bindSheetToUI
      * @param sheet
      * @param table
      * @param padRows
      * @param padColumns
      */
-    inline void bindSheetToUI(const oig::ratstats::utils::RStatsWorksheet &sheet, QTableWidget *table, bool checkableHeader = false,int padRows=10,int padColumns=10)
+    inline void bindSheetToUI(const oig::ratstats::utils::RStatsWorksheet &sheetIn, QTableWidget *table, bool checkableHeader = false,int padRows=10,int padColumns=10)
     {
+        utils::RStatsWorksheet sheet = sheetIn;
+        sheet.setThousandsSeperatorEnabled(true);
         table->clear();
         table->setColumnCount(static_cast<int>(sheet.getNumColumns())+padColumns);
         table->setRowCount(static_cast<int>(sheet.getNumRows())+padRows);
-
-        for (size_t a1 = 0; a1 < table->columnCount();++a1)
+        size_t columnCount = static_cast<size_t>(table->columnCount());
+        for (size_t a1 = 0; a1 < columnCount;++a1)
         {
             QTableWidgetItem * header = new QTableWidgetItem;
             header->setText(QString::fromStdString(oig::ratstats::utils::RStatsUtils::getColumnLabelFromIndex(a1)));
@@ -136,9 +199,7 @@ namespace UIRStatsUtils
         {
             std::pair<size_t,size_t> index = itNext.first;
             oig::ratstats::utils::RStatsCell cell = itNext.second;
-            QTableWidgetItem * item = new QTableWidgetItem;
-
-            cell.applyFormat(sheet.getCellFormatSet());
+            QTableWidgetItem * item = new QTableWidgetItem;           
             item->setText(QString::fromStdString(cell.text));
             table->setRowHeight(static_cast<int>(index.first),30);
             //set colors
@@ -191,6 +252,10 @@ namespace UIRStatsUtils
         if (!cbtek::common::utility::StringUtils::isEmpty(file.toStdString()))
         {
             checkBox->setToolTip(file);
+            if (!file.endsWith(extension,Qt::CaseInsensitive))
+            {
+                file+=extension;
+            }
             return file;
         }
         else
@@ -199,7 +264,70 @@ namespace UIRStatsUtils
         }
         return "";
     }
-}
 
+
+
+    template<typename ModuleType>
+    inline std::pair<QActionGroup *, QAction*> buildRecentSessions(
+                                     QWidget * parent,
+                                     QAction * menuRecentAction,
+                                     std::map<std::string,utils::RStatsModuleSessionDataPtr> &sessionMapOut,
+                                     const std::string& sessionExtension)
+    {
+        QActionGroup * recentSessionActionGroup = nullptr;
+        sessionMapOut.clear();
+        std::vector<std::string> sessionUrls = utils::RStatsUtils::getRecentSessions(sessionExtension);
+        if (sessionUrls.empty())
+        {
+            menuRecentAction->setDisabled(true);
+            return std::make_pair(nullptr,nullptr);
+        }
+
+        menuRecentAction->setDisabled(false);
+        recentSessionActionGroup = new QActionGroup(parent);
+        QMenu * recentMenu = new QMenu;
+        std::map<std::uint64_t,utils::RStatsModuleSessionDataPtr> last10Sessions;
+        for (const auto& url : sessionUrls)
+        {
+            std::shared_ptr<ModuleType> data = std::shared_ptr<ModuleType>(new ModuleType);
+            data->load(url);
+            if (data.get())
+            {
+                utils::RStatsModuleSessionDataImpl * impl = dynamic_cast<utils::RStatsModuleSessionDataImpl*>(data.get());
+                if (impl)
+                {
+                    std::uint64_t value = cbtek::common::utility::DateTimeUtils::getTimeStampInteger(impl->getCreationDate(),
+                                                                                                 impl->getCreationTime());
+                    last10Sessions[value] = data;
+                }
+            }
+        }
+
+        size_t sessionCount = 0;
+        for (auto it = last10Sessions.rbegin();it != last10Sessions.rend(); ++it)
+        {
+            sessionMapOut[it->second->getAuditName()] = it->second;
+            std::string dateTimeStr = cbtek::common::utility::DateTimeUtils::getDisplayTimeStamp(cbtek::common::utility::DateEntity(it->second->getCreationDate()),
+                                                                                                 cbtek::common::utility::TimeEntity(it->second->getCreationTime()));
+            QAction * action = new QAction(QString::fromStdString(it->second->getAuditName()), recentMenu);
+            action->setToolTip("Created on "+QString::fromStdString(dateTimeStr));
+            action->setProperty("name",QString::fromStdString(it->second->getAuditName()));
+            recentSessionActionGroup->addAction(action);
+            recentMenu->addAction(action);
+            ++sessionCount;
+            if (sessionCount == 10)
+            {
+                break;
+            }
+        }
+        recentMenu->addSeparator();
+        QAction * clearRecentSessionsAction = new QAction(recentMenu);
+        clearRecentSessionsAction->setText("Clear History");
+        recentMenu->addAction(clearRecentSessionsAction);
+        menuRecentAction->setMenu(recentMenu);
+        return std::make_pair(recentSessionActionGroup,clearRecentSessionsAction);
+    }
+
+}
 }}}//end namespace
 

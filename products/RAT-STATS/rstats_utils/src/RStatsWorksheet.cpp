@@ -70,7 +70,7 @@ std::pair<size_t,size_t> RStatsWorksheet::getLastDataRowAndColumn() const
     return std::make_pair(0,0);
 }
 
-const std::map<std::pair<size_t, size_t>, RStatsCell>& RStatsWorksheet::getCells() const
+const RStatsCellMap &RStatsWorksheet::getCells() const
 {
     return m_dataTable;
 }
@@ -107,11 +107,6 @@ void RStatsWorksheet::resetDefaults()
     RStatsCell::ms_DefaultFGColor = Color(0,0,0);
     RStatsCell::ms_DefaultFont = cbtek::common::utility::Font("arial");
     RStatsCell::ms_DefaultFloatingPointDecimals = 6;
-}
-
-std::set<RStatsCellFormat> RStatsWorksheet::getCellFormatSet() const
-{
-    return m_formatSet;
 }
 
 std::string RStatsWorksheet::toCommaDelimitedString() const
@@ -160,17 +155,41 @@ void RStatsWorksheet::findDataRowsAndColumns(std::set<size_t> &rowsOut,
     }
 }
 
-void RStatsWorksheet::setFormatEnabled(RStatsCellFormat format,
-                                       bool flag)
+void RStatsWorksheet::setThousandsSeperatorEnabled(bool flag)
 {
+    RStatsWorksheet & sheet = (*this);
     if (flag)
     {
-        m_formatSet.insert(format);
+
+        for(size_t r = 0; r < sheet.getNumRows(); ++r)
+        {
+            for(size_t c = 0; c < sheet.getNumColumns(); ++c)
+            {
+                if (StringUtils::isNumeric(sheet(r,c).text) && sheet(r,c).text.size() > 3)
+                {
+                    m_thousandsSeperatorToggleSet.insert(std::make_pair(r,c));
+                    sheet(r,c).text = StringUtils::formatWithThousandsLabel(sheet(r,c).text);
+                }
+            }
+        }
     }
     else
     {
-        m_formatSet.erase(format);
+        for(const auto& pair : m_thousandsSeperatorToggleSet)
+        {
+            size_t r = pair.first;
+            size_t c = pair.second;
+            sheet(r,c).text = StringUtils::remove(sheet(r,c).text,",");
+        }
+        m_thousandsSeperatorToggleSet.clear();
     }
+}
+
+void RStatsWorksheet::clear()
+{
+    m_dataTable.clear();
+    m_numColumns = m_numRows = 0;
+    m_worksheetTitle = "";
 }
 
 RStatsCell& RStatsWorksheet::operator()(size_t row, size_t column)
@@ -244,9 +263,9 @@ std::string RStatsWorksheet::toString(const std::string &prefix,
     {
         for(size_t c = 0;c<cols;++c)
         {
-            RStatsCell cell = getCell(r,c);
-            cell.applyFormat(this->m_formatSet);
+            RStatsCell cell = getCell(r,c);            
             std::string data = cell.text;
+            StringUtils::replaceInPlace(data,"\"","\"\"");
             out << prefix << data << postfix << ((c<(cols-1))?seperator:"\n");
         }
     }
@@ -264,8 +283,7 @@ std::string RStatsWorksheet::toEvenlySpacedString(const std::string &prefix,
     {
         for(size_t c = 0;c<cols;++c)
         {
-            RStatsCell cell = getCell(r,c);
-            cell.applyFormat(this->m_formatSet);
+            RStatsCell cell = getCell(r,c);            
             std::string data = cell.text;
             if (columnWidths[c] < data.size()+4)
             {
@@ -279,8 +297,7 @@ std::string RStatsWorksheet::toEvenlySpacedString(const std::string &prefix,
     {
         for(size_t c = 0;c<cols;++c)
         {
-            RStatsCell cell = getCell(r,c);
-            cell.applyFormat(this->m_formatSet);
+            RStatsCell cell = getCell(r,c);            
             std::string data = cell.text;
             std::string space;
             if (columnWidths[c] > data.size())

@@ -34,8 +34,7 @@ RStatsWorkbook RStatsDelimitedWorkbookStream::read()
         return workbook;
     }
 
-    std::vector<std::string> firstLineItems = splitLine(lines.front());
-    size_t columns = firstLineItems.size();
+    std::vector<std::string> firstLineItems = splitLine(lines.front());    
     StringUtils::clean(firstLineItems);
     bool hasHeader = false;
     if (firstLineItems.size() > 0)
@@ -112,6 +111,7 @@ std::vector<std::string> RStatsDelimitedWorkbookStream::splitLine(const std::str
             return items;
         }
     }
+    return std::vector<std::string>();
     //throw exception
 }
 

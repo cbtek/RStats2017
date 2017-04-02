@@ -912,6 +912,28 @@
    </widget>
   </widget>
   <widget class="QStatusBar" name="m_statusBar"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1103</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionRecently_Used"/>
+   </widget>
+   <addaction name="menuFile"/>
+  </widget>
+  <action name="actionRecently_Used">
+   <property name="text">
+    <string>Recently Used</string>
+   </property>
+  </action>
  </widget>
  <tabstops>
   <tabstop>m_txtAuditName</tabstop>

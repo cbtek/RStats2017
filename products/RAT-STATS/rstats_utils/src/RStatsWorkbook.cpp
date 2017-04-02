@@ -52,6 +52,11 @@ RStatsWorksheet& RStatsWorkbook::createWorksheet(const std::string &name)
     return m_worksheets.back();
 }
 
+const std::vector<RStatsWorksheet> &RStatsWorkbook::getWorksheets() const
+{
+    return m_worksheets;
+}
+
 void RStatsWorkbook::removeWorksheet(size_t index)
 {
     if (index < m_worksheets.size())
@@ -91,6 +96,11 @@ std::vector<std::string> RStatsWorkbook::getWorksheetNames() const
         names.push_back(sheet.getWorksheetTitle());
     }
     return names;
+}
+
+void RStatsWorkbook::clear()
+{
+    m_worksheets.clear();
 }
 
 RStatsWorkbook::~RStatsWorkbook()

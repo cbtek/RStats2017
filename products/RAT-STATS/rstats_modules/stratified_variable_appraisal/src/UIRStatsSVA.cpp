@@ -78,7 +78,7 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     connect(m_ui->m_btnImportSampleSizeData,SIGNAL(clicked(bool)),this,SLOT(onImportSizeInput()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
     connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));
-    connect(m_ui->m_btnContinue,SIGNAL(clicked(bool)),this,SLOT(onContinue()));    
+    connect(m_ui->m_btnContinue,SIGNAL(clicked(bool)),this,SLOT(onExecute()));
     connect(m_ui->m_cmbDataInputSheets,SIGNAL(currentIndexChanged(int)),this,SLOT(onComboDataInputSheetSelected(int)));
     connect(m_ui->m_cmbSizeInputSheets,SIGNAL(currentIndexChanged(int)),this,SLOT(onComboSizeInputSheetSelected(int)));
     connect(&m_clock,SIGNAL(timeout()),this,SLOT(onUpdateClock()));    
@@ -93,6 +93,7 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     //m_ui->m_lblNoData->hide();
     m_ui->m_frmDateTime->hide();
     m_ui->m_grpOutput->hide();
+    updateRecentSessions();
     m_clock.start(1000);
     onUpdateClock();
 }
@@ -130,6 +131,8 @@ void UIRStatsSVA::populateWithRows(const std::set<size_t>& rows,
         comboBox->addItem(QString::number(row+1));
     }
 }
+
+
 
 void UIRStatsSVA::onAddNewRowToDataTable()
 {
@@ -287,8 +290,7 @@ void UIRStatsSVA::onComboSizeInputSheetSelected(int row)
     size_t index = static_cast<size_t>(row);
     if (index < m_currentSizeWorkbook.getNumWorksheets())
     {
-        RStatsWorksheet sheet = m_currentSizeWorkbook(index);
-        sheet.setFormatEnabled(RStatsCellFormat::ThousandsSeperator,true);
+        RStatsWorksheet sheet = m_currentSizeWorkbook(index);        
         onSampleSizeInputSheetSelected(sheet);
     }
 }
@@ -302,8 +304,7 @@ void UIRStatsSVA::onComboDataInputSheetSelected(int row)
     size_t index = static_cast<size_t>(row);
     if (index < m_currentDataWorkbook.getNumWorksheets())
     {        
-        RStatsWorksheet sheet = m_currentDataWorkbook(index);
-        sheet.setFormatEnabled(RStatsCellFormat::ThousandsSeperator,true);
+        RStatsWorksheet sheet = m_currentDataWorkbook(index);        
         onSampleDataInputSheetSelected(sheet);
     }
 }
@@ -315,7 +316,7 @@ void UIRStatsSVA::onUpdateClock()
     onValidate();
 }
 
-void UIRStatsSVA::onContinue()
+void UIRStatsSVA::onExecute()
 {
     onValidate();
     RStatsDataFormatTypeIndex dfIndex;
@@ -352,6 +353,7 @@ void UIRStatsSVA::onContinue()
         dfIndex.secondaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbAuditedDataTable->currentText().toStdString());
         dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbExaminedDataTable->currentText().toStdString());
     }
+    m_dataFormatType = dfIndex.type;
 
     size_t sizeSheetSampleColumn = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbSampleCountSizeTable->currentText().toStdString());
     size_t sizeSheetUniverseColumn = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbUniverseCountSizeTable->currentText().toStdString());
@@ -383,16 +385,23 @@ void UIRStatsSVA::onContinue()
     m_ui->m_lblNoData->hide();
     m_ui->m_grpOutput->show();
 
-    if (StringUtils::isEmpty(m_currentTextFileOutput.toStdString()))
+    if (!StringUtils::isEmpty(m_currentTextFileOutput.toStdString()))
     {
-        RStatsSVA::inst().saveToTextFile(m_currentTextFileOutput.toStdString());
+        workbook.save(m_currentTextFileOutput.toStdString());
     }
 
-    if (StringUtils::isEmpty(m_currentCSVFileOutput.toStdString()))
+    if (!StringUtils::isEmpty(m_currentCSVFileOutput.toStdString()))
     {
-        RStatsSVA::inst().saveToTextFile(m_currentCSVFileOutput.toStdString());
+        workbook.save(m_currentCSVFileOutput.toStdString());
     }
     onToggleFullScreen();
+
+    RStatsSVASessionData sessionData = getSessionData();
+    sessionData.setCreationDate(DateUtils::getCurrentDate().toDateInteger());
+    sessionData.setCreationTime(TimeUtils::getCurrentTime().toTimeInteger());
+    m_recentSessionsMap[sessionData.getAuditName()]=RStatsModuleSessionDataPtr(new RStatsSVASessionData(sessionData));
+    RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getAuditName()]);
+    updateRecentSessions();
 }
 
 void UIRStatsSVA::onExit()
@@ -421,10 +430,6 @@ void UIRStatsSVA::onToggleFullScreen()
         m_ui->m_btnExit->setText("Click here or press F11 to exit full-screen mode");
         m_ui->m_grpOutput->setTitle("Output Data (Press F11 to exit full-screen mode)");
         this->setWindowState(Qt::WindowMaximized);
-//        m_currentWindowState = this->windowState();
-//        m_currentWindowFlags = this->windowFlags();
-
-//        this->setWindowFlags(Qt::FramelessWindowHint);
     }
     else
     {
@@ -437,179 +442,135 @@ void UIRStatsSVA::onToggleFullScreen()
         m_ui->m_btnHelp->show();
         m_ui->m_btnContinue->show();
         m_ui->m_btnExit->setText("Exit");
-//        this->setWindowState(m_currentWindowState);
-//        this->setWindowFlags(m_currentWindowFlags);
     }
 }
 
-void UIRStatsSVA::onImportDataInput()
+void UIRStatsSVA::importDataTable(const std::string &dataTableFilePath)
 {
-    QString filename = QFileDialog::getOpenFileName(this,"Import Stratified Variable Appraisal Sample Input File...","","Input Files(*.dat *.csv *.txt *.xls *.xlsx)");
-    if (!filename.isEmpty() && QFile::exists(filename))
+    if (StringUtils::isEmpty(dataTableFilePath) || !FileUtils::fileExists(dataTableFilePath))
     {
-        m_ui->m_cmbDataInputSheets->clear();
-        try
+        return;
+    }
+    m_dataTableImportFilePath = QString::fromStdString(dataTableFilePath);
+    m_ui->m_cmbDataInputSheets->clear();
+    try
+    {
+        std::string filePath = m_dataTableImportFilePath.toStdString();
+        m_currentDataWorkbook.load(filePath);
+        if (m_currentDataWorkbook.getNumWorksheets() == 0)
         {
-            std::string filePath = filename.toStdString();
-            m_currentDataWorkbook.load(filePath);
-            if (m_currentDataWorkbook.getNumWorksheets() == 0)
-            {
-                THROW_GENERIC_EXCEPTION("No worksheets were found in \""+filePath+"\"")
-            }
-            m_ui->m_cmbDataInputSheets->setEnabled(true);
-            bool setOther = false;
-            if (m_currentSizeWorkbook.getNumWorksheets() == 0)
-            {
-                setOther = true;
-                m_currentSizeWorkbook = m_currentDataWorkbook;
-            }
+            THROW_GENERIC_EXCEPTION("No worksheets were found in \""+filePath+"\"")
+        }
+        m_ui->m_cmbDataInputSheets->setEnabled(true);
+        bool setOther = false;
+        if (m_currentSizeWorkbook.getNumWorksheets() == 0)
+        {
+            setOther = true;
+            m_sizeTableImportFilePath = m_dataTableImportFilePath;
+            m_currentSizeWorkbook = m_currentDataWorkbook;
+        }
 
-            std::vector<std::string> worksheetNames = m_currentDataWorkbook.getWorksheetNames();
+        std::vector<std::string> worksheetNames = m_currentDataWorkbook.getWorksheetNames();
+        if (setOther)
+        {
+            m_ui->m_cmbSizeInputSheets->clear();
+            m_ui->m_cmbSizeInputSheets->setEnabled(true);
+        }
+        for(const auto& sheetName : worksheetNames)
+        {
             if (setOther)
             {
-                m_ui->m_cmbSizeInputSheets->clear();
-                m_ui->m_cmbSizeInputSheets->setEnabled(true);
+                m_ui->m_cmbSizeInputSheets->addItem(QString::fromStdString(sheetName));
             }
-            for(const auto& sheetName : worksheetNames)
+            m_ui->m_cmbDataInputSheets->addItem(QString::fromStdString(sheetName));
+        }
+        onUpdateRowColumnExtentsForDataTable();
+    }
+    catch(const std::exception& exception)
+    {
+        m_ui->m_cmbDataInputSheets->addItem("No Sheets Available");
+        m_ui->m_cmbDataInputSheets->setEnabled(false);
+        QString title = "Error occured trying to import " + m_dataTableImportFilePath;
+        QString message = QString(exception.what());
+        UIRStatsErrorMessage(title,message).exec();
+        return;
+    }
+}
+
+void UIRStatsSVA::importSizeTable(const std::string &sizeTableFilePath)
+{
+    if (StringUtils::isEmpty(sizeTableFilePath) || !FileUtils::fileExists(sizeTableFilePath))
+    {
+        return;
+    }
+    m_sizeTableImportFilePath = QString::fromStdString(sizeTableFilePath);
+    m_ui->m_cmbSizeInputSheets->clear();
+    try
+    {
+        std::string filePath = m_sizeTableImportFilePath.toStdString();
+        m_currentSizeWorkbook.load(filePath);
+        if (m_currentSizeWorkbook.getNumWorksheets() == 0)
+        {
+            THROW_GENERIC_EXCEPTION("No worksheets were found in \""+filePath+"\"")
+        }
+        m_ui->m_cmbSizeInputSheets->setEnabled(true);
+        bool setOther = false;
+        if (m_currentDataWorkbook.getNumWorksheets() == 0)
+        {
+            setOther = true;
+            m_dataTableImportFilePath = m_sizeTableImportFilePath;
+            m_currentDataWorkbook = m_currentSizeWorkbook;
+        }
+
+        std::vector<std::string> worksheetNames = m_currentSizeWorkbook.getWorksheetNames();
+
+        if (setOther)
+        {
+            m_ui->m_cmbDataInputSheets->clear();
+            m_ui->m_cmbDataInputSheets->setEnabled(true);
+        }
+
+        for(const auto& sheetName : worksheetNames)
+        {
+            if (setOther)
             {
-                if (setOther)
-                {
-                    m_ui->m_cmbSizeInputSheets->addItem(QString::fromStdString(sheetName));
-                }
                 m_ui->m_cmbDataInputSheets->addItem(QString::fromStdString(sheetName));
             }
-            onUpdateRowColumnExtentsForDataTable();
-        }                        
-        catch(const std::exception& exception)
-        {
-            m_ui->m_cmbDataInputSheets->addItem("No Sheets Available");
-            m_ui->m_cmbDataInputSheets->setEnabled(false);
-            QString title = "Error occured trying to import " + filename;
-            QString message = QString(exception.what());
-            UIRStatsErrorMessage(title,message).exec();
-            return;
+            m_ui->m_cmbSizeInputSheets->addItem(QString::fromStdString(sheetName));
         }
+        onUpdateRowColumnExtentsForSizeTable();
+    }
+    catch(const std::exception& exception)
+    {
+        m_ui->m_cmbSizeInputSheets->addItem("No Sheets Available");
+        m_ui->m_cmbSizeInputSheets->setEnabled(false);
+        QString title = "Error occured trying to import " + m_sizeTableImportFilePath;
+        QString message = QString(exception.what());
+        UIRStatsErrorMessage(title,message).exec();
+        return;
+    }
+}
+void UIRStatsSVA::onImportDataInput()
+{
+    m_dataTableImportFilePath = QFileDialog::getOpenFileName(this,"Import Stratified Variable Appraisal Sample Input File...","","Supported Input Files(*.csv *.xlsx *.dif)");
+    if (!m_dataTableImportFilePath.isEmpty() && QFile::exists(m_dataTableImportFilePath))
+    {
+        importDataTable(m_dataTableImportFilePath.toStdString());
     }
 }
 
 void UIRStatsSVA::onImportSizeInput()
 {
-    QString filename = QFileDialog::getOpenFileName(this,"Import Stratified Variable Appraisal Universe/Sample Size Input File...","","Input Files(*.dat *.csv *.txt *.xls *.xlsx)");
-    if (!filename.isEmpty() && QFile::exists(filename))
+    m_sizeTableImportFilePath = QFileDialog::getOpenFileName(this,"Import Stratified Variable Appraisal Universe/Sample Size Input File...","","Supported Input Files(*.csv *.xlsx *.dif)");
+    if (!m_sizeTableImportFilePath.isEmpty() && QFile::exists(m_sizeTableImportFilePath))
     {
-        m_ui->m_cmbSizeInputSheets->clear();
-        try
-        {
-            std::string filePath = filename.toStdString();
-            m_currentSizeWorkbook.load(filePath);
-            if (m_currentSizeWorkbook.getNumWorksheets() == 0)
-            {
-                THROW_GENERIC_EXCEPTION("No worksheets were found in \""+filePath+"\"")
-            }
-            m_ui->m_cmbSizeInputSheets->setEnabled(true);
-            bool setOther = false;
-            if (m_currentDataWorkbook.getNumWorksheets() == 0)
-            {
-                setOther = true;
-                m_currentDataWorkbook = m_currentSizeWorkbook;
-            }
-
-            std::vector<std::string> worksheetNames = m_currentSizeWorkbook.getWorksheetNames();
-
-            if (setOther)
-            {
-                m_ui->m_cmbDataInputSheets->clear();
-                m_ui->m_cmbDataInputSheets->setEnabled(true);
-            }
-
-            for(const auto& sheetName : worksheetNames)
-            {
-                if (setOther)
-                {
-                    m_ui->m_cmbDataInputSheets->addItem(QString::fromStdString(sheetName));
-                }
-                m_ui->m_cmbSizeInputSheets->addItem(QString::fromStdString(sheetName));
-            }
-            onUpdateRowColumnExtentsForSizeTable();
-        }
-        catch(const std::exception& exception)
-        {
-            m_ui->m_cmbSizeInputSheets->addItem("No Sheets Available");
-            m_ui->m_cmbSizeInputSheets->setEnabled(false);
-            QString title = "Error occured trying to import " + filename;
-            QString message = QString(exception.what());
-            UIRStatsErrorMessage(title,message).exec();
-            return;
-        }        
+       importSizeTable(m_sizeTableImportFilePath.toStdString());
     }
 }
 
 void UIRStatsSVA::onHelp()
 {
 
-}
-
-void UIRStatsSVA::onSaveCSVFile()
-{
-    if (m_ui->m_chkCSVOutput->isChecked())
-    {
-        m_currentCSVFileOutput = UIRStatsUtils::setOutputFile(
-                                                              m_ui->m_chkCSVOutput,
-                                                              "Save to CSV file...",
-                                                              "*.csv");
-        if (!m_currentCSVFileOutput.isEmpty())
-        {
-            if (m_currentCSVFileOutputLabel == nullptr)
-            {
-                m_currentCSVFileOutputLabel = new QLabel;
-
-                m_currentCSVFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
-            }
-            m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
-            m_currentCSVFileOutputLabel->setText("CSV File: "+m_currentCSVFileOutput);
-            m_ui->m_statusBar->addPermanentWidget(m_currentCSVFileOutputLabel);
-            m_currentCSVFileOutputLabel->show();
-        }
-
-        else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
-    }
-    else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
-}
-
-void UIRStatsSVA::onSaveTextFile()
-{
-    if (m_ui->m_chkTextOutput->isChecked())
-    {
-        m_currentTextFileOutput = UIRStatsUtils::setOutputFile(
-                                                               m_ui->m_chkTextOutput,
-                                                               "Save to Text file...",
-                                                               "*.txt");
-        if (!m_currentTextFileOutput.isEmpty())
-        {
-            if (m_currentTextFileOutputLabel == nullptr)
-            {
-                m_currentTextFileOutputLabel = new QLabel;
-                m_currentTextFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
-            }
-            m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
-            m_currentTextFileOutputLabel->setText("Text File: "+m_currentTextFileOutput);
-            m_ui->m_statusBar->addPermanentWidget(m_currentTextFileOutputLabel);
-            m_currentTextFileOutputLabel->show();
-        }
-        else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
-    }
-    else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
-
-}
-
-
-void UIRStatsSVA::onSetStratum(int count)
-{
-    size_t rowCount = m_ui->m_tblSizes->rowCount();
-    if (count < rowCount)
-    {
-
-    }
 }
 
 void UIRStatsSVA::onUpdateDataFormatSelection()
@@ -645,6 +606,198 @@ void UIRStatsSVA::onUpdateDataFormatSelection()
         m_ui->m_cmbExaminedDataTable->setEnabled(true);
     }
 }
+
+RStatsSVASessionData UIRStatsSVA::getSessionData() const
+{
+    QString text = m_ui->m_txtAuditName->text();
+    if (text.isEmpty())
+    {
+        text = m_ui->m_txtAuditName->placeholderText();
+    }
+    RStatsSVASessionData data;
+    data.setAuditName(text.toStdString());
+    data.setAuditColumn(m_ui->m_cmbAuditedDataTable->currentText().toStdString());
+    data.setExamineColumn(m_ui->m_cmbExaminedDataTable->currentText().toStdString());
+    data.setDifferenceColumn(m_ui->m_cmbDifferenceDataTable->currentText().toStdString());
+    data.setSampleColumn(m_ui->m_cmbSampleCountSizeTable->currentText().toStdString());
+    data.setUniverseColumn(m_ui->m_cmbUniverseCountSizeTable->currentText().toStdString());
+    data.setDataFormat(m_dataFormatType);
+    data.setDataTableRowStart(m_ui->m_cmbDataRowStartDataTable->currentText().toInt());
+    data.setSizeTableRowStart(m_ui->m_cmbDataRowStartSizeTable->currentText().toInt());
+    data.setDataTableFilePath(m_dataTableImportFilePath.toStdString());
+    data.setSizeTableFilePath(m_sizeTableImportFilePath.toStdString());
+    data.setCSVOutputFile(m_currentCSVFileOutput.toStdString());
+    data.setTextOutputFile(m_currentTextFileOutput.toStdString());
+    data.setSizeTableSheetName(m_ui->m_cmbSizeInputSheets->currentText().toStdString());
+    data.setDataTableSheetName(m_ui->m_cmbDataInputSheets->currentText().toStdString());
+    return data;
+}
+
+void UIRStatsSVA::setSessionData(const RStatsSVASessionData &data)
+{
+    m_ui->m_txtAuditName->setText(QString::fromStdString(data.getAuditName()));
+    m_currentDataWorkbook.clear();
+    m_currentSizeWorkbook.clear();
+    m_currentDataSheet.setWorksheetTitle("Data Sheet");
+    m_currentSizeSheet.setWorksheetTitle("Size Sheet");
+    m_currentDataWorkbook.addWorksheet(m_currentDataSheet);
+    m_currentSizeWorkbook.addWorksheet(m_currentSizeSheet);
+    if (FileUtils::fileExists(data.getDataTableFilePath()))
+    {
+        importDataTable(data.getDataTableFilePath());
+    }
+
+    if (FileUtils::fileExists(data.getSizeTableFilePath()))
+    {
+        importSizeTable(data.getSizeTableFilePath());
+    }
+    onUpdateRowColumnExtentsForDataTable();
+    onUpdateRowColumnExtentsForSizeTable();
+    onSampleDataInputSheetSelected(m_currentDataSheet);
+    onSampleSizeInputSheetSelected(m_currentSizeSheet);
+
+    if (!StringUtils::isEmpty(data.getDataTableSheetName()))
+    {
+        m_ui->m_cmbDataInputSheets->setCurrentText(QString::fromStdString(data.getDataTableSheetName()));
+    }
+    if (!StringUtils::isEmpty(data.getSizeTableSheetName()))
+    {
+        m_ui->m_cmbSizeInputSheets->setCurrentText(QString::fromStdString(data.getSizeTableSheetName()));
+    }
+
+    switch(data.getDataFormat())
+    {
+        case RStatsDataFormatType::Difference:m_ui->m_rdbDifference->setChecked(true);break;
+        case RStatsDataFormatType::Examine:m_ui->m_rdbExamined->setChecked(true);break;
+        case RStatsDataFormatType::AuditAndDifference:m_ui->m_rdbAuditedAndDifference->setChecked(true);break;
+        case RStatsDataFormatType::ExamineAndAudit:m_ui->m_rdbExaminedAndAudited->setChecked(true);break;
+        case RStatsDataFormatType::ExamineAndDifference:m_ui->m_rdbExaminedAndDifference->setChecked(true);break;
+        case RStatsDataFormatType::Audit:m_ui->m_rdbAudited->setChecked(true);break;
+    }
+
+    m_ui->m_cmbAuditedDataTable->setCurrentText(QString::fromStdString(data.getAuditColumn()));
+    m_ui->m_cmbExaminedDataTable->setCurrentText(QString::fromStdString(data.getAuditColumn()));
+    m_ui->m_cmbDifferenceDataTable->setCurrentText(QString::fromStdString(data.getAuditColumn()));
+    m_ui->m_cmbDataRowStartDataTable->setCurrentText(QString::number(data.getDataTableRowStart()));
+    m_ui->m_cmbDataRowStartSizeTable->setCurrentText(QString::number(data.getSizeTableRowStart()));
+    m_ui->m_cmbSampleCountSizeTable->setCurrentText(QString::fromStdString(data.getSampleColumn()));
+    m_ui->m_cmbUniverseCountSizeTable->setCurrentText(QString::fromStdString(data.getUniverseColumn()));
+
+    m_autoSetFileOutput = true;
+    if (!data.getCSVOutputFile().empty())
+    {
+        m_ui->m_chkCSVOutput->setChecked(true);
+        setCSVFileOutput(data.getTextOutputFile());
+        m_ui->m_chkCSVOutput->setToolTip(QString::fromStdString(data.getCSVOutputFile()));
+    }
+    if (!data.getTextOutputFile().empty())
+    {
+        m_ui->m_chkTextOutput->setChecked(true);
+        setTextFileOutput(data.getTextOutputFile());
+        m_ui->m_chkTextOutput->setToolTip(QString::fromStdString(data.getTextOutputFile()));
+    }
+
+    m_autoSetFileOutput = false;
+}
+
+void UIRStatsSVA::onClearRecentSessions()
+{
+    RStatsUtils::clearRecentSessions(c_RECENT_SESSION_EXTENSION);
+    updateRecentSessions();
+}
+
+void UIRStatsSVA::onSaveTextFile()
+{
+    if (m_autoSetFileOutput) return;
+    if (m_ui->m_chkTextOutput->isChecked())
+    {
+        m_currentTextFileOutput = UIRStatsUtils::setOutputFile(
+                                                               m_ui->m_chkTextOutput,
+                                                               "Save to Text file...",
+                                                               "*.txt");
+        setTextFileOutput(m_currentTextFileOutput.toStdString());
+    }
+    else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
+
+}
+
+void UIRStatsSVA::onSaveCSVFile()
+{
+    if (m_autoSetFileOutput) return;
+    if (m_ui->m_chkCSVOutput->isChecked())
+    {
+        m_currentCSVFileOutput = UIRStatsUtils::setOutputFile(
+                                                              m_ui->m_chkCSVOutput,
+                                                              "Save to CSV file...",
+                                                              "*.csv");
+        setCSVFileOutput(m_currentCSVFileOutput.toStdString());
+    }
+    else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
+}
+
+void UIRStatsSVA::onRecentSessionSelected(QAction* action)
+{
+    std::string name = action->property("name").toString().toStdString();
+    if (m_recentSessionsMap.count(name))
+    {
+        RStatsSVASessionData * data = dynamic_cast<RStatsSVASessionData*>(m_recentSessionsMap[name].get());
+        setSessionData(*data);
+    }
+}
+
+void UIRStatsSVA::updateRecentSessions()
+{
+    std::pair<QActionGroup*,QAction*> actionPair=UIRStatsUtils::buildRecentSessions<RStatsSVASessionData>(
+                                                 this,
+                                                 m_ui->actionRecently_Used,
+                                                 this->m_recentSessionsMap,
+                                                 c_RECENT_SESSION_EXTENSION);
+
+
+    if (actionPair.first && actionPair.second)
+    {
+        connect(actionPair.first,SIGNAL(triggered(QAction*)),this,SLOT(onRecentSessionSelected(QAction*)));
+        connect(actionPair.second,SIGNAL(triggered(bool)),this,SLOT(onClearRecentSessions()));
+    }
+
+}
+
+void UIRStatsSVA::setTextFileOutput(const std::string &textFile)
+{
+    m_currentTextFileOutput = QString::fromStdString(textFile);
+    if (!m_currentTextFileOutput.isEmpty())
+    {
+        if (m_currentTextFileOutputLabel == nullptr)
+        {
+            m_currentTextFileOutputLabel = new QLabel;
+            m_currentTextFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+        }
+        m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
+        m_currentTextFileOutputLabel->setText("<b>Text File:</b> "+m_currentTextFileOutput);
+        m_ui->m_statusBar->addPermanentWidget(m_currentTextFileOutputLabel);
+        m_currentTextFileOutputLabel->show();
+    }
+    else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
+}
+
+void UIRStatsSVA::setCSVFileOutput(const std::string &csvFile)
+{
+    m_currentCSVFileOutput = QString::fromStdString(csvFile);
+    if (!m_currentCSVFileOutput.isEmpty())
+    {
+        if (m_currentCSVFileOutputLabel == nullptr)
+        {
+            m_currentCSVFileOutputLabel = new QLabel;
+            m_currentCSVFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+        }
+        m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
+        m_currentCSVFileOutputLabel->setText("<b>CSV File</b>: "+m_currentCSVFileOutput);
+        m_ui->m_statusBar->addPermanentWidget(m_currentCSVFileOutputLabel);
+        m_currentCSVFileOutputLabel->show();
+    }
+    else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
+}
+
 
 }}}}//end namespace
 

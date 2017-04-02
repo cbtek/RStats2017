@@ -11,10 +11,13 @@
 #include <QComboBox>
 #include <QKeyEvent>
 #include <QLabel>
+#include <QActionGroup>
 
 #include "rstats_utils/inc/RStatsWorkbook.h"
 #include "rstats_utils/inc/RStatsConditionLogger.h"
 #include "rstats_ui/inc/UIRStatsWorkbook.h"
+#include "RStatsSVASessionData.h"
+
 
 class Ui_UIRStatsSVA;
 
@@ -70,9 +73,12 @@ private:
       * @brief Labels/Strings for output
       */
      QString m_currentTextFileOutput;
-     QString m_currentCSVFileOutput;
+     QString m_currentCSVFileOutput;     
      QLabel * m_currentTextFileOutputLabel;
      QLabel * m_currentCSVFileOutputLabel;
+
+     QString m_sizeTableImportFilePath;
+     QString m_dataTableImportFilePath;
 
      /**
       * @brief Current data sheets/workbooks for data/size tables
@@ -97,7 +103,22 @@ private:
      void populateWithColumns(const std::set<size_t> &columns, QComboBox* comboBox);
      void populateWithRows(const std::set<size_t> &rows, QComboBox* comboBox);
 
-protected slots:     
+     QActionGroup * m_recentSessionActionGroup;
+     std::map<std::string,utils::RStatsModuleSessionDataPtr> m_recentSessionsMap;
+     utils::RStatsDataFormatType m_dataFormatType;
+     bool m_autoSetFileOutput;
+     void importDataTable(const std::string& dataTableFilePath);
+     void importSizeTable(const std::string& sizeTableFilePath);
+
+     void setCSVFileOutput(const std::string& csvFile);
+     void setTextFileOutput(const std::string& textFile);
+     RStatsSVASessionData getSessionData() const;
+     void setSessionData(const RStatsSVASessionData& data);
+     void updateRecentSessions();
+
+protected slots:
+     void onClearRecentSessions();
+     void onRecentSessionSelected(QAction* action);
      void onAddNewRowToDataTable();
      void onAddNewRowToSizeTable();
      void onAddNewColumnToDataTable();
@@ -106,7 +127,7 @@ protected slots:
      void onUpdateRowColumnExtentsForSizeTable();
      bool onValidate();
      void onUpdateClock();
-     void onContinue();
+     void onExecute();
      void onExit();
      void onToggleFullScreen();
      void onSampleSizeInputSheetSelected(const oig::ratstats::utils::RStatsWorksheet& sheet);
@@ -118,7 +139,6 @@ protected slots:
      void onHelp();
      void onSaveCSVFile();
      void onSaveTextFile();
-     void onSetStratum(int count);
      void onUpdateDataFormatSelection();
 };
 

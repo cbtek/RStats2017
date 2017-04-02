@@ -112,8 +112,7 @@ RStatsSVAOutputDataList RStatsSVA::execute(
                         inputData,
                         dataFormatType);
         ++index;
-    }
-
+    }    
     processSummaryTotals(m_outputDataList);
     return m_outputDataList;
 }
@@ -125,8 +124,7 @@ void RStatsSVA::saveToWorkbook(RStatsWorkbook &workbookOut)
     RStatsInteger counter = 1;
     for(const RStatsSVAOutputData& data : outputList)
     {
-        RStatsWorksheet sheet;
-        sheet.setFormatEnabled(RStatsCellFormat::ThousandsSeperator,true);
+        RStatsWorksheet sheet;        
         std::string title;
         if (data.isDisplaySummary)
         {
@@ -141,19 +139,19 @@ void RStatsSVA::saveToWorkbook(RStatsWorkbook &workbookOut)
         sheet.setDefaultFont(cbtek::common::utility::Font("arial",11,true));
 
         sheet("A1")= "Audit Name:";
-        sheet("A2")= "Population Count:";
-        sheet("A3")= "Sample Count:";
+        sheet("A2")= "Universe Size:";
+        sheet("A3")= "Sample Size:";
         sheet("A4")= "Nonzero Count:";
         sheet("A5")= "Creation Date:";
         sheet("A6")= "Creation Time:";
-        sheet("A7")= "Creation Author:";
+        sheet("A7")= "Created By:";
 
         sheet("C1")="Mean:";
         sheet("C2")="Skewnewss:";
         sheet("C3")="Kurtosis:";
         sheet("C4")="Std. Err. Mean:";
         sheet("C5")="Std. Err. Total:";
-        sheet("C6")="Point Est.:";
+        sheet("C6")="Point Estimate:";
 
         sheet("A11") = "Lower:";
         sheet("A12") = "Upper:";
@@ -176,8 +174,7 @@ void RStatsSVA::saveToWorkbook(RStatsWorkbook &workbookOut)
         sheet("B2") = data.populationSize;
         sheet("B3") = data.sampleSize;
         sheet("B4") = data.nonZeroCount;
-        sheet("B5") = DateUtils::toShortDateString(data.createDate);
-        sheet("B5").applyFormat(std::set<RStatsCellFormat>());
+        sheet("B5") = DateUtils::toLongDateString(data.createDate);
         sheet("B6") = TimeUtils::to12HourTimeString(data.createTime);
         sheet("B7") = SystemUtils::getUserName();
 
@@ -254,16 +251,6 @@ void RStatsSVA::saveToWorkbook(RStatsWorkbook &workbookOut)
     }
 }
 
-void RStatsSVA::saveToCSVFile(const std::string &filePath)
-{
-
-}
-
-void RStatsSVA::saveToTextFile(const std::string &filePath)
-{
-
-}
-
 void RStatsSVA::buildOutputData(RStatsSVAOutputDataList& outputDataList,
                                 const RStatsSVAInputData& inputData,
                                 RStatsDataFormatType type)
@@ -301,12 +288,12 @@ void RStatsSVA::buildOutputData(RStatsSVAOutputDataList& outputDataList,
 void RStatsSVA::copyOutputData(RStatsSVAOutputData& outputData,
                                const RStatsSVAInputData& inputData,
                                RStatsDataFormatType type,
-                               RStatsInteger dataFormatIndex)
+                               size_t dataFormatIndex)
 {
     outputData.type = type;
     outputData.sampleSize = inputData.sampleSize;
     outputData.populationSize = inputData.universeSize;
-    outputData.nonZeroCount = m_outputNonZero(dataFormatIndex);
+    outputData.nonZeroCount = static_cast<RStatsInteger>(m_outputNonZero(dataFormatIndex));
     outputData.mean = m_outputMean(dataFormatIndex);
     outputData.standardDeviation = m_outputStdDev(dataFormatIndex);
     outputData.skewness = m_outputSkewAmount(dataFormatIndex);
@@ -319,7 +306,9 @@ void RStatsSVA::copyOutputData(RStatsSVAOutputData& outputData,
     outputData.upper80 = m_outputUpperLimit80(dataFormatIndex);
     outputData.upper90 = m_outputUpperLimit90(dataFormatIndex);
     outputData.upper95 = m_outputUpperLimit95(dataFormatIndex);
-
+    outputData.kurtosis = m_outputKurtosisAmount(dataFormatIndex);
+    outputData.createDate = DateUtils::getCurrentDate();
+    outputData.createTime = TimeUtils::getCurrentTime();
     outputData.precisionAmount80 = m_outputPrecision80(dataFormatIndex) * inputData.universeSize;
     outputData.precisionAmount90 = m_outputPrecision90(dataFormatIndex) * inputData.universeSize;
     outputData.precisionAmount95 = m_outputPrecision95(dataFormatIndex) * inputData.universeSize;

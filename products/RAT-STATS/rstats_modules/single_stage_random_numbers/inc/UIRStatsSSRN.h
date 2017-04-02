@@ -13,6 +13,9 @@
 
 #include "rstats_utils/inc/RStatsConditionLogger.h"
 #include "rstats_utils/inc/RStatsUtils.hpp"
+#include "rstats_utils/inc/RStatsModuleSessionData.hpp"
+
+#include "RStatsSSRNSessionData.h"
 
 class Ui_UIRStatsSSRN;
 
@@ -20,22 +23,6 @@ namespace oig {
 namespace ratstats {
 namespace modules {
 namespace ssrn {
-
-
-struct SessionData
-{
-    SessionData():dateValue(0),timeValue(0),order(0),spares(0),low(0),high(0),seed(0.){}
-    void load(const std::string& url);
-    std::string toString() const;
-    std::string name;
-    std::uint64_t dateValue;
-    std::uint64_t timeValue;
-    oig::ratstats::utils::RStatsInteger order;
-    oig::ratstats::utils::RStatsInteger spares;
-    oig::ratstats::utils::RStatsInteger low;
-    oig::ratstats::utils::RStatsInteger high;
-    oig::ratstats::utils::RStatsFloat seed;
-};
 
 class UIRStatsSSRN : public QMainWindow
 {
@@ -61,19 +48,22 @@ private:
 
     QString m_currentCSVFileOutput;
     QString m_currentTextFileOutput;
+    QLabel * m_currentCSVFileOutputLabel;
+    QLabel * m_currentTextFileOutputLabel;
 
     QIcon m_iconEdit,  m_iconHelp,  m_iconModule,m_iconRun,
           m_iconFolder,m_iconRemove,m_iconExit,  m_iconSettings,
           m_iconObject,m_iconAbout, m_iconAdd,   m_iconWarning,
           m_iconError, m_iconOK;
-
-    cbtek::common::utility::Random m_rnd;
+    cbtek::common::utility::Random m_rnd;       
     QActionGroup * m_recentSessionActionGroup;
-    QMap<QString,SessionData> m_recentSessionsMap;
-    QLabel * m_currentCSVFileOutputLabel;
-    QLabel * m_currentTextFileOutputLabel;
-    SessionData getSessionData() const;
-    void setSessionData(const SessionData& data);
+    std::map<std::string,utils::RStatsModuleSessionDataPtr> m_recentSessionsMap;    
+    bool m_autoSetFileOutput;
+
+    void setCSVFileOutput(const std::string& csvFile);
+    void setTextFileOutput(const std::string& textFile);
+    RStatsSSRNSessionData getSessionData() const;
+    void setSessionData(const RStatsSSRNSessionData& data);
     void updateRecentSessions();
 private slots:                    
      void onSeedBoxToggled(bool toggle);

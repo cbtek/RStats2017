@@ -18,7 +18,10 @@ if (WIN32)
 endif()
 
 set (ENABLE_COMMON_UTILS_STATIC_LIB ON)
+
+#Unit tests
 set (ENABLE_COMMON_UTILS_UNIT_TESTS ON)
+set (ENABLE_RSTATS_UTILS_UNIT_TESTS ON)
 
 #Project Directories
 include_directories("${PROJECT_SOURCE_DIR}/common")

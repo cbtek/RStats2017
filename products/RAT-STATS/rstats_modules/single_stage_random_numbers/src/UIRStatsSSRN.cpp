@@ -26,8 +26,6 @@ using namespace oig::ratstats::ui;
 using namespace oig::ratstats::utils;
 using namespace cbtek::common::utility;
 
-static const std::string c_RECENT_SESSION_EXTENSION = "modules_ssrn";
-
 namespace oig {
 namespace ratstats {
 namespace modules {
@@ -51,7 +49,7 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     connect(m_ui->m_chkTextOutput,SIGNAL(clicked(bool)),this,SLOT(onSaveTextFile()));    
     connect(m_ui->m_chkCustomSeed,SIGNAL(toggled(bool)),this,SLOT(onSeedBoxToggled(bool)));
     onUpdateClock();    
-
+    m_autoSetFileOutput = false;
     QString defaultAuditName = QString::fromStdString(RStatsUtils::getAuditName());
 
     m_ui->m_txtAuditName->setPlaceholderText(defaultAuditName);
@@ -171,52 +169,28 @@ void UIRStatsSSRN::onValidate()
 
 void UIRStatsSSRN::onSaveCSVFile()
 {
+    if (m_autoSetFileOutput)return;
     if (m_ui->m_chkCSVOutput->isChecked())
     {
         m_currentCSVFileOutput = UIRStatsUtils::setOutputFile(
                                                               m_ui->m_chkCSVOutput,
                                                               "Save to CSV file...",
                                                               "*.csv");
-        if (!m_currentCSVFileOutput.isEmpty())
-        {
-            if (m_currentCSVFileOutputLabel == nullptr)
-            {
-                m_currentCSVFileOutputLabel = new QLabel;
-
-                m_currentCSVFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
-            }
-            m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
-            m_currentCSVFileOutputLabel->setText("CSV File: "+m_currentCSVFileOutput);
-            m_ui->m_statusBar->addPermanentWidget(m_currentCSVFileOutputLabel);
-            m_currentCSVFileOutputLabel->show();
-        }
-
-        else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
+        setCSVFileOutput(m_currentCSVFileOutput.toStdString());
     }
     else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
 }
 
 void UIRStatsSSRN::onSaveTextFile()
 {
+    if (m_autoSetFileOutput)return;
     if (m_ui->m_chkTextOutput->isChecked())
     {
         m_currentTextFileOutput = UIRStatsUtils::setOutputFile(
                                                                m_ui->m_chkTextOutput,
                                                                "Save to Text file...",
                                                                "*.txt");
-        if (!m_currentTextFileOutput.isEmpty())
-        {
-            if (m_currentTextFileOutputLabel == nullptr)
-            {
-                m_currentTextFileOutputLabel = new QLabel;
-                m_currentTextFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
-            }
-            m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
-            m_currentTextFileOutputLabel->setText("Text File: "+m_currentTextFileOutput);
-            m_ui->m_statusBar->addPermanentWidget(m_currentTextFileOutputLabel);
-            m_currentTextFileOutputLabel->show();
-        }
-        else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
+        setTextFileOutput(m_currentTextFileOutput.toStdString());
     }
     else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
 }
@@ -284,11 +258,11 @@ void UIRStatsSSRN::onGenerate()
     m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::to12HourTimeString(outputData.createTime)));
     m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toShortDateString(outputData.createDate)));
 
-    SessionData sessionData = getSessionData();
-    sessionData.dateValue = DateUtils::getCurrentDate().toDateInteger();
-    sessionData.timeValue = TimeUtils::getCurrentTime().toTimeInteger();
-    m_recentSessionsMap[QString::fromStdString(sessionData.name)]=sessionData;
-    RStatsUtils::saveRecentSession(sessionData.toString(),c_RECENT_SESSION_EXTENSION);
+    RStatsSSRNSessionData sessionData = getSessionData();
+    sessionData.setCreationDate(DateUtils::getCurrentDate().toDateInteger());
+    sessionData.setCreationTime(TimeUtils::getCurrentTime().toTimeInteger());
+    m_recentSessionsMap[sessionData.getAuditName()]=RStatsModuleSessionDataPtr(new RStatsSSRNSessionData(sessionData));
+    RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getAuditName()]);
     updateRecentSessions();    
 }
 
@@ -303,97 +277,85 @@ void UIRStatsSSRN::onExit()
 }
 
 
-SessionData UIRStatsSSRN::getSessionData() const
+RStatsSSRNSessionData UIRStatsSSRN::getSessionData() const
 {
     QString text = m_ui->m_txtAuditName->text();
     if (text.isEmpty())
     {
         text = m_ui->m_txtAuditName->placeholderText();
     }
-    SessionData data;
-    data.name = text.toStdString();
-    data.seed = m_ui->m_spnSeed->value();
-    data.order = m_ui->m_spnOrder->value();
-    data.spares = m_ui->m_spnSpares->value();
-    data.low = m_ui->m_spnLowNumber->value();
-    data.high = m_ui->m_spnHighNumber->value();
+    RStatsSSRNSessionData data;
+    data.setAuditName(text.toStdString());
+    data.setCSVOutputFile(m_currentCSVFileOutput.toStdString());
+    data.setTextOutputFile(m_currentTextFileOutput.toStdString());
+    data.setSeed(m_ui->m_spnSeed->value());
+    data.setOrder(m_ui->m_spnOrder->value());
+    data.setSpares(m_ui->m_spnSpares->value());
+    data.setLow(m_ui->m_spnLowNumber->value());
+    data.setHigh(m_ui->m_spnHighNumber->value());
     return data;
 }
 
-void UIRStatsSSRN::setSessionData(const SessionData &data)
+void UIRStatsSSRN::setSessionData(const RStatsSSRNSessionData &data)
 {
     m_ui->m_chkCustomSeed->setEnabled(true);
-    m_ui->m_txtAuditName->setText(QString::fromStdString(data.name));
-    m_ui->m_spnSeed->setValue(data.seed);
+    m_ui->m_txtAuditName->setText(QString::fromStdString(data.getAuditName()));
+    m_ui->m_spnSeed->setValue(data.getSeed());
     m_ui->m_spnSeed->setEnabled(true);
-    m_ui->m_spnHighNumber->setValue(static_cast<int>(data.high));
-    m_ui->m_spnLowNumber->setValue(static_cast<int>(data.low));
-    m_ui->m_spnSpares->setValue(static_cast<int>(data.spares));
-    m_ui->m_spnOrder->setValue(static_cast<int>(data.order));
+    m_ui->m_spnHighNumber->setValue(static_cast<int>(data.getHigh()));
+    m_ui->m_spnLowNumber->setValue(static_cast<int>(data.getLow()));
+    m_ui->m_spnSpares->setValue(static_cast<int>(data.getSpares()));
+    m_ui->m_spnOrder->setValue(static_cast<int>(data.getOrder()));
 
+    m_autoSetFileOutput=true;
+    if (!data.getCSVOutputFile().empty())
+    {
+        m_ui->m_chkCSVOutput->setChecked(true);
+        setCSVFileOutput(data.getTextOutputFile());
+        m_ui->m_chkCSVOutput->setToolTip(QString::fromStdString(data.getCSVOutputFile()));
+    }
+    if (!data.getTextOutputFile().empty())
+    {
+        m_ui->m_chkTextOutput->setChecked(true);
+        setTextFileOutput(data.getTextOutputFile());
+        m_ui->m_chkTextOutput->setToolTip(QString::fromStdString(data.getTextOutputFile()));
+    }
+    m_autoSetFileOutput=false;
 }
 void UIRStatsSSRN::onClearRecentSessions()
 {
-    RStatsUtils::clearRecentSessions(c_RECENT_SESSION_EXTENSION);
+    RStatsUtils::clearRecentSessions(c_RECENT_SESSION_EXTENSION);        
     updateRecentSessions();
 }
 
 void UIRStatsSSRN::onRecentSessionSelected(QAction *action)
 {
-    QString name = action->property("name").toString();
-    if (m_recentSessionsMap.contains(name))
+    std::string name = action->property("name").toString().toStdString();
+    if (m_recentSessionsMap.count(name))
     {
-        SessionData data = m_recentSessionsMap[name];
-        setSessionData(data);
+        RStatsSSRNSessionData * data = dynamic_cast<RStatsSSRNSessionData*>(m_recentSessionsMap[name].get());
+        if (data)
+        {
+            setSessionData(*data);
+        }
     }
 }
 
 void UIRStatsSSRN::updateRecentSessions()
 {
-    m_recentSessionsMap.clear();
-    std::vector<std::string> sessionUrls = RStatsUtils::getRecentSessions(c_RECENT_SESSION_EXTENSION);
-    if (sessionUrls.empty())
+    std::pair<QActionGroup*,QAction*> actionPair=UIRStatsUtils::buildRecentSessions<RStatsSSRNSessionData>(
+                                                 this,
+                                                 m_ui->actionRecent,
+                                                 this->m_recentSessionsMap,
+                                                 c_RECENT_SESSION_EXTENSION);
+
+
+    if (actionPair.first && actionPair.second)
     {
-        m_ui->actionRecent->setDisabled(true);
-        return;
+        connect(actionPair.first,SIGNAL(triggered(QAction*)),this,SLOT(onRecentSessionSelected(QAction*)));
+        connect(actionPair.second,SIGNAL(triggered(bool)),this,SLOT(onClearRecentSessions()));
     }
 
-    m_ui->actionRecent->setDisabled(false);
-    m_recentSessionActionGroup = new QActionGroup(this);
-    connect(m_recentSessionActionGroup,SIGNAL(triggered(QAction*)),this,SLOT(onRecentSessionSelected(QAction*)));
-    QMenu * recentMenu = new QMenu(m_ui->menuFile);
-    std::map<std::uint64_t,SessionData> last10Sessions;
-    for (const auto& url : sessionUrls)
-    {
-        SessionData data;
-        data.load(url);
-        std::uint64_t value = DateTimeUtils::getTimeStampInteger(data.dateValue,data.timeValue);
-        last10Sessions[value] = data;
-    }
-
-    size_t sessionCount = 0;
-    for (auto it = last10Sessions.rbegin();it != last10Sessions.rend(); ++it)
-    {
-        SessionData data = it->second;
-        m_recentSessionsMap[QString::fromStdString(data.name)] = data;
-        std::string dateTimeStr = DateTimeUtils::getDisplayTimeStamp(DateEntity(data.dateValue),TimeEntity(data.timeValue));
-        QAction * action = new QAction(QString::fromStdString(data.name), recentMenu);
-        action->setToolTip("Created on "+QString::fromStdString(dateTimeStr));
-        action->setProperty("name",QString::fromStdString(data.name));
-        m_recentSessionActionGroup->addAction(action);
-        recentMenu->addAction(action);
-        ++sessionCount;
-        if (sessionCount == 10)
-        {
-            break;
-        }
-    }
-    recentMenu->addSeparator();
-    QAction * clearRecentSessionsAction = new QAction(recentMenu);
-    clearRecentSessionsAction->setText("Clear History");
-    connect(clearRecentSessionsAction,SIGNAL(triggered(bool)),this,SLOT(onClearRecentSessions()));
-    recentMenu->addAction(clearRecentSessionsAction);
-    m_ui->actionRecent->setMenu(recentMenu);
 }
 
 void UIRStatsSSRN::onSeedBoxToggled(bool toggle)
@@ -412,52 +374,43 @@ void UIRStatsSSRN::onSeedBoxToggled(bool toggle)
 
 }
 
-void SessionData::load(const std::string &url)
+
+void UIRStatsSSRN::setTextFileOutput(const std::string &textFile)
 {
-    if (!url.empty())
+    m_currentTextFileOutput = QString::fromStdString(textFile);
+    if (!m_currentTextFileOutput.isEmpty())
     {
-        XMLReader reader;
-        reader.load(url);
-        XMLDataElement * session = reader.getElement("session");
-        if (session)
+        if (m_currentTextFileOutputLabel == nullptr)
         {
-            XMLDataElement* nameXML = session->getChild("name");
-            XMLDataElement* seedXML = session->getChild("seed");
-            XMLDataElement* orderXML = session->getChild("order");
-            XMLDataElement* sparesXML = session->getChild("spares");
-            XMLDataElement* lowXML = session->getChild("low");
-            XMLDataElement* highXML = session->getChild("high");
-            XMLDataElement* dateXML = session->getChild("date");
-            XMLDataElement* timeXML = session->getChild("time");
-            if (nameXML)this->name = XMLUtils::getDecodedString(nameXML->getElementData(true));
-            if (seedXML)this->seed = seedXML->getElementDataAsFloat();
-            if (orderXML)this->order = orderXML->getElementDataAsInteger();
-            if (sparesXML)this->spares = sparesXML->getElementDataAsInteger();
-            if (lowXML)this->low = lowXML->getElementDataAsInteger();
-            if (highXML)this->high = highXML->getElementDataAsInteger();
-            if (dateXML)this->dateValue = static_cast<std::uint64_t>(dateXML->getElementDataAsInteger());
-            if (timeXML)this->timeValue = static_cast<std::uint64_t>(timeXML->getElementDataAsInteger());
+            m_currentTextFileOutputLabel = new QLabel;
+            m_currentTextFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
         }
+        m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
+        m_currentTextFileOutputLabel->setText("<b>Text File:</b> "+m_currentTextFileOutput);
+        m_ui->m_statusBar->addPermanentWidget(m_currentTextFileOutputLabel);
+        m_currentTextFileOutputLabel->show();
     }
+    else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
 }
 
-std::string SessionData::toString() const
+void UIRStatsSSRN::setCSVFileOutput(const std::string &csvFile)
 {
-    std::ostringstream out;
-    XMLStreamWriter xml(out);
-    xml.writeStartDocument();
-    xml.writeStartElementNoAttributes("session");
-    xml.writeTextElement("name",XMLUtils::getEncodedString(name));
-    xml.writeTextElement("seed",StringUtils::toString(seed));
-    xml.writeTextElement("order",StringUtils::toString(order));
-    xml.writeTextElement("spares",StringUtils::toString(spares));
-    xml.writeTextElement("low",StringUtils::toString(low));
-    xml.writeTextElement("high",StringUtils::toString(high));
-    xml.writeTextElement("date",StringUtils::toString(dateValue));
-    xml.writeTextElement("time",StringUtils::toString(timeValue));
-    xml.writeEndElement("session");
-    return out.str();
+    m_currentCSVFileOutput = QString::fromStdString(csvFile);
+    if (!m_currentCSVFileOutput.isEmpty())
+    {
+        if (m_currentCSVFileOutputLabel == nullptr)
+        {
+            m_currentCSVFileOutputLabel = new QLabel;
+            m_currentCSVFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+        }
+        m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
+        m_currentCSVFileOutputLabel->setText("<b>CSV File</b>: "+m_currentCSVFileOutput);
+        m_ui->m_statusBar->addPermanentWidget(m_currentCSVFileOutputLabel);
+        m_currentCSVFileOutputLabel->show();
+    }
+    else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
 }
+
 
 }}}}//end namespace
 

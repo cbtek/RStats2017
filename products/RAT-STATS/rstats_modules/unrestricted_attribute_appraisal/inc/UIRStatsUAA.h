@@ -13,25 +13,14 @@
 
 #include "rstats_utils/inc/RStatsUtils.hpp"
 
+#include "RStatsUAASessionData.h"
+
 class Ui_UIRStatsUAA;
 
 namespace oig {
 namespace ratstats {
 namespace modules {
 namespace uaa {
-
-struct SessionData
-{
-    SessionData():dateValue(0),timeValue(0),universe(0),samples(0),coi(0){}
-    void load(const std::string& url);
-    std::string toString() const;
-    std::string name;
-    oig::ratstats::utils::RStatsInteger dateValue;
-    oig::ratstats::utils::RStatsInteger timeValue;
-    oig::ratstats::utils::RStatsInteger universe;
-    oig::ratstats::utils::RStatsInteger samples;
-    oig::ratstats::utils::RStatsInteger coi;
-};
 
 class UIRStatsUAA : public QMainWindow
 {
@@ -54,9 +43,9 @@ private:
     QIcon m_runIcon;
     QIcon m_helpIcon;
     QActionGroup* m_recentSessionActionGroup;
-    QMap<QString,SessionData> m_recentSessionsMap;
-    SessionData getSessionData() const;
-    void setSessionData(const SessionData& data);
+    std::map<std::string,utils::RStatsModuleSessionDataPtr> m_recentSessionsMap;
+    RStatsUAASessionData getSessionData() const;
+    void setSessionData(const RStatsUAASessionData& data);
     void updateRecentSessions();
 
     /**
@@ -66,20 +55,22 @@ private:
     QString m_currentCSVFileOutput;
     QLabel * m_currentTextFileOutputLabel;
     QLabel * m_currentCSVFileOutputLabel;
-
+    bool m_autoSetFileOutput;
 
     /** 
     * MOC generated ui class for this widget
     */
      Ui_UIRStatsUAA *m_ui;
 
+     void setTextFileOutput(const std::string& textFile);
+     void setCSVFileOutput(const std::string& csvFile);
 private slots:
      void onRecentSessionSelected(QAction* action);
      void onUpdateSampleCount();
      void onUpdateUniverseCount();
      void onClearRecentSessions();
-     void onSetTextFileOutput();
-     void onSetCSVFileOutput();
+     void onSaveTextFile();
+     void onSaveCSVFile();
      void onHelp();
      void onContinue();
      void onExit();

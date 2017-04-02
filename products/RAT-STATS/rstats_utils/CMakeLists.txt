@@ -12,6 +12,13 @@ include_directories(inc/streams)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 #==============================================================================
+# Unit Test modules
+#==============================================================================
+if (${ENABLE_RSTATS_UTILS_UNIT_TESTS})
+    add_subdirectory(tests)
+endif()
+
+#==============================================================================
 # Include Source Files
 #==============================================================================
 file(GLOB CURR_TARGET_SOURCES "src/*.cpp" "src/streams/*.cpp")

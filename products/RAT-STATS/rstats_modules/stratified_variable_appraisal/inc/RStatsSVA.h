@@ -108,17 +108,6 @@ public:
      */
     void saveToWorkbook(oig::ratstats::utils::RStatsWorkbook& workbookOut);
 
-    /**
-     * @brief saveToCSVFile
-     * @param filePath
-     */
-    void saveToCSVFile(const std::string& filePath);
-
-    /**
-     * @brief saveToTextFile
-     * @param filePath
-     */
-    void saveToTextFile(const std::string& filePath);
 
 	//! Static instance method for this singleton
     static RStatsSVA & inst();
@@ -283,7 +272,7 @@ private:
     void copyOutputData(RStatsSVAOutputData& outputData,
                         const RStatsSVAInputData& inputData,
                         oig::ratstats::utils::RStatsDataFormatType type,
-                        oig::ratstats::utils::RStatsInteger dataFormatIndex);
+                        size_t dataFormatIndex);
 
 
     static RStatsSVA m_instance;        

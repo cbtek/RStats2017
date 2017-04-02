@@ -12,13 +12,15 @@
 
 #include "utility/inc/SystemUtils.hpp"
 
+#include "rstats_utils/inc/streams/RStatsCSVWorkbookStream.h"
+
 using namespace oig::ratstats::modules::sva;
 using namespace oig::ratstats::ui;
 using namespace oig::ratstats::utils;
 using namespace cbtek::common::utility;
 
 int main(int argc, char ** argv)
-{
+{    
     QApplication a(argc,argv);
     UIRStatsUtils::loadThemeSettings(&a);
     UIRStatsSVA form;

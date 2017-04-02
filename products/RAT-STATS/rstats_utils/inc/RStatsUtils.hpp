@@ -35,6 +35,7 @@ SOFTWARE.
 #include "rstats_utils/inc/RStatsModuleProperties.h"
 #include "rstats_utils/inc/RStatsScriptProviderProperties.h"
 
+#include "RStatsModuleSessionData.hpp"
 #include "RStatsObjectList.hpp"
 
 #include "utility/inc/DateTimeUtils.hpp"
@@ -714,12 +715,12 @@ namespace RStatsUtils
      * @param sessionData
      * @param sessionExtension
      */
-    inline void saveRecentSession(const std::string& sessionData, const std::string& sessionExtension)
+    inline void saveRecentSession(RStatsModuleSessionDataPtr sessionPtr)
     {
-        std::vector<std::string> sessions = getRecentSessions(sessionExtension);
+        std::vector<std::string> sessions = getRecentSessions(sessionPtr->getType());
         std::string path = getValidSessionPath();
-        path = cbtek::common::utility::FileUtils::buildFilePath(path,"session"+std::to_string(sessions.size())+"."+sessionExtension);
-        cbtek::common::utility::FileUtils::writeFileContents(path,sessionData);
+        path = cbtek::common::utility::FileUtils::buildFilePath(path,"session"+std::to_string(sessions.size())+"."+sessionPtr->getType());
+        sessionPtr->save(path);
     }
 
     /**
@@ -829,17 +830,7 @@ namespace RStatsUtils
     inline std::string getApplicationName()
     {
         return "RAT-STATS Statistical Software";
-    }
-
-//    /**
-//     * @brief vbRound
-//     * @param value
-//     * @return
-//     */
-//    inline RStatsFloat vbRound(RStatsFloat value)
-//    {
-//        return ::rounding::roundhalfeven(value);
-//    }
+    }   
 }
 
 }}}//end namespace

@@ -66,6 +66,7 @@ public:
     XMLDataElement * getNextSibling() const;
     XMLDataElement * getChildAt(size_t index)const;
     XMLDataElement * getChild(const std::string & name) const;
+    std::string getChildElementData(const std::string& name) const;
 
     bool attributeExists(const std::string &attributeName,bool caseSensitive=false) const;
 
@@ -106,6 +107,20 @@ public:
         std::stringstream in(valueStr);
         in>>valueNumber;
         return valueNumber;
+    }
+
+    template <typename Number>
+    Number getChildElementDataAsType(const std::string& name) const
+    {
+        std::string data = getChildElementData(name);
+        if (!data.empty())
+        {
+            Number valueNumber;
+            std::stringstream in(data);
+            in>>valueNumber;
+            return valueNumber;
+        }
+        return 0;
     }
 
     bool getAttributeValueAsBool(const std::string& attributeName) const;

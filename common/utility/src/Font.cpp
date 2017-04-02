@@ -41,7 +41,11 @@ Font::Font()
     m_isUnderlined=false;
 }
 
-Font::Font(const std::string &fontFamily, const size_t &pointSize, const bool &isBold, const bool &isItalic, const bool &isUnderlined)
+Font::Font(std::string fontFamily,
+           size_t pointSize,
+           bool isBold,
+           bool isItalic,
+           bool isUnderlined)
 {
     m_fontFamily=fontFamily;
     m_pointSize=pointSize;

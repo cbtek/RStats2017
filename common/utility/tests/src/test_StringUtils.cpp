@@ -30,8 +30,26 @@ SOFTWARE.
 using namespace cbtek::common::utility;
 static const std::string dataFolder = "testData/utility/";
 
+TEST_CASE("Testing StringUtils::isNumeric","[utility::StringUtils]")
+{
+    std::string test1 = "1.1234";
+    std::string test2 = "-100,231,334.1234";
+    std::string test3 = ".";
+    std::string test4 = "-";
+    std::string test5 = "$-5,000.00";
+    std::string test6 = "-$5,000.00";
+    std::string test7 = "";
 
-TEST_CASE("Testing StringUtils::isWholeWord","[utility::StringUtils")
+    REQUIRE(StringUtils::isNumeric(test1) == true);
+    REQUIRE(StringUtils::isNumeric(test2) == true);
+    REQUIRE(StringUtils::isNumeric(test3) == false);
+    REQUIRE(StringUtils::isNumeric(test4) == false);
+    REQUIRE(StringUtils::isNumeric(test5) == true);
+    REQUIRE(StringUtils::isNumeric(test6) == true);
+    REQUIRE(StringUtils::isNumeric(test7) == false);
+}
+
+TEST_CASE("Testing StringUtils::isWholeWord","[utility::StringUtils]")
 {
     std::string data = "The Quick Brown $foxjumped over the $foxxy moon with a $fox and $fox_";
     std::vector<size_t> wholeWords = StringUtils::getWholeWords(data,"$fox");

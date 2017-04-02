@@ -69,7 +69,11 @@ public:
 
     Font();
 
-    Font(const std::string & fontFamily, const size_t & pointSize=10, const bool & isBold=false, const bool & isItalic = false, const bool & isUnderlined=false);
+    Font(std::string fontFamily,
+         size_t pointSize=10,
+         bool isBold=false,
+         bool isItalic = false,
+         bool isUnderlined=false);
 
     bool operator==(const Font & font);
 

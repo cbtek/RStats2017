@@ -31,8 +31,6 @@ namespace ratstats {
 namespace modules {
 namespace uaa {
 
-const static std::string c_RECENT_SESSION_EXTENSION = "uaa";
-
 UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
     QMainWindow(parent),
     m_ui(new Ui_UIRStatsUAA)
@@ -50,12 +48,12 @@ UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
     connect(m_ui->m_btnHelp,SIGNAL(clicked()),this,SLOT(onHelp()));
     connect(m_ui->m_spnSampleSize,SIGNAL(valueChanged(int)),this,SLOT(onUpdateSampleCount()));
     connect(m_ui->m_spnUniverseSize,SIGNAL(valueChanged(int)),this,SLOT(onUpdateUniverseCount()));
-    connect(m_ui->m_chkCSVOutput,SIGNAL(toggled(bool)),this,SLOT(onSetCSVFileOutput()));
-    connect(m_ui->m_chkTextOutput,SIGNAL(toggled(bool)),this,SLOT(onSetTextFileOutput()));
+    connect(m_ui->m_chkCSVOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveCSVFile()));
+    connect(m_ui->m_chkTextOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveTextFile()));
 
     m_currentCSVFileOutputLabel = nullptr;
     m_currentTextFileOutputLabel = nullptr;
-
+    m_autoSetFileOutput = false;
     m_ui->m_txtAuditName->setPlaceholderText(QString::fromStdString(RStatsUtils::getAuditName()));
     m_ui->m_frmOutput->hide();
     onUpdateUniverseCount();
@@ -136,11 +134,11 @@ void UIRStatsUAA::onContinue()
 
 
     //Save the session data
-    SessionData sessionData = getSessionData();
-    sessionData.dateValue = static_cast<RStatsInteger>(DateUtils::getCurrentDate().toDateInteger());
-    sessionData.timeValue = static_cast<RStatsInteger>(TimeUtils::getCurrentTime().toTimeInteger());
-    m_recentSessionsMap[QString::fromStdString(sessionData.name)]=sessionData;
-    RStatsUtils::saveRecentSession(sessionData.toString(),c_RECENT_SESSION_EXTENSION);
+    RStatsUAASessionData sessionData = getSessionData();
+    sessionData.setCreationDate(DateUtils::getCurrentDate());
+    sessionData.setCreationTime(TimeUtils::getCurrentTime());
+    m_recentSessionsMap[sessionData.getAuditName()] = RStatsModuleSessionDataPtr(new RStatsUAASessionData(sessionData));
+    RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getAuditName()]);
     updateRecentSessions();
 }
 
@@ -149,27 +147,44 @@ void UIRStatsUAA::onExit()
     this->close();
 }
 
-SessionData UIRStatsUAA::getSessionData() const
+RStatsUAASessionData UIRStatsUAA::getSessionData() const
 {
     QString text = m_ui->m_txtAuditName->text();
     if (text.isEmpty())
     {
         text = m_ui->m_txtAuditName->placeholderText();
     }
-    SessionData data;
-    data.name = text.toStdString();
-    data.samples = m_ui->m_spnSampleSize->value();
-    data.coi = m_ui->m_spnCOI->value();
-    data.universe = m_ui->m_spnUniverseSize->value();
+    RStatsUAASessionData data;
+    data.setAuditName(text.toStdString());
+    data.setSampleSize(m_ui->m_spnSampleSize->value());
+    data.setCoiSize(m_ui->m_spnCOI->value());
+    data.setUniverseSize(m_ui->m_spnUniverseSize->value());
+    data.setCSVOutputFile(m_currentCSVFileOutput.toStdString());
+    data.setTextOutputFile(m_currentTextFileOutput.toStdString());
     return data;
 }
 
-void UIRStatsUAA::setSessionData(const SessionData &data)
+void UIRStatsUAA::setSessionData(const RStatsUAASessionData &data)
 {
-    m_ui->m_txtAuditName->setText(QString::fromStdString(data.name));
-    m_ui->m_spnSampleSize->setValue(static_cast<int>(data.samples));
-    m_ui->m_spnCOI->setValue(static_cast<int>(data.coi));
-    m_ui->m_spnUniverseSize->setValue(static_cast<int>(data.universe));
+    m_ui->m_txtAuditName->setText(QString::fromStdString(data.getAuditName()));
+    m_ui->m_spnSampleSize->setValue(static_cast<int>(data.getSampleSize()));
+    m_ui->m_spnCOI->setValue(static_cast<int>(data.getCoiSize()));
+    m_ui->m_spnUniverseSize->setValue(static_cast<int>(data.getUniverseSize()));
+
+    m_autoSetFileOutput = true;
+    if (!data.getCSVOutputFile().empty())
+    {        
+        m_ui->m_chkCSVOutput->setChecked(true);
+        setCSVFileOutput(data.getTextOutputFile());
+        m_ui->m_chkCSVOutput->setToolTip(QString::fromStdString(data.getCSVOutputFile()));
+    }
+    if (!data.getTextOutputFile().empty())
+    {
+        m_ui->m_chkTextOutput->setChecked(true);
+        setTextFileOutput(data.getTextOutputFile());
+        m_ui->m_chkTextOutput->setToolTip(QString::fromStdString(data.getTextOutputFile()));     
+    }
+    m_autoSetFileOutput = false;
 }
 
 void UIRStatsUAA::onClearRecentSessions()
@@ -178,144 +193,99 @@ void UIRStatsUAA::onClearRecentSessions()
     updateRecentSessions();
 }
 
-void UIRStatsUAA::onSetTextFileOutput()
+void UIRStatsUAA::onSaveTextFile()
 {
+    if (m_autoSetFileOutput) return;
     if (m_ui->m_chkTextOutput->isChecked())
     {
         m_currentTextFileOutput = UIRStatsUtils::setOutputFile(
                                                                m_ui->m_chkTextOutput,
                                                                "Save to Text file...",
                                                                "*.txt");
-        if (!m_currentTextFileOutput.isEmpty())
-        {
-            if (m_currentTextFileOutputLabel == nullptr)
-            {
-                m_currentTextFileOutputLabel = new QLabel;
-                m_currentTextFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
-            }
-            m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
-            m_currentTextFileOutputLabel->setText("Text File: "+m_currentTextFileOutput);
-            m_ui->m_statusBar->addPermanentWidget(m_currentTextFileOutputLabel);
-            m_currentTextFileOutputLabel->show();
-        }
-        else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
+        setTextFileOutput(m_currentTextFileOutput.toStdString());
     }
     else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
 
 }
 
-void UIRStatsUAA::onSetCSVFileOutput()
+void UIRStatsUAA::onSaveCSVFile()
 {
+    if (m_autoSetFileOutput) return;
     if (m_ui->m_chkCSVOutput->isChecked())
     {
         m_currentCSVFileOutput = UIRStatsUtils::setOutputFile(
                                                               m_ui->m_chkCSVOutput,
                                                               "Save to CSV file...",
                                                               "*.csv");
-        if (!m_currentCSVFileOutput.isEmpty())
-        {
-            if (m_currentCSVFileOutputLabel == nullptr)
-            {
-                m_currentCSVFileOutputLabel = new QLabel;
-
-                m_currentCSVFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
-            }
-            m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
-            m_currentCSVFileOutputLabel->setText("CSV File: "+m_currentCSVFileOutput);
-            m_ui->m_statusBar->addPermanentWidget(m_currentCSVFileOutputLabel);
-            m_currentCSVFileOutputLabel->show();
-        }
-
-        else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
+        setCSVFileOutput(m_currentCSVFileOutput.toStdString());
     }
     else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
 }
 
 void UIRStatsUAA::onRecentSessionSelected(QAction* action)
 {
-
-    QString name = action->property("name").toString();
-    if (m_recentSessionsMap.contains(name))
+    std::string name = action->property("name").toString().toStdString();
+    if (m_recentSessionsMap.count(name))
     {
-        SessionData data = m_recentSessionsMap[name];
-        setSessionData(data);
+        RStatsUAASessionData * data = dynamic_cast<RStatsUAASessionData*>(m_recentSessionsMap[name].get());
+        setSessionData(*data);
     }
 }
 
 void UIRStatsUAA::updateRecentSessions()
 {
-    m_recentSessionsMap.clear();
-    std::vector<std::string> sessionUrls = RStatsUtils::getRecentSessions(c_RECENT_SESSION_EXTENSION);
-    if (sessionUrls.empty())
-    {
-        m_ui->actionRecentlyUsed->setDisabled(true);
-        return;
-    }
+    std::pair<QActionGroup*,QAction*> actionPair=UIRStatsUtils::buildRecentSessions<RStatsUAASessionData>(
+                                                 this,
+                                                 m_ui->actionRecentlyUsed,
+                                                 this->m_recentSessionsMap,
+                                                 c_RECENT_SESSION_EXTENSION);
 
-    m_ui->actionRecentlyUsed->setDisabled(false);
-    m_recentSessionActionGroup = new QActionGroup(this);
-    connect(m_recentSessionActionGroup,SIGNAL(triggered(QAction*)),this,SLOT(onRecentSessionSelected(QAction*)));
-    QMenu* recentMenu = new QMenu(m_ui->menuFile);
-    for (const auto& url : sessionUrls)
+
+    if (actionPair.first && actionPair.second)
     {
-        SessionData data;
-        data.load(url);
-        m_recentSessionsMap[QString::fromStdString(data.name)] = data;
-        std::string dateTimeStr = DateTimeUtils::getDisplayTimeStamp(DateEntity(data.dateValue),TimeEntity(data.timeValue));
-        QAction* action = new QAction(QString::fromStdString(data.name+" "+dateTimeStr), recentMenu);
-        action->setProperty("name",QString::fromStdString(data.name));
-        m_recentSessionActionGroup->addAction(action);
-        recentMenu->addAction(action);
+        connect(actionPair.first,SIGNAL(triggered(QAction*)),this,SLOT(onRecentSessionSelected(QAction*)));
+        connect(actionPair.second,SIGNAL(triggered(bool)),this,SLOT(onClearRecentSessions()));
     }
-    recentMenu->addSeparator();
-    QAction* clearRecentSessionsAction = new QAction(recentMenu);
-    clearRecentSessionsAction->setText("Clear History");
-    connect(clearRecentSessionsAction,SIGNAL(triggered(bool)),this,SLOT(onClearRecentSessions()));
-    recentMenu->addAction(clearRecentSessionsAction);
-    m_ui->actionRecentlyUsed->setMenu(recentMenu);
 
 }
 
-
-void SessionData::load(const std::string &url)
+void UIRStatsUAA::setTextFileOutput(const std::string &textFile)
 {
-    if (!url.empty())
+    m_currentTextFileOutput = QString::fromStdString(textFile);
+    if (!m_currentTextFileOutput.isEmpty())
     {
-        XMLReader reader;
-        reader.load(url);
-        XMLDataElement* session = reader.getElement("session");
-        if (session)
+        if (m_currentTextFileOutputLabel == nullptr)
         {
-            XMLDataElement* nameXML = session->getChild("name");
-            XMLDataElement* universeXML = session->getChild("universe");
-            XMLDataElement* samplesXML = session->getChild("samples");
-            XMLDataElement* coiXML = session->getChild("coi");
-            XMLDataElement* dateXML = session->getChild("date");
-            XMLDataElement* timeXML = session->getChild("time");
-            if (nameXML)this->name = XMLUtils::getDecodedString(nameXML->getElementData(true));
-            if (samplesXML)this->samples = samplesXML->getElementDataAsInteger();
-            if (universeXML)this->universe = universeXML->getElementDataAsInteger();
-            if (coiXML)this->coi = coiXML->getElementDataAsInteger();
-            if (dateXML)this->dateValue = dateXML->getElementDataAsInteger();
-            if (timeXML)this->timeValue = timeXML->getElementDataAsInteger();
+            m_currentTextFileOutputLabel = new QLabel;
+            m_currentTextFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
         }
+        m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
+        m_currentTextFileOutputLabel->setText("<b>Text File:</b> "+m_currentTextFileOutput);
+        m_ui->m_statusBar->addPermanentWidget(m_currentTextFileOutputLabel);
+        m_currentTextFileOutputLabel->show();
     }
+    else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
 }
 
-std::string SessionData::toString() const
+void UIRStatsUAA::setCSVFileOutput(const std::string &csvFile)
 {
-    std::ostringstream out;
-    XMLStreamWriter xml(out);
-    xml.writeStartDocument();
-    xml.writeStartElementNoAttributes("session");
-    xml.writeTextElement("name",XMLUtils::getEncodedString(name));
-    xml.writeTextElement("samples",StringUtils::toString(samples));
-    xml.writeTextElement("coi",StringUtils::toString(coi));
-    xml.writeTextElement("universe",StringUtils::toString(universe));
-    xml.writeTextElement("date",StringUtils::toString(dateValue));
-    xml.writeTextElement("time",StringUtils::toString(timeValue));
-    xml.writeEndElement("session");
-    return out.str();
+    m_currentCSVFileOutput = QString::fromStdString(csvFile);
+    if (!m_currentCSVFileOutput.isEmpty())
+    {
+        if (m_currentCSVFileOutputLabel == nullptr)
+        {
+            m_currentCSVFileOutputLabel = new QLabel;
+            m_currentCSVFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+        }
+        m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
+        m_currentCSVFileOutputLabel->setText("<b>CSV File</b>: "+m_currentCSVFileOutput);
+        m_ui->m_statusBar->addPermanentWidget(m_currentCSVFileOutputLabel);
+        m_currentCSVFileOutputLabel->show();
+    }
+    else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
 }
+
+
+
 }}}}//end namespace
 

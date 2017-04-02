@@ -184,6 +184,16 @@ XMLDataElement *XMLDataElement::getChild(const std::string &name) const
     return NULL;
 }
 
+std::string XMLDataElement::getChildElementData(const std::string &name) const
+{
+    XMLDataElement * child = getChild(name);
+    if (child)
+    {
+        return child->getElementData(true);
+    }
+    return "";
+}
+
 bool XMLDataElement::childExists(const std::string &name, bool caseSensitive)
 {
     for (size_t a1 = 0;a1<m_ChildElementVector.size();a1++)

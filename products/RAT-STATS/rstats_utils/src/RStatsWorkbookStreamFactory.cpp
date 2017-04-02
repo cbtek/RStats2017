@@ -13,7 +13,9 @@
 #include "utility/inc/Exception.hpp"
 
 #include "streams/RStatsDelimitedWorkbookStream.h"
+#include "streams/RStatsDIFWorkbookStream.h"
 #include "streams/RStatsXLSXWorkbookStream.h"
+#include "streams/RStatsCSVWorkbookStream.h"
 #include "streams/RStatsAccessWorkbookStream.h"
 
 using namespace cbtek::common::utility;
@@ -34,9 +36,13 @@ RStatsWorkbookStreamPtr RStatsWorkbookStreamFactory::create(const std::string &f
     {
         THROW_GENERIC_EXCEPTION("XLS not supported")
     }
-    else if (ext == "CSV" || ext == "TXT" || ext == "DAT")
+    else if (ext == "CSV")
     {
-        return RStatsWorkbookStreamPtr(new streams::RStatsDelimitedWorkbookStream(filePath));
+        return RStatsWorkbookStreamPtr(new streams::RStatsCSVWorkbookStream(filePath));
+    }
+    else if (ext == "DIF")
+    {
+        return RStatsWorkbookStreamPtr(new streams::RStatsDIFWorkbookStream(filePath));
     }
     else if (ext == "MDB")
     {

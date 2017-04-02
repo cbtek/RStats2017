@@ -456,9 +456,77 @@ inline std::wstring toLower(const std::wstring &str)
     return strOut;
 }
 
+/**
+ * @brief trimmedInPlace
+ * @param str
+ * @param customCharToTrim
+ */
+inline void trimmedInPlace(std::string &str,
+                           char customCharToTrim,
+                           bool trimAll = true)
+{
+    int count = static_cast<int>(str.size());
+    for (int a1 = 0;a1 < count;++a1)
+    {
+        size_t index = static_cast<size_t>(a1);
+        if (str[index] == customCharToTrim)
+        {
+            str.erase(str.begin() + a1);
+            --a1;
+            --count;
+            if (!trimAll)
+            {
+                break;
+            }
+            continue;
+        }
+        else break;
+    }
+
+    if (count == 0)
+    {
+        return;
+    }
+
+    count = static_cast<int>(str.size());
+    for (long a1 = (count - 1); a1 >= 0; --a1)
+    {
+        size_t index = static_cast<size_t>(a1);
+        if (str[index] == customCharToTrim)
+        {
+            str.erase(str.begin() + static_cast<long>(index));
+            if (!trimAll)
+            {
+                break;
+            }
+        }
+        else
+        {
+            break;
+        }
+    }
+}
 
 /**
-* @brief Removes all whitespace (\t \r \n ' ' \f) from
+ * @brief trimmed
+ * @param stringToTrim
+ * @param customCharToBeRemoved
+ * @return
+ */
+inline std::string trimmed(const std::string& stringToTrim,
+                           char customCharToBeRemoved,
+                           bool trimAll = true)
+{
+    std::string str = stringToTrim;
+    trimmedInPlace(str,
+                   customCharToBeRemoved,
+                   trimAll);
+    return str;
+}
+
+
+/**
+* @brief Removes all whitespace (\\t \\r \\n ' ' \\f) from
 *        the beginning and end of inputString.
 * @param Reference to the source string to operate upon
 */
@@ -1281,14 +1349,20 @@ inline std::string textBetween(const std::string &source,
  */
 inline void clean(std::vector<std::string> & items)
 {
-    for (int a1 = items.size()-1; a1>=0 ;--a1)
+    if (items.size() == 0)
     {
-        if (items[a1].empty())
+        return;
+    }
+    int lastIndex = static_cast<int>(items.size()) - 1;
+    for (int a1 = lastIndex; a1>=0 ;--a1)
+    {
+        size_t index = static_cast<size_t>(a1);
+        if (items[index].empty())
         {
-            items.erase(items.begin()+a1);
+            items.erase(items.begin()+index);
             continue;
         }
-        StringUtils::trimmedInPlace(items[a1]);
+        StringUtils::trimmedInPlace(items[index]);
     }
 }
 
@@ -1605,7 +1679,7 @@ static inline std::pair<std::string,std::string> splitKeyValue(const std::string
  * @return
  */
 static inline bool isEmpty(const std::string& srcStr)
-{
+{    
     return StringUtils::trimmed(srcStr).empty();
 }
 
@@ -1616,8 +1690,20 @@ static inline bool isEmpty(const std::string& srcStr)
  * @return
  */
 inline bool isNumeric(const std::string& potentialNumber)
-{
-    return (isFloat(potentialNumber) || isSignedInteger(potentialNumber) || isUnsignedInteger(potentialNumber));
+{    
+    std::string numberStr = StringUtils::trimmed(potentialNumber);
+    if (numberStr.size() == 0 ||
+       (numberStr.size() == 1 &&
+        !std::isdigit(potentialNumber[0])))
+    {
+        return false;
+    }
+    numberStr = remove(numberStr,",");
+    numberStr = remove(numberStr,"-");
+    numberStr = remove(numberStr,"$");
+    return (isFloat(numberStr) ||
+            isSignedInteger(numberStr) ||
+            isUnsignedInteger(numberStr));
 }
 
 }}}} //namespace

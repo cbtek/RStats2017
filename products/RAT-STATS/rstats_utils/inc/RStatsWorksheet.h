@@ -4,8 +4,7 @@
 
 */
 
-#ifndef _OIG_RATSTATS_UTILS_RSTATSWORKSHEET_H
-#define _OIG_RATSTATS_UTILS_RSTATSWORKSHEET_H
+#pragma once
 
 #include <string>
 #include <map>
@@ -47,26 +46,6 @@ struct RStatsCell
     RStatsTextAlignment alignment;
     std::string text;
 
-    void applyFormat(const std::set<RStatsCellFormat>& formats)
-    {
-        for(const auto& format : formats)
-        {
-            switch(format)
-            {
-                case RStatsCellFormat::ThousandsSeperator:
-                {
-                    if (cbtek::common::utility::StringUtils::isNumeric(text))
-                    {
-                        text = cbtek::common::utility::StringUtils::formatWithThousandsLabel(text);
-                    }
-                }
-                break;
-                default: break;
-
-            }
-        }
-    }
-
     void operator=(const std::string& text)
     {
         this->text = text;
@@ -91,6 +70,8 @@ struct RStatsCell
         this->font = ms_DefaultFont;
     }
 };
+
+typedef std::map<std::pair<size_t, size_t>, RStatsCell> RStatsCellMap;
 
 class RStatsWorksheet 
 {
@@ -171,7 +152,7 @@ public:
      * @brief getCells
      * @return
      */
-    const std::map<std::pair<size_t, size_t>, RStatsCell> &getCells() const;
+    const RStatsCellMap &getCells() const;
 
     /**
      * @brief setDefaultTextAlignment
@@ -249,16 +230,29 @@ public:
      */
     void setFormatEnabled(RStatsCellFormat format,
                           bool flag);
+
+    /**
+     * @brief setThousandsSeperatorEnabled
+     * @param flag
+     */
+    void setThousandsSeperatorEnabled(bool flag);
+
+
+    /**
+     * @brief clear
+     */
+    void clear();
+
     //! Destructor
 	~RStatsWorksheet();	
 
 
 
 private:
-        std::set<RStatsCellFormat> m_formatSet;
+        std::set<std::pair<size_t,size_t> > m_thousandsSeperatorToggleSet;
         RStatsCell m_emptyCell;
         std::string m_worksheetTitle;
-        std::map<std::pair<size_t,size_t>, RStatsCell> m_dataTable;
+        RStatsCellMap m_dataTable;
         size_t m_numRows;
         size_t m_numColumns;
         void parseCellAddress(const std::string& address, size_t& r, size_t& c);
@@ -269,5 +263,4 @@ private:
 typedef std::shared_ptr<RStatsWorksheet> RStatsWorksheetPtr;
 }}}//end namespace
 
-#endif // _OIG_RATSTATS_UTILS_RSTATSWORKSHEET_H
 

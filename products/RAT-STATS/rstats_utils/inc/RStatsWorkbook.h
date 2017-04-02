@@ -4,8 +4,7 @@
 
 */
 
-#ifndef _OIG_RATSTATS_UTILS_RSTATSWORKBOOK_H
-#define _OIG_RATSTATS_UTILS_RSTATSWORKBOOK_H
+#pragma once
 
 #include "RStatsWorksheet.h"
 
@@ -53,6 +52,12 @@ public:
      * @brief removeWorksheet
      * @param index
      */
+    const std::vector<RStatsWorksheet> &getWorksheets() const;
+
+    /**
+     * @brief removeWorksheet
+     * @param index
+     */
     void removeWorksheet(size_t index);
 
     /**
@@ -81,6 +86,11 @@ public:
      */
     std::vector<std::string> getWorksheetNames() const;
 
+    /**
+     * @brief clear
+     */
+    void clear();
+
 	//! Destructor
 	~RStatsWorkbook();	
 
@@ -88,6 +98,4 @@ private:
     std::vector<RStatsWorksheet> m_worksheets;
 };
 }}}//end namespace
-
-#endif // _OIG_RATSTATS_UTILS_RSTATSWORKBOOK_H
 
