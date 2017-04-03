@@ -98,6 +98,63 @@ enum class RStatsConditionalOperatorType
 
 namespace RStatsUtils
 {
+
+template <class T>
+inline RStatsInteger vbRound(T value)
+{
+    T val1;
+    T decimals;
+
+    if (value >= 0.0)
+    {
+        decimals = value - floor(value);
+        if (decimals > 0.5)
+        {
+            val1 = ceil(value);
+        }
+        else if (decimals < 0.5)
+        {
+            val1 = floor(value);
+        } else
+        {
+            bool is_even = (static_cast<RStatsInteger>(value - decimals) % 2 == 0);
+            if (is_even)
+            {
+                val1 = floor(value);
+            }
+            else
+            {
+                val1 = ceil(value);
+            }
+        }
+    }
+    else
+    {
+        decimals = std::abs(value + floor(std::abs(value)));
+        if (decimals > 0.5)
+        {
+            val1 = floor(value);
+        }
+        else if (decimals < 0.5)
+        {
+            val1 = ceil(value);
+        }
+        else
+        {
+            bool is_even = (static_cast<RStatsInteger>(value + decimals) % 2 == 0);
+            if (is_even)
+            {
+                val1 = ceil(value);
+            }
+            else
+            {
+                val1 = floor(value);
+            }
+        }
+    }
+    return static_cast<RStatsInteger>(val1);
+}
+
     /**
      * @brief ipow
      * @param base
@@ -166,7 +223,8 @@ namespace RStatsUtils
         size_t size = values.size(dimension);
         for (size_t a1 = 0; a1 < size; ++a1 )
         {
-            sum += std::pow(values(a1,dimension),power);
+            float value = static_cast<float>(values(a1,dimension));
+            sum += std::pow(value,power);
         }
         return sum;
     }
@@ -747,61 +805,6 @@ namespace RStatsUtils
         return (static_cast<RStatsFloat>(value1) / static_cast<RStatsFloat>(value2));
     }
 
-    template <class T>
-    inline RStatsInteger vbRound(T value)
-    {
-        T val1;
-        T decimals;
-
-        if (value >= 0.0)
-        {
-            decimals = value - floor(value);
-            if (decimals > 0.5)
-            {
-                val1 = ceil(value);
-            }
-            else if (decimals < 0.5)
-            {
-                val1 = floor(value);
-            } else
-            {
-                bool is_even = (static_cast<RStatsInteger>(value - decimals) % 2 == 0);
-                if (is_even)
-                {
-                    val1 = floor(value);
-                }
-                else
-                {
-                    val1 = ceil(value);
-                }
-            }
-        }
-        else
-        {
-            decimals = std::abs(value + floor(std::abs(value)));
-            if (decimals > 0.5)
-            {
-                val1 = floor(value);
-            }
-            else if (decimals < 0.5)
-            {
-                val1 = ceil(value);
-            }
-            else
-            {
-                bool is_even = (static_cast<RStatsInteger>(value + decimals) % 2 == 0);
-                if (is_even)
-                {
-                    val1 = ceil(value);
-                }
-                else
-                {
-                    val1 = floor(value);
-                }
-            }
-        }
-        return static_cast<RStatsInteger>(val1);
-    }
 
     /**
      * @brief vbDivide

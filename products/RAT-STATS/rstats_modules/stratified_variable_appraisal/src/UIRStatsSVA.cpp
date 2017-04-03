@@ -359,18 +359,24 @@ void UIRStatsSVA::onExecute()
     size_t sizeSheetUniverseColumn = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbUniverseCountSizeTable->currentText().toStdString());
     size_t sizeSheetRowDataStart = static_cast<size_t>(m_ui->m_cmbDataRowStartSizeTable->currentText().toInt()-1);
     size_t dataSheetRowDataStart = static_cast<size_t>(m_ui->m_cmbDataRowStartDataTable->currentText().toInt()-1);
+    RStatsSVA sva;
+    std::string auditName = m_ui->m_txtAuditName->text().toStdString();
+    if (StringUtils::isEmpty(auditName))
+    {
+        auditName = m_ui->m_txtAuditName->placeholderText().toStdString();
+    }
 
-    RStatsSVA::inst().execute(m_currentDataSheet,
-                              m_currentSizeSheet,
-                              dfIndex,
-                              dataSheetRowDataStart,
-                              sizeSheetSampleColumn,
-                              sizeSheetUniverseColumn,
-                              sizeSheetRowDataStart);
-
+    sva.execute(auditName,
+              m_currentDataSheet,
+              m_currentSizeSheet,
+              dfIndex,
+              dataSheetRowDataStart,
+              sizeSheetSampleColumn,
+              sizeSheetUniverseColumn,
+              sizeSheetRowDataStart);
 
     RStatsWorkbook workbook;
-    RStatsSVA::inst().saveToWorkbook(workbook);
+    sva.saveToWorkbook(workbook);
 
     //Clear layout
     QLayoutItem *item;

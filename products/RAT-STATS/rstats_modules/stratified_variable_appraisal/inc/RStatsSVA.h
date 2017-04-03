@@ -93,7 +93,7 @@ public:
      * @param dataFormatType
      * @return
      */
-    RStatsSVAOutputDataList execute(const oig::ratstats::utils::RStatsWorksheet& dataSheet,
+    RStatsSVAOutputDataList execute(const std::string &auditName, const oig::ratstats::utils::RStatsWorksheet& dataSheet,
                                     const oig::ratstats::utils::RStatsWorksheet& sizeSheet,
                                     const utils::RStatsDataFormatTypeIndex &dataSheetIndex,
                                     size_t dataSheetRowStart,
@@ -108,9 +108,6 @@ public:
      */
     void saveToWorkbook(oig::ratstats::utils::RStatsWorkbook& workbookOut);
 
-
-	//! Static instance method for this singleton
-    static RStatsSVA & inst();
 
 	//! Destructor
 	~RStatsSVA();	
@@ -274,8 +271,7 @@ private:
                         oig::ratstats::utils::RStatsDataFormatType type,
                         size_t dataFormatIndex);
 
-
-    static RStatsSVA m_instance;        
+    std::string m_auditName;
     oig::ratstats::utils::RStatsInteger m_auditZeroCount;
     oig::ratstats::utils::RStatsInteger m_conditionCount;
     oig::ratstats::utils::RStatsInteger m_conditionUsage;

@@ -34,11 +34,7 @@ namespace constants
     const static RStatsFloat ZVAL95 = 1.95996398454;
 }
 
-RStatsSVA RStatsSVA::m_instance = RStatsSVA();
-
-
-
-RStatsSVAOutputDataList RStatsSVA::execute(
+RStatsSVAOutputDataList RStatsSVA::execute(const std::string& auditName,
                                            const RStatsWorksheet &dataSheet,
                                            const RStatsWorksheet &sizeSheet,
                                            const RStatsDataFormatTypeIndex & dataSheetIndex,
@@ -82,7 +78,7 @@ RStatsSVAOutputDataList RStatsSVA::execute(
     m_summaryTValue90 = 0.;
     m_summaryTValue95 = 0.;
     m_summaryStandardDeviation = 0.;
-
+    m_auditName = auditName;
     for (const RStatsSVAInputData& inputData : strataDataList)
     {
         onReset();
@@ -146,12 +142,13 @@ void RStatsSVA::saveToWorkbook(RStatsWorkbook &workbookOut)
         sheet("A6")= "Creation Time:";
         sheet("A7")= "Created By:";
 
-        sheet("C1")="Mean:";
+        sheet("C1")="Mean:";        
         sheet("C2")="Skewnewss:";
         sheet("C3")="Kurtosis:";
-        sheet("C4")="Std. Err. Mean:";
-        sheet("C5")="Std. Err. Total:";
-        sheet("C6")="Point Estimate:";
+        sheet("C4")="Std. Deviation:";
+        sheet("C5")="Std. Err. Mean:";
+        sheet("C6")="Std. Err. Total:";
+        sheet("C7")="Point Estimate:";
 
         sheet("A11") = "Lower:";
         sheet("A12") = "Upper:";
@@ -174,16 +171,17 @@ void RStatsSVA::saveToWorkbook(RStatsWorkbook &workbookOut)
         sheet("B2") = data.populationSize;
         sheet("B3") = data.sampleSize;
         sheet("B4") = data.nonZeroCount;
-        sheet("B5") = DateUtils::toLongDateString(data.createDate);
-        sheet("B6") = TimeUtils::to12HourTimeString(data.createTime);
+        sheet("B5") = DateUtils::toLongDateString(DateUtils::getCurrentDate());
+        sheet("B6") = TimeUtils::to12HourTimeString(TimeUtils::getCurrentTime());
         sheet("B7") = SystemUtils::getUserName();
 
         sheet("D1") = data.mean;
         sheet("D2") = data.skewness;
         sheet("D3") = data.kurtosis;
-        sheet("D4") = data.standardErrorTotal;
+        sheet("D4") = data.standardDeviation;
         sheet("D5") = data.standardErrorMean;
-        sheet("D6") = data.pointEstimate;
+        sheet("D6") = data.standardErrorTotal;
+        sheet("D7") = data.pointEstimate;
         sheet.resetDefaults();
         sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
         sheet.setDefaultFont(Font("arial",11));
@@ -216,13 +214,11 @@ void RStatsSVA::saveToWorkbook(RStatsWorkbook &workbookOut)
             sheet("C1")="";
             sheet("C2")="";
             sheet("C3")="";
+            sheet("C4")="";
             sheet("D1")="";
             sheet("D2")="";
             sheet("D3")="";
-            sheet("C4")="Std. Err. Mean:";
-            sheet("C5")="Std. Err. Total:";
-            sheet("C6")="Point Est.:";
-
+            sheet("D4")="";
             sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignRight);
             sheet.setDefaultFont(cbtek::common::utility::Font("arial",11,true));
             sheet("A15") = "z-Value:";
@@ -290,6 +286,7 @@ void RStatsSVA::copyOutputData(RStatsSVAOutputData& outputData,
                                RStatsDataFormatType type,
                                size_t dataFormatIndex)
 {
+    outputData.auditName = m_auditName;
     outputData.type = type;
     outputData.sampleSize = inputData.sampleSize;
     outputData.populationSize = inputData.universeSize;
@@ -324,12 +321,6 @@ void RStatsSVA::copyOutputData(RStatsSVAOutputData& outputData,
     outputData.tValue90 = m_outputTValue90;
     outputData.tValue95 = m_outputTValue95;
 
-}
-
-
-RStatsSVA & RStatsSVA::inst()
-{
-    return m_instance;
 }
 
 RStatsSVA::RStatsSVA()
@@ -548,7 +539,7 @@ void RStatsSVA::initializeDataTypeFormat(RStatsDataFormatType dataTypeFormat,
                                                                         0);
         m_dataFormatTypeAvailableFlag(0) = true;
         m_examineSum = RStatsUtils::getSum(inputData.samples);
-        m_outputSum(0) += m_examineSum;
+        m_outputSum(0) += m_examineSum;        
         m_outputSumSqrt(0) += RStatsUtils::getSumRaisedTo<RStatsFloat>(inputData.samples,2);
         m_outputSumCbrt(0) += RStatsUtils::getSumRaisedTo<RStatsFloat>(inputData.samples,3);
         m_outputSumQdrt(0) += RStatsUtils::getSumRaisedTo<RStatsFloat>(inputData.samples,4);
@@ -719,7 +710,8 @@ void RStatsSVA::calculateCorrectionFactors(const RStatsSVAInputData& inputData)
 {
     if (inputData.universeSize > 1)
     {
-         m_outputSEFIN = std::sqrt((inputData.universeSize - inputData.sampleSize) / (inputData.universeSize));
+        RStatsFloat value = static_cast<RStatsFloat>(inputData.universeSize - inputData.sampleSize) / (static_cast<RStatsFloat>(inputData.universeSize));
+        m_outputSEFIN = std::sqrt(value);
     }
 }
 
@@ -744,24 +736,31 @@ void RStatsSVA::calculatePointEstimates(const RStatsSVAInputData& inputData)
 //'----------CALCULATE LOWER AND UPPER LIMITS-----------
 void RStatsSVA::calculateUpperAndLowerLimits(const RStatsSVAInputData& inputData)
 {
-    for (RStatsInteger a1 = 0; a1 < 3; ++a1)
+    for (size_t a1 = 0; a1 < 3; ++a1)
     {
-        double temp0 = m_outputPrecision80(a1) * inputData.universeSize;
-        double temp1 = m_outputPrecision90(a1) * inputData.universeSize;
-        double temp2 = m_outputPrecision95(a1) * inputData.universeSize;
+        if (m_outputNonZero(a1) > 0)
+        {
+            RStatsFloat temp0 = m_outputPrecision80(a1) * static_cast<RStatsFloat>(inputData.universeSize);
+            RStatsFloat temp1 = m_outputPrecision90(a1) * static_cast<RStatsFloat>(inputData.universeSize);
+            RStatsFloat temp2 = m_outputPrecision95(a1) * static_cast<RStatsFloat>(inputData.universeSize);
 
-        m_outputLowerLimit80(a1) = m_outputPNTest(a1) - temp0;
-        m_outputLowerLimit90(a1) = m_outputPNTest(a1) - temp1;
-        m_outputLowerLimit95(a1) = m_outputPNTest(a1) - temp2;
-        m_outputUpperLimit80(a1) = m_outputPNTest(a1) + temp0;
-        m_outputUpperLimit90(a1) = m_outputPNTest(a1) + temp1;
-        m_outputUpperLimit95(a1) = m_outputPNTest(a1) + temp2;
-        m_outputVUpperLimit80(a1) = m_outputUpperLimit80(a1);
-        m_outputVLowerLimit80(a1) = m_outputLowerLimit80(a1);
-        m_outputVLowerLimit90(a1) = m_outputLowerLimit90(a1);
-        m_outputVUpperLimit90(a1) = m_outputUpperLimit90(a1);
-        m_outputVLowerLimit95(a1) = m_outputLowerLimit95(a1);
-        m_outputVUpperLimit95(a1) = m_outputUpperLimit95(a1);
+            m_outputLowerLimit80(a1) = m_outputPNTest(a1) - temp0;
+            m_outputLowerLimit90(a1) = m_outputPNTest(a1) - temp1;
+            m_outputLowerLimit95(a1) = m_outputPNTest(a1) - temp2;
+
+            m_outputUpperLimit80(a1) = m_outputPNTest(a1) + temp0;
+            m_outputUpperLimit90(a1) = m_outputPNTest(a1) + temp1;
+            m_outputUpperLimit95(a1) = m_outputPNTest(a1) + temp2;
+
+            m_outputVUpperLimit80(a1) = m_outputUpperLimit80(a1);
+            m_outputVLowerLimit80(a1) = m_outputLowerLimit80(a1);
+
+            m_outputVLowerLimit90(a1) = m_outputLowerLimit90(a1);
+            m_outputVUpperLimit90(a1) = m_outputUpperLimit90(a1);
+
+            m_outputVLowerLimit95(a1) = m_outputLowerLimit95(a1);
+            m_outputVUpperLimit95(a1) = m_outputUpperLimit95(a1);
+        }
     }
 }
 
@@ -1086,15 +1085,13 @@ void RStatsSVA::calculateIntervals(const RStatsSVAInputData & inputData)
 
 void RStatsSVA::calculateOverallPrecision(const RStatsSVAInputData &inputData)
 {
-    for (RStatsInteger a1 = 0; a1 < 3; ++a1)
+    for (size_t a1 = 0; a1 < 3; ++a1)
     {
         if (m_outputNonZero(a1) > 0 &&
             m_dataFormatTypeAvailableFlag(a1))
         {
             m_outputStdErrTemp(a1) = std::sqrt(m_outputStdErrTemp(a1));
-            m_outputPrecisionTemp80(a1) = constants::ZVAL80 * m_outputStdErrTemp(a1);
-
-            m_outputPrecisionTemp80(a1) = constants::ZVAL80 * m_outputStdErrTemp(a1);
+            m_outputPrecisionTemp80(a1) = constants::ZVAL80 * m_outputStdErrTemp(a1);           
             m_outputLowerLimitTemp80(a1) = m_outputPNTestTemp(a1) - m_outputPrecisionTemp80(a1);
             m_outputUpperLimitTemp80(a1) = m_outputPNTestTemp(a1) + m_outputPrecisionTemp80(a1);
 
@@ -1108,6 +1105,7 @@ void RStatsSVA::calculateOverallPrecision(const RStatsSVAInputData &inputData)
 
             m_outputVStdErr(a1) = m_outputStdErrTemp(a1);
             m_outputVProjectNumber(a1) = m_outputPNTest(a1);
+
             m_outputVLowerLimit80(a1) = m_outputLowerLimitTemp80(a1);
             m_outputVLowerLimit90(a1) = m_outputLowerLimitTemp90(a1);
             m_outputVLowerLimit95(a1) = m_outputLowerLimitTemp95(a1);
