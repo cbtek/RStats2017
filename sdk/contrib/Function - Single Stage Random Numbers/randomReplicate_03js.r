@@ -42,10 +42,6 @@ ExcelRandInit<-function(initvar)
 	packBits(c(testhelp[25:32],intToBits(0)[1:24]),"integer") +packBits( c(testhelp[1:24],intToBits(0)[1:8]),"integer")
 }
 
-#Sets the path for the relevant R library files
-rootpath<-"C:/Partlist"
-.libPaths(file.path(rootpath,"Library"))
-
 #This replication requires the "bit64" library.
 library(bit64)
 
@@ -58,7 +54,7 @@ CurrentSeed<-ExcelRand64(CurrentSeed,30269)[["Step"]]
 
 
 #Emulates the Visual Basic function Randomize() given the seed entered by the user or the system clock if no seed is provided
-CurrentSeed<-ExcelRandomize64(12345,CurrentSeed)
+CurrentSeed<-ExcelRandomize64(102284,CurrentSeed)
 #The above line of code equates to steps 2 through 5 in the detailed specification document
 
 
@@ -74,10 +70,10 @@ ResC<-ExcelRand64(ResB[["Step"]],30323)
 Seed_A<-floor(ResA[["RATSTAT"]])
 Seed_B<-floor(ResB[["RATSTAT"]])
 Seed_C<-floor(ResC[["RATSTAT"]])
-samsiz<-10
+samsiz<-70
 RandomNumber<-NA*(1:samsiz)
-Lowb<-1
-Upb<-1000
+Lowb<-0
+Upb<-101
 repcheck<-0*(1:(Upb-Lowb+1))
 for(j in 1:samsiz){
 	repflag=TRUE

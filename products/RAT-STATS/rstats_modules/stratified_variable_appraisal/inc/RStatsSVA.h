@@ -315,7 +315,7 @@ private:
     oig::ratstats::utils::RStatsFloat m_lowProbability;
     oig::ratstats::utils::RStatsFloat m_lowValue;
     oig::ratstats::utils::RStatsFloat m_newProbability;
-    oig::ratstats::utils::RStatsFloat m_outputDOF;
+    oig::ratstats::utils::RStatsInteger m_outputDOF;
     oig::ratstats::utils::RStatsFloat m_outputSampleError80;
     oig::ratstats::utils::RStatsFloat m_outputSampleError90;
     oig::ratstats::utils::RStatsFloat m_outputSampleError95;
