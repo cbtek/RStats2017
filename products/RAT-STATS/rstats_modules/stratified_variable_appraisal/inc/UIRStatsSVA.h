@@ -67,6 +67,9 @@ private:
      QString m_sizeTableImportFilePath;
      QString m_dataTableImportFilePath;
 
+     QIcon m_iconError;
+     QIcon m_iconWarning;
+     QIcon m_iconOK;
      /**
       * @brief Current data sheets/workbooks for data/size tables
       */

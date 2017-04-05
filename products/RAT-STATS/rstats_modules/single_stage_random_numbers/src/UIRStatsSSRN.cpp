@@ -37,6 +37,11 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
 {
     m_ui->setupUi(this);
     m_ui->m_dockOptions->setTitleBarWidget(new QWidget());    
+
+    m_iconError = UIRStatsUtils::getIcon("img_error.png");
+    m_iconOK = UIRStatsUtils::getIcon("img_ok.png");
+    m_iconWarning = UIRStatsUtils::getIcon("img_warning.png");
+
     connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));
     connect(m_ui->m_btnExecute,SIGNAL(clicked(bool)),this,SLOT(onExecute()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
@@ -79,9 +84,9 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
                                  nullptr,
                                  nullptr,
                                  m_ui->actionExit,
-                                 m_ui->actionSingle_Stage_Random_Numbers_Help_Guide
+                                 m_ui->actionSingle_Stage_Random_Numbers_Help_Guide,
                                  m_ui->actionAbout,
-                                 m_ui->actionRecentlyUsed,
+                                 m_ui->actionRecent,
                                  buttonHeight,
                                  this->font());
     m_ui->menuFile->setTitle("&File");

@@ -44,6 +44,11 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
 
     m_ui->m_dockOptions->setTitleBarWidget(new QWidget());
     int buttonHeight = 32;
+
+    m_iconError = UIRStatsUtils::getIcon("img_error.png");
+    m_iconOK = UIRStatsUtils::getIcon("img_ok.png");
+    m_iconWarning = UIRStatsUtils::getIcon("img_warning.png");
+
     UIRStatsUtils::customUISetup(m_ui->m_btnExecute,
                                  m_ui->m_btnExit,
                                  m_ui->m_btnHelp,
@@ -89,7 +94,7 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     connect(m_ui->m_rdbExaminedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
     m_ui->m_rdbExamined->setChecked(true);
 
-    //m_ui->m_lblNoData->hide();
+
     m_ui->m_frmDateTime->hide();
     m_ui->m_grpOutput->hide();
     updateRecentSessions();
