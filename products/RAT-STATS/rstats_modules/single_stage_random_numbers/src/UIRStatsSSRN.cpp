@@ -36,10 +36,9 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     m_ui(new Ui_UIRStatsSSRN)
 {
     m_ui->setupUi(this);
-    m_ui->m_dockOptions->setTitleBarWidget(new QWidget());
-    m_ui->m_dockOutput->setTitleBarWidget(new QWidget());
+    m_ui->m_dockOptions->setTitleBarWidget(new QWidget());    
     connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));
-    connect(m_ui->m_btnGenerate,SIGNAL(clicked(bool)),this,SLOT(onGenerate()));
+    connect(m_ui->m_btnExecute,SIGNAL(clicked(bool)),this,SLOT(onExecute()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
     connect(m_ui->m_spnHighNumber,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
     connect(m_ui->m_spnLowNumber,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
@@ -62,42 +61,31 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     m_ui->m_spnSeed->setValue(static_cast<RStatsFloat>(TimeUtils::getSecondsNow()) /
                               static_cast<RStatsFloat>(m_rnd.next(10,1000)));
 
-    m_ui->m_btnGenerate->setEnabled(false);
+    m_ui->m_btnExecute->setEnabled(false);
 
     m_currentCSVFileOutputLabel = nullptr;
     m_currentTextFileOutputLabel = nullptr;
-
-    //initialize default icons
-    m_iconFolder = UIRStatsUtils::getIcon("img_folder.png");
-    m_iconModule = UIRStatsUtils::getIcon("img_module.png");
-    m_iconEdit = UIRStatsUtils::getIcon("img_edit.png");
-    m_iconHelp = UIRStatsUtils::getIcon("img_help.png");
-    m_iconRemove = UIRStatsUtils::getIcon("img_remove.png");
-    m_iconAdd = UIRStatsUtils::getIcon("img_add.png");
-    m_iconExit = UIRStatsUtils::getIcon("img_exit.png");
-    m_iconSettings = UIRStatsUtils::getIcon("img_settings.png");
-    m_iconObject = UIRStatsUtils::getIcon("img_object.png");
-    m_iconAbout = UIRStatsUtils::getIcon("img_about.png");
-    m_iconRun = UIRStatsUtils::getIcon("img_run.png");
-    m_iconWarning = UIRStatsUtils::getIcon("img_warning.png");
-    m_iconError = UIRStatsUtils::getIcon("img_error.png");
-    m_iconOK = UIRStatsUtils::getIcon("img_ok.png");
     onValidate();
     RStatsInteger buttonHeight = 32;
-    UIRStatsUtils::setButtonStyle(m_ui->m_btnExit,
-                                  this->font(),
-                                  m_iconExit,
-                                  buttonHeight);
-
-    UIRStatsUtils::setButtonStyle(m_ui->m_btnGenerate,
-                                  this->font(),
-                                  m_iconRun,
-                                  buttonHeight);
-
-    UIRStatsUtils::setButtonStyle(m_ui->m_btnHelp,
-                                  this->font(),
-                                  m_iconHelp,
-                                  buttonHeight);
+    UIRStatsUtils::customUISetup(m_ui->m_btnExecute,
+                                 m_ui->m_btnExit,
+                                 m_ui->m_btnHelp,
+                                 nullptr,
+                                 nullptr,
+                                 nullptr,
+                                 nullptr,
+                                 nullptr,
+                                 nullptr,
+                                 nullptr,
+                                 nullptr,
+                                 m_ui->actionExit,
+                                 m_ui->actionSingle_Stage_Random_Numbers_Help_Guide
+                                 m_ui->actionAbout,
+                                 m_ui->actionRecentlyUsed,
+                                 buttonHeight,
+                                 this->font());
+    m_ui->menuFile->setTitle("&File");
+    m_ui->menuHelp->setTitle("&Help");
     updateRecentSessions();
     onSeedBoxToggled(false);
 
@@ -136,7 +124,7 @@ void UIRStatsSSRN::onValidate()
     if (m_logger.hasMessages() == false)
     {
         m_ui->m_dockOutput->hide();
-        m_ui->m_btnGenerate->setEnabled(true);
+        m_ui->m_btnExecute->setEnabled(true);
         return;
     }
     m_ui->m_dockOptions->show();
@@ -162,9 +150,9 @@ void UIRStatsSSRN::onValidate()
 
     if (m_logger.hasError())
     {
-        m_ui->m_btnGenerate->setEnabled(false);
+        m_ui->m_btnExecute->setEnabled(false);
     }
-    else m_ui->m_btnGenerate->setEnabled(true);
+    else m_ui->m_btnExecute->setEnabled(true);
 }
 
 void UIRStatsSSRN::onSaveCSVFile()
@@ -206,7 +194,7 @@ void UIRStatsSSRN::onUpdateClock()
     }
 }
 
-void UIRStatsSSRN::onGenerate()
+void UIRStatsSSRN::onExecute()
 {
 
     onUpdateClock();

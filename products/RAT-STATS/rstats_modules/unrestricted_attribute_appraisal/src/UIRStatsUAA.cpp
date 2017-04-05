@@ -36,14 +36,9 @@ UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
     m_ui(new Ui_UIRStatsUAA)
 {
     m_ui->setupUi(this);
-    m_exitIcon = UIRStatsUtils::getIcon("img_exit.png");
-    m_runIcon = UIRStatsUtils::getIcon("img_run.png");
-    m_helpIcon = UIRStatsUtils::getIcon("img_help.png");
     m_ui->m_dockOptions->setTitleBarWidget(new QWidget());
-    m_ui->m_btnContinue->setIcon(m_runIcon);
-    m_ui->m_btnExit->setIcon(m_exitIcon);
-    m_ui->m_btnHelp->setIcon(m_helpIcon);
-    connect(m_ui->m_btnContinue,SIGNAL(clicked()),this,SLOT(onContinue()));
+
+    connect(m_ui->m_btnExecute,SIGNAL(clicked()),this,SLOT(onExecute()));
     connect(m_ui->m_btnExit,SIGNAL(clicked()),this,SLOT(onExit()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked()),this,SLOT(onHelp()));
     connect(m_ui->m_spnSampleSize,SIGNAL(valueChanged(int)),this,SLOT(onUpdateSampleCount()));
@@ -59,6 +54,26 @@ UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
     onUpdateUniverseCount();
     onUpdateSampleCount();
     updateRecentSessions();
+
+    int buttonHeight = 32;
+    UIRStatsUtils::customUISetup(m_ui->m_btnExecute,
+                                 m_ui->m_btnExit,
+                                 m_ui->m_btnHelp,
+                                 nullptr,
+                                 nullptr,
+                                 nullptr,
+                                 nullptr,
+                                 nullptr,
+                                 nullptr,
+                                 nullptr,
+                                 nullptr,
+                                 m_ui->actionExit,
+                                 m_ui->actionHelp_Topics,
+                                 m_ui->actionAbout,
+                                 m_ui->actionRecentlyUsed,
+                                 buttonHeight,
+                                 this->font());
+
 }
 
 UIRStatsUAA::~UIRStatsUAA()
@@ -81,7 +96,7 @@ void UIRStatsUAA::onHelp()
 
 }
 
-void UIRStatsUAA::onContinue()
+void UIRStatsUAA::onExecute()
 {
     RStatsInteger sampleSize = m_ui->m_spnSampleSize->value();
     RStatsInteger universeSize = m_ui->m_spnUniverseSize->value();

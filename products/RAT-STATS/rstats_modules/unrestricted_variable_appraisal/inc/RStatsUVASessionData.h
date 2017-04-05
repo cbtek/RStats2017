@@ -15,6 +15,8 @@ namespace ratstats {
 namespace modules {
 namespace uva {
 
+const static std::string c_RECENT_SESSION_EXTENSION = "modules_uva";
+
 class RStatsUVASessionData : public utils::RStatsModuleSessionDataImpl
 {
 public:
@@ -108,7 +110,23 @@ public:
     */
     const std::string & getDifferenceColumn() const;
 
+    /**
+     * @brief getType
+     * @return
+     */
     std::string getType() const;
+
+    /**
+     * @brief save
+     * @param url
+     */
+    void save(const std::string& url);
+
+    /**
+     * @brief load
+     * @param url
+     */
+    void load(const std::string& url);
 
 	//! Destructor
 	~RStatsUVASessionData();	

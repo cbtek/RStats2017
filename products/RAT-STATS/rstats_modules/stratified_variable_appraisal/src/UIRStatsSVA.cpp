@@ -34,34 +34,33 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     QMainWindow(parent),
     m_ui(new Ui_UIRStatsSVA)
 {
-    m_ui->setupUi(this);
-
-    //initialize default icons
-    m_iconFolder = UIRStatsUtils::getIcon("img_folder.png");
-    m_iconHelp = UIRStatsUtils::getIcon("img_help.png");
-    m_iconExit = UIRStatsUtils::getIcon("img_exit.png");
-    m_iconSave = UIRStatsUtils::getIcon("img_save.png");
-    m_iconRun = UIRStatsUtils::getIcon("img_run.png");
-    m_iconAdd = UIRStatsUtils::getIcon("img_add.png");
-    m_iconWarning = UIRStatsUtils::getIcon("img_warning.png");
-    m_iconError = UIRStatsUtils::getIcon("img_error.png");
-    m_iconOK = UIRStatsUtils::getIcon("img_ok.png");
+    m_ui->setupUi(this);       
+    m_ui->menuFile->setTitle("&File");
+    m_ui->menuHelp->setTitle("&Help");
     m_fullScreenToggle = false;
     m_ui->m_txtAuditName->setPlaceholderText(QString::fromStdString(RStatsUtils::getAuditName()));
     m_currentCSVFileOutputLabel = nullptr;
     m_currentTextFileOutputLabel = nullptr;
+
     m_ui->m_dockOptions->setTitleBarWidget(new QWidget());
     int buttonHeight = 32;
-    UIRStatsUtils::setButtonStyle(m_ui->m_btnExit,this->font(),m_iconExit,buttonHeight);
-    UIRStatsUtils::setButtonStyle(m_ui->m_btnHelp,this->font(),m_iconHelp,buttonHeight);
-    UIRStatsUtils::setButtonStyle(m_ui->m_btnContinue,this->font(),m_iconRun,buttonHeight);
-    UIRStatsUtils::setButtonStyle(m_ui->m_btnImportSampleSizeData,this->font(),m_iconFolder,buttonHeight);
-    UIRStatsUtils::setButtonStyle(m_ui->m_btnImportSampleInputData,this->font(),m_iconFolder,buttonHeight);
-
-    UIRStatsUtils::setButtonStyle(m_ui->m_btnAddColumnSizeTable,this->font(),m_iconAdd,buttonHeight);
-    UIRStatsUtils::setButtonStyle(m_ui->m_btnAddColumnDataTable,this->font(),m_iconAdd,buttonHeight);
-    UIRStatsUtils::setButtonStyle(m_ui->m_btnAddRowSizeTable,this->font(),m_iconAdd,buttonHeight);
-    UIRStatsUtils::setButtonStyle(m_ui->m_btnAddRowDataTable,this->font(),m_iconAdd,buttonHeight);
+    UIRStatsUtils::customUISetup(m_ui->m_btnExecute,
+                                 m_ui->m_btnExit,
+                                 m_ui->m_btnHelp,
+                                 m_ui->m_btnImportSampleInputData,
+                                 m_ui->m_btnImportSampleSizeData,
+                                 nullptr,
+                                 m_ui->m_btnAddRowSizeTable,
+                                 m_ui->m_btnAddColumnSizeTable,
+                                 m_ui->m_btnAddRowDataTable,
+                                 m_ui->m_btnAddColumnDataTable,
+                                 nullptr,
+                                 m_ui->actionExit,
+                                 m_ui->actionHelp,
+                                 m_ui->actionAbout,
+                                 m_ui->actionRecently_Used,
+                                 buttonHeight,
+                                 this->font());
 
     m_ui->m_cmbDataInputSheets->addItem("No Sheets Available");
     m_ui->m_cmbSizeInputSheets->addItem("No Sheets Available");
@@ -78,7 +77,7 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     connect(m_ui->m_btnImportSampleSizeData,SIGNAL(clicked(bool)),this,SLOT(onImportSizeInput()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
     connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));
-    connect(m_ui->m_btnContinue,SIGNAL(clicked(bool)),this,SLOT(onExecute()));
+    connect(m_ui->m_btnExecute,SIGNAL(clicked(bool)),this,SLOT(onExecute()));
     connect(m_ui->m_cmbDataInputSheets,SIGNAL(currentIndexChanged(int)),this,SLOT(onComboDataInputSheetSelected(int)));
     connect(m_ui->m_cmbSizeInputSheets,SIGNAL(currentIndexChanged(int)),this,SLOT(onComboSizeInputSheetSelected(int)));
     connect(&m_clock,SIGNAL(timeout()),this,SLOT(onUpdateClock()));    
@@ -131,8 +130,6 @@ void UIRStatsSVA::populateWithRows(const std::set<size_t>& rows,
         comboBox->addItem(QString::number(row+1));
     }
 }
-
-
 
 void UIRStatsSVA::onAddNewRowToDataTable()
 {
@@ -227,7 +224,7 @@ bool UIRStatsSVA::onValidate()
          }
 
 
-         m_ui->m_btnContinue->setEnabled(true);
+         m_ui->m_btnExecute->setEnabled(true);
          return true;
      }     
      if (!m_fullScreenToggle)
@@ -259,9 +256,9 @@ bool UIRStatsSVA::onValidate()
 
      if (m_conditionLogger.hasError())
      {
-         m_ui->m_btnContinue->setEnabled(false);
+         m_ui->m_btnExecute->setEnabled(false);
      }
-     else m_ui->m_btnContinue->setEnabled(true);
+     else m_ui->m_btnExecute->setEnabled(true);
      return false;
 }
 
@@ -388,6 +385,7 @@ void UIRStatsSVA::onExecute()
     m_ui->m_grpOutput->layout()->addWidget(m_outputWorkbook);
     m_outputWorkbook->setWorkbook(workbook);
     m_outputWorkbook->onStretchToContents();
+    m_outputWorkbook->onHideGridLines();
     m_ui->m_lblNoData->hide();
     m_ui->m_grpOutput->show();
 
@@ -432,7 +430,7 @@ void UIRStatsSVA::onToggleFullScreen()
         m_ui->m_dockSampleDataInput->hide();
         m_ui->m_dockSampleSizeInput->hide();
         m_ui->m_btnHelp->hide();
-        m_ui->m_btnContinue->hide();
+        m_ui->m_btnExecute->hide();
         m_ui->m_btnExit->setText("Click here or press F11 to exit full-screen mode");
         m_ui->m_grpOutput->setTitle("Output Data (Press F11 to exit full-screen mode)");
         this->setWindowState(Qt::WindowMaximized);
@@ -446,7 +444,7 @@ void UIRStatsSVA::onToggleFullScreen()
         m_ui->m_frmCommand->show();
         m_ui->m_grpOutput->setTitle("Output Data:");
         m_ui->m_btnHelp->show();
-        m_ui->m_btnContinue->show();
+        m_ui->m_btnExecute->show();
         m_ui->m_btnExit->setText("Exit");
     }
 }

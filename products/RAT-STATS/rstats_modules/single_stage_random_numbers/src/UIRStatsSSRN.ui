@@ -336,7 +336,7 @@
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <property name="spacing">
-        <number>4</number>
+        <number>32</number>
        </property>
        <property name="leftMargin">
         <number>1</number>
@@ -351,15 +351,34 @@
         <number>4</number>
        </property>
        <item>
-        <widget class="QPushButton" name="m_btnExit">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="m_btnHelp">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="minimumSize">
+          <size>
+           <width>128</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
-          <string>Exit</string>
+          <string>Help</string>
          </property>
          <property name="iconSize">
           <size>
@@ -377,6 +396,12 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="minimumSize">
+          <size>
+           <width>128</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
           <string>Generate</string>
          </property>
@@ -389,15 +414,21 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="m_btnHelp">
+        <widget class="QPushButton" name="m_btnExit">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="minimumSize">
+          <size>
+           <width>128</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
-          <string>Help</string>
+          <string>Exit</string>
          </property>
          <property name="iconSize">
           <size>
@@ -406,6 +437,19 @@
           </size>
          </property>
         </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>
@@ -630,7 +674,7 @@
      <x>0</x>
      <y>0</y>
      <width>983</width>
-     <height>25</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -671,7 +715,7 @@
     <set>Qt::BottomDockWidgetArea|Qt::TopDockWidgetArea</set>
    </property>
    <property name="windowTitle">
-    <string>Validation</string>
+    <string>Validation Console</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
@@ -745,8 +789,6 @@
   <tabstop>m_chkCSVOutput</tabstop>
   <tabstop>m_chkTextOutput</tabstop>
   <tabstop>m_tblOutput</tabstop>
-  <tabstop>m_btnExit</tabstop>
-  <tabstop>m_btnGenerate</tabstop>
   <tabstop>m_btnHelp</tabstop>
   <tabstop>m_lstErrorConsole</tabstop>
  </tabstops>

@@ -223,8 +223,10 @@ inline RStatsInteger vbRound(T value)
         size_t size = values.size(dimension);
         for (size_t a1 = 0; a1 < size; ++a1 )
         {
-            float value = static_cast<float>(values(a1,dimension));
-            sum += std::pow(value,power);
+            Float value = values(a1,dimension);
+            std::string valueStr = cbtek::common::utility::StringUtils::toString(value,3);
+            Float powValue = std::pow(cbtek::common::utility::StringUtils::toFloat64(valueStr),power);
+            sum += powValue;
         }
         return sum;
     }
@@ -237,7 +239,7 @@ inline RStatsInteger vbRound(T value)
      * @param dimension
      * @return
      */
-    template <typename Number>    
+    template <typename Number>
     inline size_t getNumItemsThatMatchCondition(RStatsConditionalOperatorType condition,
                                                 const RStatsObjectList<Number>& values,
                                                 Number value,

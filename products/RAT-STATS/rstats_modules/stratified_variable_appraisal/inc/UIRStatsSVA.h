@@ -52,19 +52,6 @@ private:
      Ui_UIRStatsSVA *m_ui;
 
      /**
-      * @brief Icons for varios buttons/menus
-      */
-     QIcon m_iconFolder;
-     QIcon m_iconSave;
-     QIcon m_iconHelp;
-     QIcon m_iconExit;
-     QIcon m_iconRun;
-     QIcon m_iconAdd;
-     QIcon m_iconError;
-     QIcon m_iconWarning;
-     QIcon m_iconOK;
-
-     /**
       * @brief m_clock
       */
      QTimer m_clock;

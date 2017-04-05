@@ -79,6 +79,7 @@ RStatsSVAOutputDataList RStatsSVA::execute(const std::string& auditName,
     m_summaryTValue95 = 0.;
     m_summaryStandardDeviation = 0.;
     m_auditName = auditName;
+    m_currentIndex = 0;
     for (const RStatsSVAInputData& inputData : strataDataList)
     {
         onReset();
@@ -108,6 +109,7 @@ RStatsSVAOutputDataList RStatsSVA::execute(const std::string& auditName,
                         inputData,
                         dataFormatType);
         ++index;
+        m_currentIndex = index;
     }    
     processSummaryTotals(m_outputDataList);
     return m_outputDataList;
@@ -167,7 +169,7 @@ void RStatsSVA::saveToWorkbook(RStatsWorkbook &workbookOut)
         sheet("C10").fgColor.set(1,1,1);
         sheet("D10").fgColor.set(1,1,1);
         sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignLeft);
-        sheet("B1") = data.auditName;
+        sheet("B1") = m_auditName;
         sheet("B2") = data.populationSize;
         sheet("B3") = data.sampleSize;
         sheet("B4") = data.nonZeroCount;
@@ -175,22 +177,22 @@ void RStatsSVA::saveToWorkbook(RStatsWorkbook &workbookOut)
         sheet("B6") = TimeUtils::to12HourTimeString(TimeUtils::getCurrentTime());
         sheet("B7") = SystemUtils::getUserName();
 
-        sheet("D1") = data.mean;
-        sheet("D2") = data.skewness;
-        sheet("D3") = data.kurtosis;
-        sheet("D4") = data.standardDeviation;
-        sheet("D5") = data.standardErrorMean;
-        sheet("D6") = data.standardErrorTotal;
-        sheet("D7") = data.pointEstimate;
+        sheet("D1") = StringUtils::toString(data.mean,2);
+        sheet("D2") = StringUtils::toString(data.skewness,2);
+        sheet("D3") = StringUtils::toString(data.kurtosis,2);
+        sheet("D4") = StringUtils::toString(data.standardDeviation,2);
+        sheet("D5") = StringUtils::toString(data.standardErrorMean,2);
+        sheet("D6") = StringUtils::toString(data.standardErrorTotal,0);
+        sheet("D7") = StringUtils::toString(data.pointEstimate,0);
         sheet.resetDefaults();
         sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
         sheet.setDefaultFont(Font("arial",11));
         sheet.setDefaultFloatingPointDecimals(2);
         sheet.setDefaultFloatingPointDecimals(0);
 
-        std::string percent80 = StringUtils::toString(data.precisionPercent80,2)+"%";
-        std::string percent90 = StringUtils::toString(data.precisionPercent90,2)+"%";
-        std::string percent95 = StringUtils::toString(data.precisionPercent95,2)+"%";
+        std::string percent80 = StringUtils::toString(data.precisionPercent80*100.,2)+"%";
+        std::string percent90 = StringUtils::toString(data.precisionPercent90*100.,2)+"%";
+        std::string percent95 = StringUtils::toString(data.precisionPercent95*100.,2)+"%";
 
         sheet("B11") = data.lower80;
         sheet("C11") = data.lower90;
@@ -390,9 +392,9 @@ RStatsSVAInputDataList RStatsSVA::buildInputDataList(const RStatsWorksheet &data
 
 void RStatsSVA::onReset()
 {
-    m_outputSampleError80 = 0.;
-    m_outputSampleError90 = 0.;
-    m_outputSampleError95 = 0.;
+    m_temporary80 = 0.;
+    m_temporary90 = 0.;
+    m_temporary95 = 0.;
     m_outputTValue80 = 0.;
     m_outputTValue90 = 0.;
     m_outputTValue95 = 0.;
@@ -529,8 +531,9 @@ void RStatsSVA::onUpdateSums(const RStatsFloatList &auditValues,
 
 
 void RStatsSVA::initializeDataTypeFormat(RStatsDataFormatType dataTypeFormat,
-                                         const RStatsSVAInputData &inputData)
+                                         const RStatsSVAInputData& inputData)
 {
+
     if (dataTypeFormat == RStatsDataFormatType::Examine)
     {
         m_examineZeroCount = RStatsUtils::getNumItemsThatMatchCondition(RStatsConditionalOperatorType::NotEqual,
@@ -666,7 +669,7 @@ void RStatsSVA::calculateStandardDeviation(const RStatsSVAInputData &inputData)
             RStatsFloat sampleSize = inputData.sampleSize;
             RStatsFloat sqRt = m_outputSumSqrt(a1);
             RStatsFloat universeSize = inputData.universeSize;
-            double temp1 = std::pow(totalAmount,2) / sampleSize;
+            RStatsFloat temp1 = std::pow(totalAmount,2) / sampleSize;
             if (temp1 < sqRt)
             {
                 m_outputStdDev(a1) = (std::sqrt((sqRt - temp1) / m_outputDOF));
@@ -843,23 +846,24 @@ void RStatsSVA::calculateSamplingError(const RStatsSVAInputData& inputData)
     }
     else if (m_outputDOF == 1)
     {
-        m_outputSampleError80 = 3.077683537175;
-        m_outputSampleError90 = 6.313751514675;
-        m_outputSampleError95 = 12.706204736175;
+        m_temporary80 = 3.077683537175;
+        m_temporary90 = 6.313751514675;
+        m_temporary95 = 12.706204736175;
     }
     else if (m_outputDOF == 2)
     {
-        m_outputSampleError80 = 1.885618083164;
-        m_outputSampleError90 = 2.919985580354;
-        m_outputSampleError95 = 4.30265272975;
+        m_temporary80 = 1.885618083164;
+        m_temporary90 = 2.919985580354;
+        m_temporary95 = 4.30265272975;
     }
     else if (m_outputDOF == 3)
     {
-        m_outputSampleError80 = 1.637744353696;
-        m_outputSampleError90 = 2.353363434802;
-        m_outputSampleError95 = 3.182446305284;
+        m_temporary80 = 1.637744353696;
+        m_temporary90 = 2.353363434802;
+        m_temporary95 = 3.182446305284;
     }
-    processSamplingError(inputData);
+    calculateIntervals(inputData);
+    //processSamplingError(inputData);
 }
 
 void RStatsSVA::processSamplingError(const RStatsSVAInputData& inputData)

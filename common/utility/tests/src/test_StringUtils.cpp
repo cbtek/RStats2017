@@ -134,12 +134,26 @@ TEST_CASE("Testing StringUtils::removeNonAlphaNumeric","[utility::StringUtils]")
 TEST_CASE("Testing StringUtils::toString","[utility::StringUtils")
 {
     double value1 = 122104432.23456789;
-    double value2 = 1.23;
+    double value2 = 1.23;    
     std::uint64_t value3 = 99123456789;
-    std::uint64_t value4 = 72;
+    std::uint64_t value4 = 72;    
+    std::int64_t value5 = -262315;
+    double value6 = -903172.0112;
+    double value7 = 102234.00;
 
     REQUIRE(StringUtils::toString(value1,2,true) == "122,104,432.23");
     REQUIRE(StringUtils::toString(value2,1,true) == "1.2");
     REQUIRE(StringUtils::toString(value3,true) == "99,123,456,789");
     REQUIRE(StringUtils::toString(value4,true) == "72");
+    REQUIRE(StringUtils::toString(value5,true) == "-262,315");
+    REQUIRE(StringUtils::toString(value6,2,true) == "-903,172.01");
+    REQUIRE(StringUtils::toString(value7,2,true) == "102,234.00");
+
+    REQUIRE(StringUtils::toString(value1,2,false) == "122104432.23");
+    REQUIRE(StringUtils::toString(value2,1,false) == "1.2");
+    REQUIRE(StringUtils::toString(value3,false) == "99123456789");
+    REQUIRE(StringUtils::toString(value4,false) == "72");
+    REQUIRE(StringUtils::toString(value5,false) == "-262315");
+    REQUIRE(StringUtils::toString(value6,2,false) == "-903172.01");
+    REQUIRE(StringUtils::toString(value7,2,false) == "102234.00");
 }

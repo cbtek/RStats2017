@@ -5,6 +5,16 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QActionGroup>
+#include <QLabel>
+#include <QComboBox>
+
+#include "rstats_utils/inc/RStatsWorkbook.h"
+#include "rstats_utils/inc/RStatsConditionLogger.h"
+
+#include "rstats_ui/inc/UIRStatsWorkbook.h"
+
+#include "RStatsUVASessionData.h"
 
 class Ui_UIRStatsUVA;
 
@@ -34,8 +44,66 @@ private:
     * MOC generated ui class for this widget
     */
      Ui_UIRStatsUVA *m_ui;
+
+     QIcon m_exitIcon;
+     QIcon m_runIcon;
+     QIcon m_helpIcon;
+     QActionGroup* m_recentSessionActionGroup;
+     std::map<std::string,utils::RStatsModuleSessionDataPtr> m_recentSessionsMap;
+
+    /**
+    * @brief Labels/Strings for output
+    */
+    QString m_currentTextFileOutput;
+    QString m_currentCSVFileOutput;
+    QString m_dataTableImportFilePath;
+
+    QLabel * m_currentTextFileOutputLabel;
+    QLabel * m_currentCSVFileOutputLabel;
+
+    bool m_autoSetFileOutput;
+
+    /**
+    * @brief Current data sheets/workbooks
+    */
+    oig::ratstats::utils::RStatsWorksheet m_currentDataSheet;
+    oig::ratstats::utils::RStatsWorkbook m_currentDataWorkbook;
+
+    /**
+    * @brief Used by validation console
+    */
+    oig::ratstats::utils::RStatsConditionLogger m_conditionLogger;
+    bool m_fullScreenToggle;
+    utils::RStatsDataFormatType m_dataFormatType;
+
+    void importDataTable(const std::string& dataTableFilePath);
+    void importSizeTable(const std::string& sizeTableFilePath);
+    void populateWithColumns(const std::set<size_t> &columns, QComboBox* comboBox);
+    void populateWithRows(const std::set<size_t> &rows, QComboBox* comboBox);
+    void setTextFileOutput(const std::string& textFile);
+    void setCSVFileOutput(const std::string& csvFile);
+    RStatsUVASessionData getSessionData() const;
+    void setSessionData(const RStatsUVASessionData& data);
+    void updateRecentSessions();
+
+ private slots:
+      void onImportDataInput();
+      void onRecentSessionSelected(QAction* action);
+      void onComboDataInputSheetSelected(int row);
+      void onSampleDataInputSheetSelected(const oig::ratstats::utils::RStatsWorksheet& sheet);
+      void onUpdateRowColumnExtentsForDataTable();
+      void onUpdateDataFormatSelection();
+      void onClearRecentSessions();
+      void onAddNewRowToDataTable();
+      void onAddNewColumnToDataTable();
+      void onSaveTextFile();
+      void onSaveCSVFile();
+      void onHelp();
+      void onExecute();
+      void onExit();
     
 };
 
 }}}}//end namespace
+
 

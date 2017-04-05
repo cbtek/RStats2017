@@ -260,6 +260,45 @@ inline T toNumber(const std::string & value)
     return returnValue;
 }
 
+
+
+/**
+ * @brief Perfroms string replace (in-place)
+ * @param inputString Reference to the inputString to perform
+ * in-place replacement
+ * @param oldString The old string to replace
+ * @param newString The new string to insert
+ * @param isCaseSensitive Should oldString be caseSensitive
+ * within inputString?
+ */
+inline void replaceInPlace(std::string &inputString,
+                                 const std::string &oldString,
+                                 const std::string &newString,
+                                 bool isCaseSensitive = c_DEFAULT_CASE_SENSITIVE)
+{
+    if (isCaseSensitive)
+    {
+        size_t pos = 0;
+        while((pos = inputString.find(oldString, pos)) != std::string::npos)
+        {
+             inputString.replace(pos, oldString.length(), newString);
+             pos += newString.length();
+        }
+    }
+    else
+    {
+        std::string subject = toUpper(inputString);
+        std::string search  = toUpper(oldString);
+        std::string replace = toUpper(newString);
+        size_t pos = 0;
+        while((pos = subject.find(search, pos)) != std::string::npos)
+        {
+             inputString.replace(pos, search.length(), newString);
+             pos += newString.length();
+        }
+    }
+}
+
 /**
  * @brief Prints vector of templated type if underlying type
  *        supports it.
@@ -281,6 +320,13 @@ inline std::string formatWithThousandsLabel(const std::string& numericString)
 {
     std::string numberStr = numericString;
     size_t decimalIndex = numberStr.find(".");
+    std::string modifier;
+    bool hasNumericModifier  = (numberStr.size() && !std::isdigit(numberStr[0]));
+    if (hasNumericModifier)
+    {
+        modifier.push_back(numberStr[0]);
+    }
+
     if (decimalIndex == std::string::npos)
     {
         decimalIndex = numberStr.size()-1;
@@ -297,9 +343,14 @@ inline std::string formatWithThousandsLabel(const std::string& numericString)
         counter++;
         if (counter == 3 && a1 != 0)
         {
-            counter = 0;
+            counter = 0;            
             numberStr.insert(numberStr.begin() + a1, ',');
         }
+    }
+
+    if (hasNumericModifier)
+    {
+        StringUtils::replaceInPlace(numberStr,modifier+",",modifier);
     }
     return numberStr;
 }
@@ -345,41 +396,21 @@ inline std::string toString(double floatValue,
 }
 
 /**
- * @brief Perfroms string replace (in-place)
- * @param inputString Reference to the inputString to perform
- * in-place replacement
- * @param oldString The old string to replace
- * @param newString The new string to insert
- * @param isCaseSensitive Should oldString be caseSensitive
- * within inputString?
+ * @brief toString
+ * @param floatValue
+ * @param digitsAfterDecimal
+ * @param addThousandsSeperator
+ * @return
  */
-inline void replaceInPlace(std::string &inputString,
-                                 const std::string &oldString,
-                                 const std::string &newString,
-                                 bool isCaseSensitive = c_DEFAULT_CASE_SENSITIVE)
+inline std::string toString(float floatValue,
+                            int digitsAfterDecimal = 6,
+                            bool addThousandsSeperator = false)
 {
-    if (isCaseSensitive)
-    {
-        size_t pos = 0;
-        while((pos = inputString.find(oldString, pos)) != std::string::npos)
-        {
-             inputString.replace(pos, oldString.length(), newString);
-             pos += newString.length();
-        }
-    }
-    else
-    {
-        std::string subject = toUpper(inputString);
-        std::string search  = toUpper(oldString);
-        std::string replace = toUpper(newString);
-        size_t pos = 0;
-        while((pos = subject.find(search, pos)) != std::string::npos)
-        {
-             inputString.replace(pos, search.length(), newString);
-             pos += newString.length();
-        }
-    }
+    return toString(static_cast<double>(floatValue),
+                    digitsAfterDecimal,
+                    addThousandsSeperator);
 }
+
 
 /**
  * @brief Perfroms string replace (in-place)

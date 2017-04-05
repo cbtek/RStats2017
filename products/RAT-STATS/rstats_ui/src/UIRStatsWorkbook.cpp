@@ -92,6 +92,16 @@ void UIRStatsWorkbook::onResizeToContents()
     this->update();
 }
 
+void UIRStatsWorkbook::onShowGridLines()
+{
+    m_ui->m_tblCurrentSheet->setGridStyle(Qt::SolidLine);
+}
+
+void UIRStatsWorkbook::onHideGridLines()
+{
+    m_ui->m_tblCurrentSheet->setGridStyle(Qt::NoPen);
+}
+
 void UIRStatsWorkbook::onStretchToContents()
 {
     m_ui->m_tblCurrentSheet->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);

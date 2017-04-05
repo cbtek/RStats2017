@@ -10,6 +10,9 @@
     <height>768</height>
    </rect>
   </property>
+  <property name="windowTitle">
+   <string>Unrestricted </string>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <property name="windowTitle">
     <string>UIRStatsUVA</string>
@@ -187,6 +190,9 @@
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="spacing">
+       <number>32</number>
+      </property>
       <property name="leftMargin">
        <number>4</number>
       </property>
@@ -200,14 +206,39 @@
        <number>4</number>
       </property>
       <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
        <widget class="QPushButton" name="m_btnHelp">
+        <property name="minimumSize">
+         <size>
+          <width>128</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string>Help</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="m_btnGenerate">
+       <widget class="QPushButton" name="m_btnExecute">
+        <property name="minimumSize">
+         <size>
+          <width>128</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string>Generate</string>
         </property>
@@ -215,10 +246,29 @@
       </item>
       <item>
        <widget class="QPushButton" name="m_btnExit">
+        <property name="minimumSize">
+         <size>
+          <width>128</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string>Exit</string>
         </property>
        </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
       </item>
      </layout>
     </item>
@@ -229,28 +279,13 @@
     <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
    </property>
    <property name="allowedAreas">
-    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+    <set>Qt::BottomDockWidgetArea|Qt::TopDockWidgetArea</set>
    </property>
    <attribute name="dockWidgetArea">
-    <number>1</number>
+    <number>4</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_2">
-    <layout class="QVBoxLayout" name="verticalLayout_2">
-     <property name="spacing">
-      <number>9</number>
-     </property>
-     <property name="leftMargin">
-      <number>2</number>
-     </property>
-     <property name="topMargin">
-      <number>2</number>
-     </property>
-     <property name="rightMargin">
-      <number>2</number>
-     </property>
-     <property name="bottomMargin">
-      <number>2</number>
-     </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QGroupBox" name="verticalGroupBox">
        <property name="title">
@@ -276,9 +311,170 @@
       </widget>
      </item>
      <item>
+      <widget class="QGroupBox" name="verticalGroupBox_2">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="title">
+        <string>Data Format Options:</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout">
+        <property name="leftMargin">
+         <number>9</number>
+        </property>
+        <property name="topMargin">
+         <number>9</number>
+        </property>
+        <property name="rightMargin">
+         <number>9</number>
+        </property>
+        <property name="bottomMargin">
+         <number>9</number>
+        </property>
+        <item row="0" column="2">
+         <widget class="QRadioButton" name="m_rdbAudited">
+          <property name="text">
+           <string>Audited</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QRadioButton" name="m_rdbExamined">
+          <property name="text">
+           <string>Examined</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QRadioButton" name="m_rdbExaminedAndDifference">
+          <property name="text">
+           <string>Examined / Difference</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QRadioButton" name="m_rdbAuditedAndDifference">
+          <property name="text">
+           <string>Audited / Difference</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QRadioButton" name="m_rdbExaminedAndAudited">
+          <property name="text">
+           <string>Examined / Audited</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QRadioButton" name="m_rdbDifference">
+          <property name="text">
+           <string>Difference</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="verticalGroupBox_3">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>275</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>275</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="title">
+        <string>Output Options:</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <property name="leftMargin">
+         <number>11</number>
+        </property>
+        <property name="topMargin">
+         <number>11</number>
+        </property>
+        <property name="rightMargin">
+         <number>11</number>
+        </property>
+        <property name="bottomMargin">
+         <number>11</number>
+        </property>
+        <item>
+         <widget class="QCheckBox" name="m_chkCSVOutput">
+          <property name="text">
+           <string>Excel / Access File</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="m_chkTextOutput">
+          <property name="text">
+           <string>Text File</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QStatusBar" name="m_statusBar"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1024</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="actionRecently_Used"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menu_Help">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+    <addaction name="actionHelp_Topics"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menu_Help"/>
+  </widget>
+  <widget class="QDockWidget" name="m_dockSampleEditor">
+   <property name="allowedAreas">
+    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QVBoxLayout" name="verticalLayout_5">
+     <item>
       <widget class="QGroupBox" name="groupBox">
        <property name="title">
-        <string>Import Worksheet:</string>
+        <string>Select Worksheet:</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_8">
         <property name="leftMargin">
@@ -313,75 +509,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QGroupBox" name="verticalGroupBox_2">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="title">
-        <string>Data Format Options:</string>
-       </property>
-       <layout class="QGridLayout" name="gridLayout">
-        <property name="leftMargin">
-         <number>9</number>
-        </property>
-        <property name="topMargin">
-         <number>9</number>
-        </property>
-        <property name="rightMargin">
-         <number>9</number>
-        </property>
-        <property name="bottomMargin">
-         <number>9</number>
-        </property>
-        <item row="2" column="1">
-         <widget class="QRadioButton" name="m_rdbExaminedAndDifference">
-          <property name="text">
-           <string>Examined / Difference</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QRadioButton" name="m_rdbExamined">
-          <property name="text">
-           <string>Examined</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QRadioButton" name="m_rdbExaminedAndAudited">
-          <property name="text">
-           <string>Examined / Audited</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QRadioButton" name="m_rdbDifference">
-          <property name="text">
-           <string>Difference</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QRadioButton" name="m_rdbAuditedAndDifference">
-          <property name="text">
-           <string>Audited / Difference</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QRadioButton" name="m_rdbAudited">
-          <property name="text">
-           <string>Audited</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
       <widget class="QGroupBox" name="groupBox_2">
        <property name="title">
         <string>Worksheet Options:</string>
@@ -399,34 +526,14 @@
         <property name="bottomMargin">
          <number>9</number>
         </property>
-        <item row="1" column="0">
-         <widget class="QComboBox" name="m_cmbDataRowStartDataTable"/>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="m_lblDataRowStartDataTable">
-          <property name="text">
-           <string>Data Row Start</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLabel" name="m_lblExaminedDataTable">
-          <property name="text">
-           <string>Examined Column</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="1">
          <widget class="QComboBox" name="m_cmbExaminedDataTable"/>
         </item>
         <item row="3" column="1">
          <widget class="QComboBox" name="m_cmbDifferenceDataTable"/>
+        </item>
+        <item row="3" column="0">
+         <widget class="QComboBox" name="m_cmbAuditedDataTable"/>
         </item>
         <item row="2" column="0">
          <widget class="QLabel" name="m_lblAuditedDataTable">
@@ -448,41 +555,45 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
-         <widget class="QComboBox" name="m_cmbAuditedDataTable"/>
+        <item row="0" column="0">
+         <widget class="QLabel" name="m_lblDataRowStartDataTable">
+          <property name="text">
+           <string>Data Row Start</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLabel" name="m_lblExaminedDataTable">
+          <property name="text">
+           <string>Examined Column</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QComboBox" name="m_cmbDataRowStartDataTable"/>
+        </item>
+        <item row="4" column="0">
+         <widget class="QPushButton" name="m_btnAddRowDataTable">
+          <property name="text">
+           <string>New Row</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QPushButton" name="m_btnAddColumnDataTable">
+          <property name="text">
+           <string>New Column</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_6">
-       <property name="leftMargin">
-        <number>4</number>
-       </property>
-       <property name="topMargin">
-        <number>4</number>
-       </property>
-       <property name="rightMargin">
-        <number>4</number>
-       </property>
-       <property name="bottomMargin">
-        <number>4</number>
-       </property>
-       <item>
-        <widget class="QPushButton" name="m_btnAddRowDataTable">
-         <property name="text">
-          <string>New Row</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="m_btnAddColumnDataTable">
-         <property name="text">
-          <string>New Column</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
      </item>
      <item>
       <widget class="QTableWidget" name="m_tblData">
@@ -512,24 +623,36 @@
     </layout>
    </widget>
   </widget>
+  <action name="actionRecently_Used">
+   <property name="text">
+    <string>Recently Used</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionHelp_Topics">
+   <property name="text">
+    <string>Help Topics</string>
+   </property>
+  </action>
  </widget>
  <tabstops>
   <tabstop>m_spnUniverseSize</tabstop>
   <tabstop>m_cmbDataInputSheets</tabstop>
   <tabstop>m_btnImportSampleInputData</tabstop>
   <tabstop>m_rdbExamined</tabstop>
-  <tabstop>m_rdbExaminedAndAudited</tabstop>
-  <tabstop>m_rdbAudited</tabstop>
-  <tabstop>m_rdbAuditedAndDifference</tabstop>
-  <tabstop>m_rdbDifference</tabstop>
-  <tabstop>m_rdbExaminedAndDifference</tabstop>
   <tabstop>m_cmbDataRowStartDataTable</tabstop>
   <tabstop>m_cmbExaminedDataTable</tabstop>
   <tabstop>m_cmbAuditedDataTable</tabstop>
   <tabstop>m_cmbDifferenceDataTable</tabstop>
-  <tabstop>m_btnAddRowDataTable</tabstop>
-  <tabstop>m_btnAddColumnDataTable</tabstop>
-  <tabstop>m_tblData</tabstop>
   <tabstop>m_tblOutput</tabstop>
  </tabstops>
  <resources/>

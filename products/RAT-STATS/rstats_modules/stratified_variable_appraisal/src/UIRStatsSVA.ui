@@ -148,7 +148,7 @@
     <item>
      <widget class="QGroupBox" name="m_grpOutput">
       <property name="title">
-       <string>Output Data:</string>
+       <string>Output Data: (Press F11 to Toggle Full-Screen View)</string>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_9">
        <property name="leftMargin">
@@ -175,6 +175,9 @@
        </sizepolicy>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <property name="spacing">
+        <number>32</number>
+       </property>
        <property name="leftMargin">
         <number>4</number>
        </property>
@@ -926,12 +929,36 @@
      <string>File</string>
     </property>
     <addaction name="actionRecently_Used"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+    <addaction name="actionHelp"/>
    </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuHelp"/>
   </widget>
   <action name="actionRecently_Used">
    <property name="text">
     <string>Recently Used</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionHelp">
+   <property name="text">
+    <string>Help</string>
    </property>
   </action>
  </widget>

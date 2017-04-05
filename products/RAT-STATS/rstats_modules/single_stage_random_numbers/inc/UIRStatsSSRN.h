@@ -70,7 +70,7 @@ private slots:
      void onClearRecentSessions();
      void onRecentSessionSelected(QAction* action);
      void onExit();
-     void onGenerate();
+     void onExecute();
      void onHelp();
      void onValidate();
      void onSaveCSVFile();

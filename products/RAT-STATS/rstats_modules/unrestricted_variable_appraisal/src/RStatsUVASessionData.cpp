@@ -98,7 +98,17 @@ const std::string &RStatsUVASessionData::getDifferenceColumn() const
 
 std::string RStatsUVASessionData::getType() const
 {
-    return "uva";
+    return c_RECENT_SESSION_EXTENSION;
+}
+
+void RStatsUVASessionData::save(const std::string &url)
+{
+
+}
+
+void RStatsUVASessionData::load(const std::string &url)
+{
+
 }
 
 }}}}//end namespace

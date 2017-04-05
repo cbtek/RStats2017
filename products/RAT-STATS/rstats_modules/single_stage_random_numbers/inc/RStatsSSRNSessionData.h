@@ -29,7 +29,7 @@ public:
     * @brief Setter for m_seed
     * @param Value to replace m_seed
     */
-    void setSeed(const utils::RStatsFloat & value);`
+    void setSeed(const utils::RStatsFloat & value);
 
     /**
     * @brief Setter for m_order

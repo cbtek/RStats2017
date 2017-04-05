@@ -18,6 +18,7 @@
 #include <QMenu>
 #include <QAction>
 #include <QActionGroup>
+#include <QPushButton>
 
 #include <map>
 
@@ -254,7 +255,8 @@ namespace UIRStatsUtils
             checkBox->setToolTip(file);
             if (!file.endsWith(extension,Qt::CaseInsensitive))
             {
-                file+=extension;
+                QString ext = QString::fromStdString(cbtek::common::utility::StringUtils::remove(extension.toStdString(),"*"));
+                file+=ext;
             }
             return file;
         }
@@ -328,6 +330,100 @@ namespace UIRStatsUtils
         return std::make_pair(recentSessionActionGroup,clearRecentSessionsAction);
     }
 
+    inline void customUISetup(QPushButton* executeButton,
+                            QPushButton* exitButton,
+                            QPushButton* helpButton,
+                            QPushButton* folderBrowse1Button,
+                            QPushButton* folderBrowse2Button,
+                            QPushButton* folderBrowse3Button,
+                            QPushButton* addRowButton1,
+                            QPushButton* addColumnButton1,
+                            QPushButton* addRowButton2,
+                            QPushButton* addColumnButton2,
+                            QAction* executeAction,
+                            QAction* exitAction,
+                            QAction* helpAction,
+                            QAction* aboutAction,
+                            QAction* recentAction,
+                            int buttonHeight,
+                            QFont font)
+    {
+        QIcon iconFolder = UIRStatsUtils::getIcon("img_folder.png");
+        QIcon iconHelp = UIRStatsUtils::getIcon("img_help.png");
+        QIcon iconExit = UIRStatsUtils::getIcon("img_exit.png");
+        QIcon iconRun = UIRStatsUtils::getIcon("img_run.png");
+        QIcon iconAdd = UIRStatsUtils::getIcon("img_add.png");
+        if (recentAction)
+        {
+            recentAction->setIcon(UIRStatsUtils::getIcon("img_clock.png"));
+        }
+        if (aboutAction)
+        {
+            aboutAction->setIcon(UIRStatsUtils::getIcon("img_about.png"));
+        }
+        if (helpAction)
+        {
+            helpAction->setIcon(iconHelp);
+        }
+        if (exitAction)
+        {
+            exitAction->setIcon(iconExit);
+        }
+        if (executeAction)
+        {
+            executeAction->setIcon(iconRun);
+        }
+        if (executeButton)
+        {
+            UIRStatsUtils::setButtonStyle(executeButton,font,iconRun,buttonHeight,false);
+        }
+
+        if (helpButton)
+        {
+            UIRStatsUtils::setButtonStyle(helpButton,font,iconHelp,buttonHeight,false);
+        }
+
+        if (exitButton)
+        {
+            UIRStatsUtils::setButtonStyle(exitButton,font,iconExit,buttonHeight,false);
+        }
+
+
+        if (folderBrowse1Button)
+        {
+            UIRStatsUtils::setButtonStyle(folderBrowse1Button,font,iconFolder,buttonHeight,false);
+        }
+
+        if (folderBrowse2Button)
+        {
+            UIRStatsUtils::setButtonStyle(folderBrowse2Button,font,iconFolder,buttonHeight,false);
+        }
+
+        if (folderBrowse3Button)
+        {
+            UIRStatsUtils::setButtonStyle(folderBrowse3Button,font,iconFolder,buttonHeight,false);
+        }
+
+        if (addRowButton1)
+        {
+            UIRStatsUtils::setButtonStyle(addRowButton1,font,iconAdd,buttonHeight,false);
+        }
+
+        if (addColumnButton1)
+        {
+            UIRStatsUtils::setButtonStyle(addColumnButton1,font,iconAdd,buttonHeight,false);
+        }
+        if (addRowButton2)
+        {
+            UIRStatsUtils::setButtonStyle(addRowButton2,font,iconAdd,buttonHeight,false);
+        }
+
+        if (addColumnButton2)
+        {
+            UIRStatsUtils::setButtonStyle(addColumnButton2,font,iconAdd,buttonHeight,false);
+        }
+
+    }
 }
 }}}//end namespace
 

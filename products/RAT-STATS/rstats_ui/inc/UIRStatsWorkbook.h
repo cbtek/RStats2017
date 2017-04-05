@@ -62,6 +62,8 @@ public slots:
      void onSheetSelected(int index);
      void onResizeToContents();     
      void onStretchToContents();
+     void onShowGridLines();
+     void onHideGridLines();
 
 signals:
      void sheetSelected(const oig::ratstats::utils::RStatsWorksheet& sheet);

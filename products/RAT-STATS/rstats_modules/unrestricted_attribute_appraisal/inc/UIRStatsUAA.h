@@ -72,7 +72,7 @@ private slots:
      void onSaveTextFile();
      void onSaveCSVFile();
      void onHelp();
-     void onContinue();
+     void onExecute();
      void onExit();
 
 };

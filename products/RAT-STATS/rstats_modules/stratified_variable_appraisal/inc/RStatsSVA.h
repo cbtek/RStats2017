@@ -405,5 +405,6 @@ private:
     oig::ratstats::utils::RStatsFloatList m_outputVStdErr;
     RStatsSVAFlagList m_dataFormatTypeAvailableFlag;
     RStatsSVAOutputDataList m_outputDataList;
+    size_t m_currentIndex;
 };
 }}}}//end namespace

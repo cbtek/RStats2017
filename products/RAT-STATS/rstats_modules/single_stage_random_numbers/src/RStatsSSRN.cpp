@@ -72,39 +72,39 @@ void RStatsSSRN::saveToWorksheet(RStatsWorksheet &worksheetOut)
     worksheetOut.setDefaultFont(Font("arial",10,true));
     worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignLeft);
     worksheetOut("B1") = m_outputData.auditName;
-    worksheetOut("B2") = StringUtils::toString(m_outputData.seed,2,true);
-    worksheetOut("B3") = StringUtils::toString(m_outputData.frameSize,true);
+    worksheetOut("B2") = StringUtils::toString(m_outputData.seed,2);
+    worksheetOut("B3") = StringUtils::toString(m_outputData.frameSize);
     worksheetOut("B4") = DateUtils::toLongDateString(m_outputData.createDate);
     worksheetOut("B5") = TimeUtils::to12HourTimeString(m_outputData.createTime);
-    worksheetOut("B6") = StringUtils::toString(m_outputData.sequentialCount,true);
-    worksheetOut("B7") = StringUtils::toString(m_outputData.sparesCount,true);
-    worksheetOut("B8") = StringUtils::toString(m_outputData.lower,true);
-    worksheetOut("B9") = StringUtils::toString(m_outputData.upper,true);
+    worksheetOut("B6") = StringUtils::toString(m_outputData.sequentialCount);
+    worksheetOut("B7") = StringUtils::toString(m_outputData.sparesCount);
+    worksheetOut("B8") = StringUtils::toString(m_outputData.lower);
+    worksheetOut("B9") = StringUtils::toString(m_outputData.upper);
 
     worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
-    worksheetOut("A11") = "Number Type";
-    worksheetOut("B11") = "Selection Order";
-    worksheetOut("C11") = "Value";
+    worksheetOut("C1") = "Number Type";
+    worksheetOut("D1") = "Selection Order";
+    worksheetOut("E1") = "Value";
     worksheetOut.setDefaultFont(Font("arial",10,true));
 
 
-    size_t r = 11;
+    size_t r = 1;
     for (const RStatsSSRNValue& value : m_outputData.values)
     {
         std::string type = (value.orderType==RStatsSSRNOrderType::RandomlyOrdered?"(Random)":"(Spare)");
         Color typeBg = (value.orderType==RStatsSSRNOrderType::RandomlyOrdered?Color(255,255,200):Color(200,255,255));
         Color typeFg = Color(1,1,1);
-        worksheetOut(r,0) = type;
-        worksheetOut(r,0).fgColor = typeFg;
-        worksheetOut(r,0).bgColor = typeBg;
-
-        worksheetOut(r,1) = StringUtils::toString(value.orderIndex,true);
-        worksheetOut(r,1).fgColor = typeFg;
-        worksheetOut(r,1).bgColor = typeBg;
-
-        worksheetOut(r,2) = StringUtils::toString(value.value,true);
+        worksheetOut(r,2) = type;
         worksheetOut(r,2).fgColor = typeFg;
         worksheetOut(r,2).bgColor = typeBg;
+
+        worksheetOut(r,3) = StringUtils::toString(value.orderIndex);
+        worksheetOut(r,3).fgColor = typeFg;
+        worksheetOut(r,3).bgColor = typeBg;
+
+        worksheetOut(r,4) = StringUtils::toString(value.value);
+        worksheetOut(r,4).fgColor = typeFg;
+        worksheetOut(r,4).bgColor = typeBg;
         ++r;
     }
 }
