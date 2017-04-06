@@ -372,6 +372,8 @@ void XMLReader::parse()
             this->consume();
             if (m_Current)
             {
+                data = StringUtils::remove(data,"<");
+                data = StringUtils::remove(data,">");
                 m_Current->setElementData(StringUtils::trimmed(data));
                 data.clear();
             }
@@ -450,8 +452,8 @@ void XMLReader::parse()
 }
 
 
-void XMLReader::parseAttributes(const std::string &attributes,
-                                XMLDataElement *element)
+void XMLReader::parseAttributes(const std::string& attributes,
+                                XMLDataElement* element)
 {
     if (attributes.length() > 0)
     {
@@ -541,7 +543,6 @@ void XMLReader::parseAttributes(const std::string &attributes,
 
 void XMLReader::consume()
 {
-
     ++this->m_Index;
     if (this->m_Index >= m_ParseString.length())
     {
@@ -558,8 +559,6 @@ void XMLReader::consume()
     {
         this->m_PeekToken = m_ParseString[m_Index+1];
     }
-
-
 }
 
 bool XMLReader::isParsingValid()

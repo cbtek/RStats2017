@@ -51,11 +51,11 @@ private:
     QLabel * m_currentCSVFileOutputLabel;
     QLabel * m_currentTextFileOutputLabel;
 
-    QIcon m_iconEdit,  m_iconHelp,  m_iconModule,m_iconRun,
-          m_iconFolder,m_iconRemove,m_iconExit,  m_iconSettings,
-          m_iconObject,m_iconAbout, m_iconAdd,   m_iconWarning,
-          m_iconError, m_iconOK;
-    cbtek::common::utility::Random m_rnd;       
+    QIcon m_iconError;
+    QIcon m_iconWarning;
+    QIcon m_iconOK;
+
+    cbtek::common::utility::Random m_rnd;
     QActionGroup * m_recentSessionActionGroup;
     std::map<std::string,utils::RStatsModuleSessionDataPtr> m_recentSessionsMap;    
     bool m_autoSetFileOutput;

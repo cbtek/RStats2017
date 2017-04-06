@@ -210,7 +210,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="m_btnContinue">
+        <widget class="QPushButton" name="m_btnExecute">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -218,7 +218,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>Generate</string>
+          <string>Execute</string>
          </property>
          <property name="iconSize">
           <size>
@@ -552,7 +552,7 @@
         <bool>true</bool>
        </attribute>
        <attribute name="verticalHeaderVisible">
-        <bool>true</bool>
+        <bool>false</bool>
        </attribute>
       </widget>
      </item>
@@ -839,7 +839,7 @@
         <bool>true</bool>
        </attribute>
        <attribute name="verticalHeaderVisible">
-        <bool>true</bool>
+        <bool>false</bool>
        </attribute>
       </widget>
      </item>
@@ -921,7 +921,7 @@
      <x>0</x>
      <y>0</y>
      <width>1103</width>
-     <height>20</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -989,7 +989,7 @@
   <tabstop>m_btnAddColumnDataTable</tabstop>
   <tabstop>m_tblData</tabstop>
   <tabstop>m_btnHelp</tabstop>
-  <tabstop>m_btnContinue</tabstop>
+  <tabstop>m_btnExecute</tabstop>
   <tabstop>m_btnExit</tabstop>
  </tabstops>
  <resources/>
