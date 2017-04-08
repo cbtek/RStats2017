@@ -2,8 +2,12 @@
 #include <QMessageBox>
 
 #include "UIRStatsLaunchProgressDialog.h"
+
 #include "rstats_utils/inc/RStatsModuleProperties.h"
+
 #include "rstats_ui/inc/UIRStatsUtils.hpp"
+#include "rstats_ui/inc/UIRStatsErrorMessage.h"
+
 #include "utility/inc/StringUtils.hpp"
 #include "utility/inc/FileUtils.hpp"
 
@@ -28,8 +32,16 @@ int main(int argc, char ** argv)
             {
                 std::string command;
                 props.generateApplicationCommand(command);
-                QProcess::startDetached(QString::fromStdString(command));
-                return 0;
+                StringUtils::trimmedInPlace(command);
+                if (FileUtils::fileExists(command))
+                {
+                    QProcess::startDetached(QString::fromStdString(command));
+                }
+                else
+                {
+                    throw FileNotFoundException(EXCEPTION_TAG+"Could not find module at \""+props.getPath()+"\"");
+                }
+                return a.exec();
             }
             UIRStatsLaunchProgressDialog ui(props);
             return ui.exec();
@@ -45,7 +57,7 @@ int main(int argc, char ** argv)
     }
     catch(std::exception& e)
     {
-        QMessageBox::critical(NULL,"Launcher Error Occurred",QString(e.what()));
+        UIRStatsErrorMessage("Launcher Error Occurred",std::string(e.what()),true).exec();
         return -1;
     }
 }

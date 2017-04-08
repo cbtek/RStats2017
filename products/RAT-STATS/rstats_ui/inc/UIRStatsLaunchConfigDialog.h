@@ -32,12 +32,22 @@ public:
     
     //! Destructor for UIRStatsLaunchConfigDialog
     ~UIRStatsLaunchConfigDialog();
+
+    /**
+     * @brief launch Calls the exec function for this dialog
+     * @return Return true if changes were made (OK was pressed)
+     *  or false if this dialog was canceled
+     */
+    bool launch();
+
 private:
     /** 
     * MOC generated ui class for this widget
     */
      Ui_UIRStatsLaunchConfigDialog *m_ui;
      utils::RStatsModuleProperties m_props;
+
+     bool m_isModified;
 
 
 private slots:

@@ -90,6 +90,9 @@ namespace UIRStatsUtils
 
     inline void loadThemeSettings(QApplication * app)
     {
+
+        // set the RAT-STATS icon
+        app->setWindowIcon(UIRStatsUtils::getIcon("img_ratstats_icon.png"));
         std::string path = utils::RStatsUtils::getThemeSettingsFilePath();
         cbtek::common::utility::XMLReader xmlReader;
         xmlReader.load(path);
@@ -252,11 +255,11 @@ namespace UIRStatsUtils
 
         if (!cbtek::common::utility::StringUtils::isEmpty(file.toStdString()))
         {
+            std::string ext = cbtek::common::utility::StringUtils::remove(extension.toStdString(),"*");
             checkBox->setToolTip(file);
-            if (!file.endsWith(extension,Qt::CaseInsensitive))
-            {
-                QString ext = QString::fromStdString(cbtek::common::utility::StringUtils::remove(extension.toStdString(),"*"));
-                file+=ext;
+            if (!StringUtils::endsWith(file.toStdString(),ext,false))
+            {                
+                file += QString::fromStdString(ext);
             }
             return file;
         }
@@ -330,23 +333,23 @@ namespace UIRStatsUtils
         return std::make_pair(recentSessionActionGroup,clearRecentSessionsAction);
     }
 
-    inline void customUISetup(QPushButton* executeButton,
-                            QPushButton* exitButton,
-                            QPushButton* helpButton,
-                            QPushButton* folderBrowse1Button,
-                            QPushButton* folderBrowse2Button,
-                            QPushButton* folderBrowse3Button,
-                            QPushButton* addRowButton1,
-                            QPushButton* addColumnButton1,
-                            QPushButton* addRowButton2,
-                            QPushButton* addColumnButton2,
-                            QAction* executeAction,
-                            QAction* exitAction,
-                            QAction* helpAction,
-                            QAction* aboutAction,
-                            QAction* recentAction,
-                            int buttonHeight,
-                            QFont font)
+    inline void customUISetup(QPushButton* executeButton = nullptr,
+                            QPushButton* exitButton = nullptr,
+                            QPushButton* helpButton = nullptr,
+                            QPushButton* folderBrowse1Button = nullptr,
+                            QPushButton* folderBrowse2Button = nullptr,
+                            QPushButton* folderBrowse3Button = nullptr,
+                            QPushButton* addRowButton1 = nullptr,
+                            QPushButton* addColumnButton1 = nullptr,
+                            QPushButton* addRowButton2 = nullptr,
+                            QPushButton* addColumnButton2 = nullptr,
+                            QAction* executeAction = nullptr,
+                            QAction* exitAction = nullptr,
+                            QAction* helpAction = nullptr,
+                            QAction* aboutAction = nullptr,
+                            QAction* recentAction = nullptr,
+                            int buttonHeight = 32,
+                            QFont font = QFont())
     {
         QIcon iconFolder = UIRStatsUtils::getIcon("img_folder.png");
         QIcon iconHelp = UIRStatsUtils::getIcon("img_help.png");

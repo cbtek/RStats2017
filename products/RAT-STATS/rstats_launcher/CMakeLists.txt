@@ -51,6 +51,7 @@ qt5_use_modules(${CURR_TARGET}
                  Widgets)
 
 add_dependencies(${CURR_TARGET}
+                rstats_ui
                 rstats_utils
                 common_utils)
 
@@ -58,6 +59,7 @@ add_dependencies(${CURR_TARGET}
 # Target Link Libraries
 #==============================================================================
 target_link_libraries(${CURR_TARGET}
+                     rstats_ui
                      rstats_utils
                      common_utils
                      Qt5::Widgets)

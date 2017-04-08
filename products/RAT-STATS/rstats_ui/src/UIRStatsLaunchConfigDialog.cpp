@@ -38,7 +38,24 @@ UIRStatsLaunchConfigDialog::UIRStatsLaunchConfigDialog(const utils::RStatsModule
     m_ui->setupUi(this);
     m_props = props;
     this->setWindowTitle(QString::fromStdString(props.getName())+" Launch Settings");
+    m_isModified = false;
+
+
+    UIRStatsUtils::customUISetup(m_ui->m_btnLaunch,
+                                 m_ui->m_btnCancel,
+                                 nullptr,
+                                 m_ui->m_btnSetIcon,
+                                 m_ui->m_btnBrowseLocation);
+
+    m_ui->m_btnSave->setIcon(UIRStatsUtils::getIcon("img_ok.png"));
     onInit();
+
+    //Setup signal/slot connections
+    connect(m_ui->m_btnSave,SIGNAL(clicked(bool)),this,SLOT(onSave()));
+    connect(m_ui->m_btnCancel,SIGNAL(clicked(bool)),this,SLOT(onCancel()));
+    connect(m_ui->m_btnLaunch,SIGNAL(clicked(bool)),this,SLOT(onLaunch()));
+    connect(m_ui->m_btnBrowseLocation,SIGNAL(clicked(bool)),this,SLOT(onBrowseModulePath()));
+    connect(m_ui->m_btnSetIcon,SIGNAL(clicked(bool)),this,SLOT(onBrowseModuleIcon()));
 }
 
 UIRStatsLaunchConfigDialog::~UIRStatsLaunchConfigDialog()
@@ -46,13 +63,16 @@ UIRStatsLaunchConfigDialog::~UIRStatsLaunchConfigDialog()
     delete m_ui;
 }
 
-void UIRStatsLaunchConfigDialog::onInit()
+bool UIRStatsLaunchConfigDialog::launch()
 {
-    m_ui->m_btnSave->setIcon(UIRStatsUtils::getIcon("img_ok.png"));
-    m_ui->m_btnLaunch->setIcon(UIRStatsUtils::getIcon("img_run.png"));
-    m_ui->m_btnCancel->setIcon(UIRStatsUtils::getIcon("img_exit.png"));
-    m_ui->m_btnSetIcon->setIcon(UIRStatsUtils::getIcon("img_folder.png"));
+    QDialog::exec();
+    return m_isModified;
+}
 
+void UIRStatsLaunchConfigDialog::onInit()
+{   
+    m_ui->m_cmbCategories->clear();
+    m_ui->m_cmbTypes->clear();
     m_ui->m_txtName->setText(QString::fromStdString(m_props.getName()));
     m_ui->m_cmbTypes->setCurrentText(QString::fromStdString(m_props.getType()));
     m_ui->m_txtLocation->setText(QString::fromStdString(m_props.getPath()));    
@@ -82,14 +102,7 @@ void UIRStatsLaunchConfigDialog::onInit()
     if (!icon.isNull())
     {
         m_ui->m_btnSetIcon->setIcon(icon);
-    }    
-
-    //Setup signal/slot connections
-    connect(m_ui->m_btnSave,SIGNAL(clicked(bool)),this,SLOT(onSave()));
-    connect(m_ui->m_btnCancel,SIGNAL(clicked(bool)),this,SLOT(onCancel()));
-    connect(m_ui->m_btnLaunch,SIGNAL(clicked(bool)),this,SLOT(onLaunch()));
-    connect(m_ui->m_btnBrowseLocation,SIGNAL(clicked(bool)),this,SLOT(onBrowseModulePath()));
-    connect(m_ui->m_btnSetIcon,SIGNAL(clicked(bool)),this,SLOT(onBrowseModuleIcon()));
+    }       
 }
 
 void UIRStatsLaunchConfigDialog::onSave()
@@ -104,18 +117,19 @@ void UIRStatsLaunchConfigDialog::onSave()
 
     //Save property values and close
     m_props.setName(m_ui->m_txtName->text().toStdString());
-    m_props.setPath(m_ui->m_txtLocation->text().toStdString());    
-    //m_props.setWorkingDir(m_ui->m_txtWorkingDir->text().toStdString());
+    m_props.setPath(m_ui->m_txtLocation->text().toStdString());        
     m_props.setType(m_ui->m_cmbTypes->currentText().toStdString());    
-    m_props.setCategory(m_ui->m_cmbTypes->currentText().toStdString());
+    m_props.setCategory(m_ui->m_cmbCategories->currentText().toStdString());
     m_props.setArgs(m_ui->m_txtArgs->text().toStdString());
-    m_props.saveConfig();
     m_props.setConsoleShown(m_ui->m_chkShowConsole->isChecked());
+    m_props.saveConfig();        
+    m_isModified = true;
     this->close();
 }
 
 void UIRStatsLaunchConfigDialog::onCancel()
 {
+    m_isModified = false;
     this->close();
 }
 
@@ -139,6 +153,8 @@ void UIRStatsLaunchConfigDialog::onBrowseModulePath()
     if (QFile::exists(file))
     {
         m_props.setPath(file.toStdString());
+        m_ui->m_txtLocation->setText(file);
+        m_props.setWorkingDir(FileUtils::getDirPath(file.toStdString()));
     }
 }
 
@@ -147,7 +163,7 @@ void UIRStatsLaunchConfigDialog::onBrowseModuleWorkingDir()
     QString dir = QFileDialog::getExistingDirectory(this,"Search for module working directory...");
     if (QDir(dir).exists())
     {
-        m_props.setWorkingDir(dir.toStdString());
+        m_props.setWorkingDir(dir.toStdString());                
     }
 }
 

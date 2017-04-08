@@ -4,8 +4,7 @@
 
 */
 
-#ifndef _OIG_RATSTATS_MAIN_UIRSTATSMAIN_H
-#define _OIG_RATSTATS_MAIN_UIRSTATSMAIN_H
+#pragma once
 
 #include <QMainWindow>
 #include <QShortcut>
@@ -17,6 +16,7 @@
 #include <QSet>
 #include <QTableWidget>
 #include <QKeySequence>
+#include <QPaintEvent>
 
 #include "rstats_ui/inc/UIRStatsShortcut.h"
 #include "rstats_utils/inc/RStatsModuleProperties.h"
@@ -27,6 +27,12 @@ namespace oig {
 namespace ratstats {
 namespace main {
 
+enum class RStatsMainVisualZoom
+{
+    Normal,
+    Larger,
+    Largest
+};
 
 class UIRStatsMain : public QMainWindow
 {
@@ -49,17 +55,16 @@ private:
     */
      Ui_UIRStatsMain *m_ui;
 
-     void onInitialize(int defaultCategoryIndex = 0);
-     void setupButton(QAbstractButton * button,
-                      const QFont& font,
-                      const QIcon& icon,
-                      size_t buttonHeight,
-                      bool squareButton = false);    
+     void onInitialize(int defaultCategoryIndex = 0);    
      QVector<QToolButton*> m_allLaunchButtons;
-     QMap<int, QTableWidget *> m_tableMap;
-     QButtonGroup * m_launchButtons;
-     QButtonGroup * m_editButtons;
-     QButtonGroup * m_removeButtons;
+     QMap<size_t, QTableWidget*> m_tableMap;
+     QMap<size_t, QButtonGroup*> m_launchButtonMap;
+     QMap<size_t, QButtonGroup*> m_editButtonMap;
+     QMap<size_t, QButtonGroup*> m_removeButtonMap;
+//     QMap<int, QVector<QAbstractButton*>> m_currentLaunchButtonMap;
+//     QMap<int, QVector<QAbstractButton*>> m_currentEditButtonMap;
+//     QMap<int, QVector<QAbstractButton*>> m_currentRemoveButtonMap;
+
      QIcon m_iconEdit;
      QIcon m_iconHelp;
      QIcon m_iconModule;
@@ -74,14 +79,23 @@ private:
      QKeySequence getKeyLaunchSequence(int count, QString & keyString) const;
      QKeySequence getKeyEditSequence(int count, QString & keyString) const;
      QKeySequence getKeyRemoveSequence(int count, QString & keyString) const;
+
+     QFont m_font;
      int m_buttonHeight;
+     bool m_tableHasFocus;
+     QTableWidget * m_currentTable;
+
+
 
 protected:
-    void showEvent(QShowEvent *event);
+    void showEvent(QShowEvent *);
     void resizeEvent(QResizeEvent *event);
     void editModule(const QString &propsPath);
     void removeModule(const QString &propsPath);
     void launchModule(const QString &propsPath);
+    void paintEvent(QPaintEvent* event);
+    void keyPressEvent(QKeyEvent * event);
+    void setVisualZoom(RStatsMainVisualZoom zoom);
 protected slots:
     void onExit();    
     void onLaunchSettingsManager();
@@ -98,5 +112,3 @@ protected slots:
 };
 
 }}}//end namespace
-
-#endif // _OIG_RATSTATS_MAIN_UIRSTATSMAIN_H

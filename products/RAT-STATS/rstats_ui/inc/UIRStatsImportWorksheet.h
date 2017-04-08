@@ -41,7 +41,14 @@ private:
     */
      Ui_UIRStatsImportWorksheet *m_ui;
 
+     /**
+      * @brief m_currentSheet Hold the current worksheet being viewed in the UI
+      */
      oig::ratstats::utils::RStatsWorksheet m_currentSheet;
+
+     /**
+      * @brief m_workbookWidget The current workbook widget
+      */
      oig::ratstats::ui::UIRStatsWorkbook* m_workbookWidget;
 
 private slots:

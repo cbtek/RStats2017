@@ -4,8 +4,8 @@
 
 */
 
-#ifndef _OIG_RATSTATS_UI_UIRStatsErrorMessage_H
-#define _OIG_RATSTATS_UI_UIRStatsErrorMessage_H
+#pragma once
+
 #include <QDialog>
 
 class Ui_UIRStatsErrorMessage;
@@ -31,6 +31,13 @@ public:
                                   QWidget *parent = 0);
     
     
+    /**
+     * @brief UIRStatsErrorMessage
+     * @param title
+     * @param message
+     * @param exitApplication
+     * @param parent
+     */
     explicit UIRStatsErrorMessage(const std::string & title,
                                   const std::string & message,
                                   bool exitApplication=false,
@@ -53,5 +60,3 @@ private slots:
 };
 
 }}}//end namespace
-
-#endif // _OIG_RATSTATS_UI_UIRStatsErrorMessage_H
