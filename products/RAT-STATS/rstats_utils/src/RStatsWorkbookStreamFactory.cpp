@@ -34,7 +34,7 @@ RStatsWorkbookStreamPtr RStatsWorkbookStreamFactory::create(const std::string &f
     }
     else if (ext == "XLS")
     {
-        THROW_GENERIC_EXCEPTION("XLS not supported")
+        THROW_GENERIC_EXCEPTION("XLS not supported yet")
     }
     else if (ext == "CSV")
     {
@@ -44,13 +44,17 @@ RStatsWorkbookStreamPtr RStatsWorkbookStreamFactory::create(const std::string &f
     {
         return RStatsWorkbookStreamPtr(new streams::RStatsDIFWorkbookStream(filePath));
     }
+    else if (ext == "TXT")
+    {
+        return RStatsWorkbookStreamPtr(new streams::RStatsDelimitedWorkbookStream(filePath));
+    }
     else if (ext == "MDB")
     {
-        THROW_GENERIC_EXCEPTION("MDB not supported")
+        THROW_GENERIC_EXCEPTION("MDB not supported yet")
     }
     else if (ext == "AACDB")
     {
-        THROW_GENERIC_EXCEPTION("AACDB not supported")
+        THROW_GENERIC_EXCEPTION("AACDB not supported yet")
     }
     THROW_GENERIC_EXCEPTION("Invalid type type detected at \""+filePath+"\"")
 }

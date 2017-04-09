@@ -314,8 +314,7 @@ namespace UIRStatsUtils
             sessionMapOut[it->second->getAuditName()] = it->second;
             std::string dateTimeStr = cbtek::common::utility::DateTimeUtils::getDisplayTimeStamp(cbtek::common::utility::DateEntity(it->second->getCreationDate()),
                                                                                                  cbtek::common::utility::TimeEntity(it->second->getCreationTime()));
-            QAction * action = new QAction(QString::fromStdString(it->second->getAuditName()), recentMenu);
-            action->setToolTip("Created on "+QString::fromStdString(dateTimeStr));
+            QAction * action = new QAction(QString::fromStdString(it->second->getAuditName()) +"(Created on "+QString::fromStdString(dateTimeStr)+")", recentMenu);
             action->setProperty("name",QString::fromStdString(it->second->getAuditName()));
             recentSessionActionGroup->addAction(action);
             recentMenu->addAction(action);

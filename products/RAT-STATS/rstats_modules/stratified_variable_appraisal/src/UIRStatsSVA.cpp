@@ -35,30 +35,40 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     m_ui(new Ui_UIRStatsSVA)
 {
     m_ui->setupUi(this);       
+
+    //Set shortcut for File/Help menu
     m_ui->menuFile->setTitle("&File");
     m_ui->menuHelp->setTitle("&Help");
+
+    //Disable fullscreen
     m_fullScreenToggle = false;
+
+    //Set audit name text to default
     m_ui->m_txtAuditName->setPlaceholderText(QString::fromStdString(RStatsUtils::getAuditName()));
+
+    //Set the CSV/Text file output labels to null
     m_currentCSVFileOutputLabel = nullptr;
     m_currentTextFileOutputLabel = nullptr;
 
     m_ui->m_dockOptions->setTitleBarWidget(new QWidget());
     int buttonHeight = 32;
 
+    //Load icons used by validation console
     m_iconError = UIRStatsUtils::getIcon("img_error.png");
     m_iconOK = UIRStatsUtils::getIcon("img_ok.png");
     m_iconWarning = UIRStatsUtils::getIcon("img_warning.png");
 
+    //Initialize button/action elements
     UIRStatsUtils::customUISetup(m_ui->m_btnExecute,
                                  m_ui->m_btnExit,
                                  m_ui->m_btnHelp,
                                  m_ui->m_btnImportSampleInputData,
                                  m_ui->m_btnImportSampleSizeData,
                                  nullptr,
-                                 m_ui->m_btnAddRowSizeTable,
-                                 m_ui->m_btnAddColumnSizeTable,
-                                 m_ui->m_btnAddRowDataTable,
-                                 m_ui->m_btnAddColumnDataTable,
+                                 nullptr,
+                                 nullptr,
+                                 nullptr,
+                                 nullptr,
                                  nullptr,
                                  m_ui->actionExit,
                                  m_ui->actionHelp,
@@ -67,17 +77,19 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
                                  buttonHeight,
                                  this->font());
 
+    //Initialize worksheet combo boxes
     m_ui->m_cmbDataInputSheets->addItem("No Sheets Available");
     m_ui->m_cmbSizeInputSheets->addItem("No Sheets Available");
     m_ui->m_cmbDataInputSheets->setEnabled(false);
     m_ui->m_cmbSizeInputSheets->setEnabled(false);
 
+    //Create connections for UI/View elements
     connect(m_ui->m_chkTextOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveTextFile()));
     connect(m_ui->m_chkCSVOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveCSVFile()));
-    connect(m_ui->m_btnAddRowDataTable,SIGNAL(clicked(bool)),this,SLOT(onAddNewRowToDataTable()));
-    connect(m_ui->m_btnAddColumnDataTable,SIGNAL(clicked(bool)),this,SLOT(onAddNewColumnToDataTable()));
-    connect(m_ui->m_btnAddRowSizeTable,SIGNAL(clicked(bool)),this,SLOT(onAddNewRowToSizeTable()));
-    connect(m_ui->m_btnAddColumnSizeTable,SIGNAL(clicked(bool)),this,SLOT(onAddNewColumnToSizeTable()));
+//    connect(m_ui->m_btnAddRowDataTable,SIGNAL(clicked(bool)),this,SLOT(onAddNewRowToDataTable()));
+//    connect(m_ui->m_btnAddColumnDataTable,SIGNAL(clicked(bool)),this,SLOT(onAddNewColumnToDataTable()));
+//    connect(m_ui->m_btnAddRowSizeTable,SIGNAL(clicked(bool)),this,SLOT(onAddNewRowToSizeTable()));
+//    connect(m_ui->m_btnAddColumnSizeTable,SIGNAL(clicked(bool)),this,SLOT(onAddNewColumnToSizeTable()));
     connect(m_ui->m_btnImportSampleInputData,SIGNAL(clicked(bool)),this,SLOT(onImportDataInput()));
     connect(m_ui->m_btnImportSampleSizeData,SIGNAL(clicked(bool)),this,SLOT(onImportSizeInput()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
@@ -91,14 +103,22 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     connect(m_ui->m_rdbDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
     connect(m_ui->m_rdbAuditedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
     connect(m_ui->m_rdbExaminedAndAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
-    connect(m_ui->m_rdbExaminedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
+    connect(m_ui->m_rdbExaminedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));    
+
+    //Enable the Examined data format as default
     m_ui->m_rdbExamined->setChecked(true);
 
-
+    //Hide the date/time bar
     m_ui->m_frmDateTime->hide();
+
+    //Hide the output window
     m_ui->m_grpOutput->hide();
+
+    //Update recently used
     updateRecentSessions();
-    m_clock.start(1000);
+
+    //Start the internal clock
+    m_clock.start(1000);    
     onUpdateClock();
 }
 
@@ -132,38 +152,40 @@ void UIRStatsSVA::populateWithRows(const std::set<size_t>& rows,
     comboBox->clear();
     for(const auto& row : rows)
     {
-        comboBox->addItem(QString::number(row+1));
+        comboBox->addItem(QString::number(row + 1));
     }
 }
+//Took out these features for now.  Running out of time to validate them
+//This basically allows user to edit spreadsheet information within application
+//void UIRStatsSVA::onAddNewRowToDataTable()
+//{
+//    m_ui->m_tblData->setRowCount(m_ui->m_tblData->rowCount() + 1);
+//}
 
-void UIRStatsSVA::onAddNewRowToDataTable()
-{
-    m_ui->m_tblData->setRowCount(m_ui->m_tblData->rowCount()+1);
-}
+//void UIRStatsSVA::onAddNewRowToSizeTable()
+//{
+//    m_ui->m_tblSizes->setRowCount(m_ui->m_tblSizes->rowCount() + 1);
+//}
 
-void UIRStatsSVA::onAddNewRowToSizeTable()
-{
-    m_ui->m_tblSizes->setRowCount(m_ui->m_tblSizes->rowCount()+1);
-}
+//void UIRStatsSVA::onAddNewColumnToDataTable()
+//{
+//    m_ui->m_tblData->setColumnCount(m_ui->m_tblData->columnCount() + 1);
+//    size_t index = static_cast<size_t>(m_ui->m_tblData->columnCount() - 1);
+//    std::string headerLabel = RStatsUtils::getColumnLabelFromIndex(index);
+//    QTableWidgetItem * item = new QTableWidgetItem;
+//    item->setText(QString::fromStdString(headerLabel));
+//    m_ui->m_tblData->setHorizontalHeaderItem(m_ui->m_tblData->columnCount() - 1,item);
+//}
 
-void UIRStatsSVA::onAddNewColumnToDataTable()
-{
-    m_ui->m_tblData->setColumnCount(m_ui->m_tblData->columnCount()+1);
-    std::string headerLabel = RStatsUtils::getColumnLabelFromIndex(m_ui->m_tblData->columnCount()-1);
-    QTableWidgetItem * item = new QTableWidgetItem;
-    item->setText(QString::fromStdString(headerLabel));
-    m_ui->m_tblData->setHorizontalHeaderItem(m_ui->m_tblData->columnCount()-1,item);
-
-}
-
-void UIRStatsSVA::onAddNewColumnToSizeTable()
-{
-    m_ui->m_tblSizes->setColumnCount(m_ui->m_tblSizes->columnCount()+1);
-    std::string headerLabel = RStatsUtils::getColumnLabelFromIndex(m_ui->m_tblSizes->columnCount()-1);
-    QTableWidgetItem * item = new QTableWidgetItem;
-    item->setText(QString::fromStdString(headerLabel));
-    m_ui->m_tblSizes->setHorizontalHeaderItem(m_ui->m_tblSizes->columnCount()-1,item);
-}
+//void UIRStatsSVA::onAddNewColumnToSizeTable()
+//{
+//    m_ui->m_tblSizes->setColumnCount(m_ui->m_tblSizes->columnCount() + 1);
+//    size_t index = static_cast<size_t>(m_ui->m_tblSizes->columnCount() - 1);
+//    std::string headerLabel = RStatsUtils::getColumnLabelFromIndex(index);
+//    QTableWidgetItem * item = new QTableWidgetItem;
+//    item->setText(QString::fromStdString(headerLabel));
+//    m_ui->m_tblSizes->setHorizontalHeaderItem(m_ui->m_tblSizes->columnCount() - 1,item);
+//}
 
 void UIRStatsSVA::onUpdateRowColumnExtentsForDataTable()
 {
@@ -320,97 +342,106 @@ void UIRStatsSVA::onUpdateClock()
 
 void UIRStatsSVA::onExecute()
 {
-    onValidate();
-    RStatsDataFormatTypeIndex dfIndex;
-    if (m_ui->m_rdbAudited->isChecked())
+    try
     {
-        dfIndex.type = RStatsDataFormatType::Audit;
-        dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbAuditedDataTable->currentText().toStdString());
-    }
-    else if (m_ui->m_rdbDifference->isChecked())
-    {
-        dfIndex.type = RStatsDataFormatType::Difference;
-        dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbDifferenceDataTable->currentText().toStdString());
-    }
-    else if (m_ui->m_rdbExamined->isChecked())
-    {
-        dfIndex.type = RStatsDataFormatType::Examine;
-        dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbExaminedDataTable->currentText().toStdString());
-    }
-    else if (m_ui->m_rdbAuditedAndDifference->isChecked())
-    {
-        dfIndex.type = RStatsDataFormatType::AuditAndDifference;
-        dfIndex.secondaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbDifferenceDataTable->currentText().toStdString());
-        dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbAuditedDataTable->currentText().toStdString());
-    }
-    else if (m_ui->m_rdbExaminedAndDifference->isChecked())
-    {
-        dfIndex.type = RStatsDataFormatType::ExamineAndDifference;
-        dfIndex.secondaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbDifferenceDataTable->currentText().toStdString());
-        dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbExaminedDataTable->currentText().toStdString());
-    }
-    else if (m_ui->m_rdbExaminedAndAudited->isChecked())
-    {
-        dfIndex.type = RStatsDataFormatType::ExamineAndAudit;
-        dfIndex.secondaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbAuditedDataTable->currentText().toStdString());
-        dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbExaminedDataTable->currentText().toStdString());
-    }
-    m_dataFormatType = dfIndex.type;
+        onValidate();
+        RStatsDataFormatTypeIndex dfIndex;
+        if (m_ui->m_rdbAudited->isChecked())
+        {
+            dfIndex.type = RStatsDataFormatType::Audit;
+            dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbAuditedDataTable->currentText().toStdString());
+        }
+        else if (m_ui->m_rdbDifference->isChecked())
+        {
+            dfIndex.type = RStatsDataFormatType::Difference;
+            dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbDifferenceDataTable->currentText().toStdString());
+        }
+        else if (m_ui->m_rdbExamined->isChecked())
+        {
+            dfIndex.type = RStatsDataFormatType::Examine;
+            dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbExaminedDataTable->currentText().toStdString());
+        }
+        else if (m_ui->m_rdbAuditedAndDifference->isChecked())
+        {
+            dfIndex.type = RStatsDataFormatType::AuditAndDifference;
+            dfIndex.secondaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbDifferenceDataTable->currentText().toStdString());
+            dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbAuditedDataTable->currentText().toStdString());
+        }
+        else if (m_ui->m_rdbExaminedAndDifference->isChecked())
+        {
+            dfIndex.type = RStatsDataFormatType::ExamineAndDifference;
+            dfIndex.secondaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbDifferenceDataTable->currentText().toStdString());
+            dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbExaminedDataTable->currentText().toStdString());
+        }
+        else if (m_ui->m_rdbExaminedAndAudited->isChecked())
+        {
+            dfIndex.type = RStatsDataFormatType::ExamineAndAudit;
+            dfIndex.secondaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbAuditedDataTable->currentText().toStdString());
+            dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbExaminedDataTable->currentText().toStdString());
+        }
+        m_dataFormatType = dfIndex.type;
 
-    size_t sizeSheetSampleColumn = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbSampleCountSizeTable->currentText().toStdString());
-    size_t sizeSheetUniverseColumn = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbUniverseCountSizeTable->currentText().toStdString());
-    size_t sizeSheetRowDataStart = static_cast<size_t>(m_ui->m_cmbDataRowStartSizeTable->currentText().toInt()-1);
-    size_t dataSheetRowDataStart = static_cast<size_t>(m_ui->m_cmbDataRowStartDataTable->currentText().toInt()-1);
-    RStatsSVA sva;
-    std::string auditName = m_ui->m_txtAuditName->text().toStdString();
-    if (StringUtils::isEmpty(auditName))
-    {
-        auditName = m_ui->m_txtAuditName->placeholderText().toStdString();
+        size_t sizeSheetSampleColumn = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbSampleCountSizeTable->currentText().toStdString());
+        size_t sizeSheetUniverseColumn = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbUniverseCountSizeTable->currentText().toStdString());
+        size_t sizeSheetRowDataStart = static_cast<size_t>(m_ui->m_cmbDataRowStartSizeTable->currentText().toInt() - 1);
+        size_t dataSheetRowDataStart = static_cast<size_t>(m_ui->m_cmbDataRowStartDataTable->currentText().toInt() - 1);
+        RStatsSVA sva;
+        std::string auditName = m_ui->m_txtAuditName->text().toStdString();
+        if (StringUtils::isEmpty(auditName))
+        {
+            auditName = m_ui->m_txtAuditName->placeholderText().toStdString();
+        }
+
+        sva.execute(auditName,
+                  m_currentDataSheet,
+                  m_currentSizeSheet,
+                  dfIndex,
+                  dataSheetRowDataStart,
+                  sizeSheetSampleColumn,
+                  sizeSheetUniverseColumn,
+                  sizeSheetRowDataStart);
+
+        RStatsWorkbook workbook;
+        sva.saveToWorkbook(workbook);
+
+        //Clear layout
+        QLayoutItem *item;
+        while ((item = m_ui->m_grpOutput->layout()->takeAt(0)))
+        {
+            delete item;
+        }
+        m_outputWorkbook = new UIRStatsWorkbook;
+        m_ui->m_grpOutput->layout()->addWidget(m_outputWorkbook);
+        m_outputWorkbook->setWorkbook(workbook);
+        m_outputWorkbook->onStretchToContents();
+        m_outputWorkbook->onHideGridLines();
+        m_ui->m_lblNoData->hide();
+        m_ui->m_grpOutput->show();
+
+        if (!StringUtils::isEmpty(m_currentTextFileOutput.toStdString()))
+        {
+            workbook.save(m_currentTextFileOutput.toStdString());
+        }
+
+        if (!StringUtils::isEmpty(m_currentCSVFileOutput.toStdString()))
+        {
+            workbook.save(m_currentCSVFileOutput.toStdString());
+        }
+        onToggleFullScreen();
+
+        RStatsSVASessionData sessionData = getSessionData();
+        sessionData.setCreationDate(DateUtils::getCurrentDate().toDateInteger());
+        sessionData.setCreationTime(TimeUtils::getCurrentTime().toTimeInteger());
+        m_recentSessionsMap[sessionData.getAuditName()]=RStatsModuleSessionDataPtr(new RStatsSVASessionData(sessionData));
+        RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getAuditName()]);
+        updateRecentSessions();
     }
-
-    sva.execute(auditName,
-              m_currentDataSheet,
-              m_currentSizeSheet,
-              dfIndex,
-              dataSheetRowDataStart,
-              sizeSheetSampleColumn,
-              sizeSheetUniverseColumn,
-              sizeSheetRowDataStart);
-
-    RStatsWorkbook workbook;
-    sva.saveToWorkbook(workbook);
-
-    //Clear layout
-    QLayoutItem *item;
-    while ((item = m_ui->m_grpOutput->layout()->takeAt(0)))
+    catch (std::exception& e)
     {
-        delete item;
+        UIRStatsErrorMessage("Error occured while executing \""+this->windowTitle().toStdString()+"\"",
+                             std::string(e.what()),false,this).exec();
+        return;
     }
-    m_outputWorkbook = new UIRStatsWorkbook;
-    m_ui->m_grpOutput->layout()->addWidget(m_outputWorkbook);
-    m_outputWorkbook->setWorkbook(workbook);
-    m_outputWorkbook->onStretchToContents();
-    m_outputWorkbook->onHideGridLines();
-    m_ui->m_lblNoData->hide();
-    m_ui->m_grpOutput->show();
-
-    if (!StringUtils::isEmpty(m_currentTextFileOutput.toStdString()))
-    {
-        workbook.save(m_currentTextFileOutput.toStdString());
-    }
-
-    if (!StringUtils::isEmpty(m_currentCSVFileOutput.toStdString()))
-    {
-        workbook.save(m_currentCSVFileOutput.toStdString());
-    }
-    onToggleFullScreen();
-
-    RStatsSVASessionData sessionData = getSessionData();
-    sessionData.setCreationDate(DateUtils::getCurrentDate().toDateInteger());
-    sessionData.setCreationTime(TimeUtils::getCurrentTime().toTimeInteger());
-    m_recentSessionsMap[sessionData.getAuditName()]=RStatsModuleSessionDataPtr(new RStatsSVASessionData(sessionData));
-    RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getAuditName()]);
-    updateRecentSessions();
 }
 
 void UIRStatsSVA::onExit()

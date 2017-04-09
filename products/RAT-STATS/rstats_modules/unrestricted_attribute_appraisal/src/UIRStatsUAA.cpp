@@ -25,7 +25,6 @@ using namespace cbtek::common::utility;
 using namespace oig::ratstats::ui;
 using namespace oig::ratstats::utils;
 
-
 namespace oig {
 namespace ratstats {
 namespace modules {
@@ -98,63 +97,72 @@ void UIRStatsUAA::onHelp()
 
 void UIRStatsUAA::onExecute()
 {
-    RStatsInteger sampleSize = m_ui->m_spnSampleSize->value();
-    RStatsInteger universeSize = m_ui->m_spnUniverseSize->value();
-    RStatsInteger coiSize = m_ui->m_spnCOI->value();
-
-    std::string name = m_ui->m_txtAuditName->text().toStdString();
-    if (StringUtils::trimmed(name).empty())
+    try
     {
-        name = m_ui->m_txtAuditName->placeholderText().toStdString();
-    }
+        RStatsInteger sampleSize = m_ui->m_spnSampleSize->value();
+        RStatsInteger universeSize = m_ui->m_spnUniverseSize->value();
+        RStatsInteger coiSize = m_ui->m_spnCOI->value();
 
-    RStatsUAAConfidenceIntervalType type = RStatsUAAConfidenceIntervalType::TwoSided;
-    if (coiSize == 0 || coiSize == sampleSize)
-    {
-        int answer = QMessageBox::question(this,"One or Two sided confidence?","Would you like to compute a one-sided confidence interval?");
-        if (answer == QMessageBox::Yes)
+        std::string name = m_ui->m_txtAuditName->text().toStdString();
+        if (StringUtils::trimmed(name).empty())
         {
-            type = (coiSize == 0) ? RStatsUAAConfidenceIntervalType::OneSidedUpper : RStatsUAAConfidenceIntervalType::OneSidedLower;
+            name = m_ui->m_txtAuditName->placeholderText().toStdString();
         }
-    }
-    RStatsUAA::inst().execute(name,sampleSize,universeSize,coiSize,type);
-    RStatsWorksheet output;
-    RStatsUAA::inst().saveToWorksheet(output);
-    UIRStatsUtils::bindSheetToUI(output,m_ui->m_tblOutput,false,0,1);
 
-    //Save CSV file (for Excel/Access) if applicable
-    if (m_ui->m_chkCSVOutput->isChecked())
+        RStatsUAAConfidenceIntervalType type = RStatsUAAConfidenceIntervalType::TwoSided;
+        if (coiSize == 0 || coiSize == sampleSize)
+        {
+            int answer = QMessageBox::question(this,"One or Two sided confidence?","Would you like to compute a one-sided confidence interval?");
+            if (answer == QMessageBox::Yes)
+            {
+                type = (coiSize == 0) ? RStatsUAAConfidenceIntervalType::OneSidedUpper : RStatsUAAConfidenceIntervalType::OneSidedLower;
+            }
+        }
+        RStatsUAA::inst().execute(name,sampleSize,universeSize,coiSize,type);
+        RStatsWorksheet output;
+        RStatsUAA::inst().saveToWorksheet(output);
+        UIRStatsUtils::bindSheetToUI(output,m_ui->m_tblOutput,false,0,1);
+
+        //Save CSV file (for Excel/Access) if applicable
+        if (m_ui->m_chkCSVOutput->isChecked())
+        {
+            FileUtils::writeFileContents(m_currentCSVFileOutput.toStdString(),
+                                         output.toCommaDelimitedString());
+        }
+
+        //Save Text file, if applicable
+        if (m_ui->m_chkTextOutput->isChecked())
+        {
+            FileUtils::writeFileContents(m_currentTextFileOutput.toStdString(),
+                                         output.toEvenlySpacedString());
+        }
+
+
+        m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toCurrentShortDateString()));
+        m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::toCurrent12HourTimeString()));
+        m_ui->m_lblAudit->setText(QString::fromStdString(name));
+        m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+        m_ui->m_tblOutput->horizontalHeader()->hide();
+        m_ui->m_frmOutput->show();
+        m_ui->m_lblNoData->hide();
+        m_ui->m_tblOutput->setSelectionMode(QAbstractItemView::NoSelection);
+        m_ui->m_tblOutput->setGridStyle(Qt::NoPen);
+
+
+        //Save the session data
+        RStatsUAASessionData sessionData = getSessionData();
+        sessionData.setCreationDate(DateUtils::getCurrentDate());
+        sessionData.setCreationTime(TimeUtils::getCurrentTime());
+        m_recentSessionsMap[sessionData.getAuditName()] = RStatsModuleSessionDataPtr(new RStatsUAASessionData(sessionData));
+        RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getAuditName()]);
+        updateRecentSessions();
+    }
+    catch (std::exception& e)
     {
-        FileUtils::writeFileContents(m_currentCSVFileOutput.toStdString(),
-                                     output.toCommaDelimitedString());
+        UIRStatsErrorMessage("Error occured while executing \""+this->windowTitle().toStdString()+"\"",
+                             std::string(e.what()),false,this).exec();
+        return;
     }
-
-    //Save Text file, if applicable
-    if (m_ui->m_chkTextOutput->isChecked())
-    {
-        FileUtils::writeFileContents(m_currentTextFileOutput.toStdString(),
-                                     output.toEvenlySpacedString());
-    }
-
-
-    m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toCurrentShortDateString()));
-    m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::toCurrent12HourTimeString()));
-    m_ui->m_lblAudit->setText(QString::fromStdString(name));
-    m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    m_ui->m_tblOutput->horizontalHeader()->hide();
-    m_ui->m_frmOutput->show();
-    m_ui->m_lblNoData->hide();
-    m_ui->m_tblOutput->setSelectionMode(QAbstractItemView::NoSelection);
-    m_ui->m_tblOutput->setGridStyle(Qt::NoPen);
-
-
-    //Save the session data
-    RStatsUAASessionData sessionData = getSessionData();
-    sessionData.setCreationDate(DateUtils::getCurrentDate());
-    sessionData.setCreationTime(TimeUtils::getCurrentTime());
-    m_recentSessionsMap[sessionData.getAuditName()] = RStatsModuleSessionDataPtr(new RStatsUAASessionData(sessionData));
-    RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getAuditName()]);
-    updateRecentSessions();
 }
 
 void UIRStatsUAA::onExit()

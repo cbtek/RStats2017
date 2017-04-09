@@ -9,7 +9,9 @@
 #include "RStatsSSRN.h"
 
 #include "rstats_utils/inc/RStatsSettingsManager.h"
+
 #include "rstats_ui/inc/UIRStatsUtils.hpp"
+#include "rstats_ui/inc/UIRStatsErrorMessage.h"
 
 #include "utility/inc/DateTimeUtils.hpp"
 #include "utility/inc/TimeUtils.hpp"
@@ -201,62 +203,70 @@ void UIRStatsSSRN::onUpdateClock()
 
 void UIRStatsSSRN::onExecute()
 {
-
-    onUpdateClock();
-    m_ui->m_tblOutput->clear();
-    RStatsSSRN ssrn;
-    std::string name = m_ui->m_txtAuditName->text().toStdString();
-    if (StringUtils::isEmpty(name))
+    try
     {
-        name = m_ui->m_txtAuditName->placeholderText().toStdString();
+        onUpdateClock();
+        m_ui->m_tblOutput->clear();
+        RStatsSSRN ssrn;
+        std::string name = m_ui->m_txtAuditName->text().toStdString();
+        if (StringUtils::isEmpty(name))
+        {
+            name = m_ui->m_txtAuditName->placeholderText().toStdString();
+        }
+        RStatsSSRNOutputData outputData = ssrn.execute(name,
+                                                       m_ui->m_spnSeed->value(),
+                                                       m_ui->m_spnOrder->value(),
+                                                       m_ui->m_spnSpares->value(),
+                                                       m_ui->m_spnLowNumber->value(),
+                                                       m_ui->m_spnHighNumber->value());
+
+        RStatsWorksheet worksheet;
+        ssrn.saveToWorksheet(worksheet);
+        UIRStatsUtils::bindSheetToUI(worksheet,m_ui->m_tblOutput,false,0,0);
+
+        if (!StringUtils::isEmpty(m_currentTextFileOutput.toStdString()))
+        {
+            FileUtils::writeFileContents(m_currentTextFileOutput.toStdString(),
+                                         worksheet.toEvenlySpacedString());
+        }
+
+        if (!StringUtils::isEmpty(m_currentCSVFileOutput.toStdString()))
+        {
+            FileUtils::writeFileContents(m_currentCSVFileOutput.toStdString(),
+                                         worksheet.toCommaDelimitedString());
+        }
+
+        m_ui->m_tblOutput->resizeColumnsToContents();
+        m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+        m_ui->m_grpOutput->show();
+        m_ui->m_line->show();
+        m_ui->m_frmTotals->show();
+        m_ui->m_lblNoData->hide();
+
+        std::string totalStr = StringUtils::toString(m_ui->m_spnOrder->value()+m_ui->m_spnSpares->value(),true);
+        std::string frameSizeStr = StringUtils::toString((m_ui->m_spnHighNumber->value()-m_ui->m_spnLowNumber->value())+1,true);
+        std::string sumStr = StringUtils::toString(outputData.sum,true);
+
+        m_ui->m_lblTotalRandomNumbersValue->setText(QString::fromStdString(totalStr));
+        m_ui->m_lblTotalFrameSizeValue->setText(QString::fromStdString(frameSizeStr));
+        m_ui->m_lblOutputSummationValue->setText(QString::fromStdString(sumStr));
+
+        m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::to12HourTimeString(outputData.createTime)));
+        m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toShortDateString(outputData.createDate)));
+
+        RStatsSSRNSessionData sessionData = getSessionData();
+        sessionData.setCreationDate(DateUtils::getCurrentDate().toDateInteger());
+        sessionData.setCreationTime(TimeUtils::getCurrentTime().toTimeInteger());
+        m_recentSessionsMap[sessionData.getAuditName()]=RStatsModuleSessionDataPtr(new RStatsSSRNSessionData(sessionData));
+        RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getAuditName()]);
+        updateRecentSessions();
     }
-    RStatsSSRNOutputData outputData = ssrn.execute(name,
-                                                   m_ui->m_spnSeed->value(),
-                                                   m_ui->m_spnOrder->value(),
-                                                   m_ui->m_spnSpares->value(),
-                                                   m_ui->m_spnLowNumber->value(),
-                                                   m_ui->m_spnHighNumber->value());
-
-    RStatsWorksheet worksheet;
-    ssrn.saveToWorksheet(worksheet);
-    UIRStatsUtils::bindSheetToUI(worksheet,m_ui->m_tblOutput,false,0,0);
-
-    if (!StringUtils::isEmpty(m_currentTextFileOutput.toStdString()))
+    catch (std::exception& e)
     {
-        FileUtils::writeFileContents(m_currentTextFileOutput.toStdString(),
-                                     worksheet.toEvenlySpacedString());
+        UIRStatsErrorMessage("Error occured while executing \""+this->windowTitle().toStdString()+"\"",
+                             std::string(e.what()),false,this).exec();
+        return;
     }
-
-    if (!StringUtils::isEmpty(m_currentCSVFileOutput.toStdString()))
-    {
-        FileUtils::writeFileContents(m_currentCSVFileOutput.toStdString(),
-                                     worksheet.toCommaDelimitedString());
-    }
-
-    m_ui->m_tblOutput->resizeColumnsToContents();
-    m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    m_ui->m_grpOutput->show();
-    m_ui->m_line->show();
-    m_ui->m_frmTotals->show();
-    m_ui->m_lblNoData->hide();
-
-    std::string totalStr = StringUtils::toString(m_ui->m_spnOrder->value()+m_ui->m_spnSpares->value(),true);
-    std::string frameSizeStr = StringUtils::toString((m_ui->m_spnHighNumber->value()-m_ui->m_spnLowNumber->value())+1,true);
-    std::string sumStr = StringUtils::toString(outputData.sum,true);
-
-    m_ui->m_lblTotalRandomNumbersValue->setText(QString::fromStdString(totalStr));
-    m_ui->m_lblTotalFrameSizeValue->setText(QString::fromStdString(frameSizeStr));
-    m_ui->m_lblOutputSummationValue->setText(QString::fromStdString(sumStr));
-
-    m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::to12HourTimeString(outputData.createTime)));
-    m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toShortDateString(outputData.createDate)));
-
-    RStatsSSRNSessionData sessionData = getSessionData();
-    sessionData.setCreationDate(DateUtils::getCurrentDate().toDateInteger());
-    sessionData.setCreationTime(TimeUtils::getCurrentTime().toTimeInteger());
-    m_recentSessionsMap[sessionData.getAuditName()]=RStatsModuleSessionDataPtr(new RStatsSSRNSessionData(sessionData));
-    RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getAuditName()]);
-    updateRecentSessions();    
 }
 
 void UIRStatsSSRN::onHelp()
