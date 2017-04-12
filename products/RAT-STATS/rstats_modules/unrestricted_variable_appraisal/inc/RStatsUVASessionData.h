@@ -29,86 +29,99 @@ public:
     * @brief Setter for m_dataFormat
     * @param Value to replace m_dataFormat
     */
-    void setDataFormat(const utils::RStatsDataFormatType & value);
+    void setDataFormat(const utils::RStatsDataFormatType& value);
 
     /**
     * @brief Setter for m_universeSize
     * @param Value to replace m_universeSize
     */
-    void setUniverseSize(const utils::RStatsInteger & value);
+    void setUniverseSize(const utils::RStatsInteger& value);
 
     /**
     * @brief Setter for m_dataRowStart
     * @param Value to replace m_dataRowStart
     */
-    void setDataRowStart(const utils::RStatsInteger & value);
+    void setDataRowStart(const utils::RStatsInteger& value);
 
     /**
     * @brief Setter for m_dataTable
     * @param Value to replace m_dataTable
     */
-    void setDataTable(const utils::RStatsWorksheet & value);
+    void setDataTableFilePath(const std::string& value);
+
+    /**
+    * @brief Setter for m_dataTable
+    * @param Value to replace m_dataTable
+    */
+    void setDataTableSheetName(const std::string& value);
 
     /**
     * @brief Setter for m_examineColumn
     * @param Value to replace m_examineColumn
     */
-    void setExamineColumn(const std::string & value);
+    void setExamineColumn(const std::string& value);
 
     /**
     * @brief Setter for m_auditColumn
     * @param Value to replace m_auditColumn
     */
-    void setAuditColumn(const std::string & value);
+    void setAuditColumn(const std::string& value);
 
     /**
     * @brief Setter for m_differenceColumn
     * @param Value to replace m_differenceColumn
     */
-    void setDifferenceColumn(const std::string & value);
+    void setDifferenceColumn(const std::string& value);
 
 
         /**
     * @brief Getter for m_dataFormat
     * @return Return copy of m_dataFormat
     */
-    const utils::RStatsDataFormatType & getDataFormat() const;
+    const utils::RStatsDataFormatType& getDataFormat() const;
 
     /**
     * @brief Getter for m_universeSize
     * @return Return copy of m_universeSize
     */
-    const utils::RStatsInteger & getUniverseSize() const;
+    const utils::RStatsInteger& getUniverseSize() const;
 
     /**
     * @brief Getter for m_dataRowStart
     * @return Return copy of m_dataRowStart
     */
-    const utils::RStatsInteger & getDataRowStart() const;
+    const utils::RStatsInteger& getDataRowStart() const;
 
     /**
     * @brief Getter for m_dataTable
-    * @return Return copy of m_dataTable
+    * @return Return url of data table
     */
-    const utils::RStatsWorksheet & getDataTable() const;
+    const std::string& getDataTableFilePath() const;
+
+
+    /**
+    * @brief Getter for m_dataTable
+    * @return Return url of data table
+    */
+    const std::string& getDataTableSheetName() const;
 
     /**
     * @brief Getter for m_examineColumn
     * @return Return copy of m_examineColumn
     */
-    const std::string & getExamineColumn() const;
+    const std::string& getExamineColumn() const;
 
     /**
     * @brief Getter for m_auditColumn
     * @return Return copy of m_auditColumn
     */
-    const std::string & getAuditColumn() const;
+    const std::string& getAuditColumn() const;
 
     /**
     * @brief Getter for m_differenceColumn
     * @return Return copy of m_differenceColumn
     */
-    const std::string & getDifferenceColumn() const;
+    const std::string& getDifferenceColumn() const;
 
     /**
      * @brief getType
@@ -135,11 +148,11 @@ private:
     utils::RStatsDataFormatType m_dataFormat;
     utils::RStatsInteger m_universeSize;
     utils::RStatsInteger m_dataRowStart;
-    utils::RStatsWorksheet m_dataTable;
+    std::string m_dataTableSheetName;
+    std::string m_dataTableFilePath;
     std::string m_examineColumn;
     std::string m_auditColumn;
     std::string m_differenceColumn;
-
 };
 }}}}//end namespace
 

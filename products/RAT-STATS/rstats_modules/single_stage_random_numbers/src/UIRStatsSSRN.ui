@@ -674,7 +674,7 @@
      <x>0</x>
      <y>0</y>
      <width>983</width>
-     <height>25</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -682,6 +682,7 @@
      <string>Fi&amp;le</string>
     </property>
     <addaction name="actionRecent"/>
+    <addaction name="actionExecute"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -775,6 +776,11 @@
   <action name="actionAbout">
    <property name="text">
     <string>&amp;About</string>
+   </property>
+  </action>
+  <action name="actionExecute">
+   <property name="text">
+    <string>Execute...</string>
    </property>
   </action>
  </widget>

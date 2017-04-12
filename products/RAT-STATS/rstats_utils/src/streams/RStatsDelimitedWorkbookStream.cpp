@@ -75,9 +75,9 @@ void RStatsDelimitedWorkbookStream::write(const RStatsWorkbook &workbook)
 {
     std::string extension = FileUtils::getFileExtension(m_filePath);
     for (size_t a1 = 0; a1 < workbook.getNumWorksheets(); ++ a1)
-    {
-        FileUtils::writeFileContents(m_filePath+"_"+std::to_string(a1)+"_"+extension,
-                                     workbook(a1).toCommaDelimitedString());
+    {                
+        FileUtils::writeFileContents(m_filePath+"("+std::to_string(a1)+")."+extension,
+                                     workbook(a1).toEvenlySpacedString());
     }
 }
 
@@ -87,15 +87,15 @@ std::vector<std::string> RStatsDelimitedWorkbookStream::splitLine(const std::str
     {
         return std::vector<std::string>();
     }
-    std::vector<std::string>delimiters{"\t"," ",","};
+    std::vector<std::string>delimiters{"\t"," "};
     for (size_t a1 = 0; a1 < delimiters.size(); ++a1)
     {
         std::string delimiter = delimiters[a1];
         std::vector<std::string> items = StringUtils::split(line,delimiter);
         StringUtils::clean(items);
 
-        //Check and see if CSV has quotes around each item and remove if true
-        if (items.size() && delimiter == "," &&
+        //Check and see if TAB has quotes around each item and remove if true
+        if (items.size() && delimiter == "\t" &&
             StringUtils::startsWith(items[0],"\"") &&
             StringUtils::endsWith(items[0],"\""))
         {
@@ -111,8 +111,7 @@ std::vector<std::string> RStatsDelimitedWorkbookStream::splitLine(const std::str
             return items;
         }
     }
-    return std::vector<std::string>();
-    //throw exception
+    return std::vector<std::string>();    
 }
 
 RStatsDelimitedWorkbookStream::~RStatsDelimitedWorkbookStream()

@@ -70,26 +70,19 @@ target_link_libraries(${CURR_TARGET}
 # Copy templates folder to build directory
 # so that the exe can see them
 
-if (EXISTS "${CURR_TARGET}>/resx")
-else()
-    add_custom_command(TARGET ${CURR_TARGET} POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory
-                   ${PROJECT_SOURCE_DIR}/rstats_resx $<TARGET_FILE_DIR:${CURR_TARGET}>/resx)
-endif()
+add_custom_command(TARGET ${CURR_TARGET} POST_BUILD
+               COMMAND ${CMAKE_COMMAND} -E copy_directory
+               ${PROJECT_SOURCE_DIR}/rstats_resx $<TARGET_FILE_DIR:${CURR_TARGET}>/resx)
 
-if (EXISTS "${CURR_TARGET}>/config")
-else()
-    add_custom_command(TARGET ${CURR_TARGET} POST_BUILD
-                  COMMAND ${CMAKE_COMMAND} -E copy_directory
-                  ${PROJECT_SOURCE_DIR}/rstats_config $<TARGET_FILE_DIR:${CURR_TARGET}>/config)
-endif()
 
-if (EXISTS "${CURR_TARGET}>/contrib")
-else()
-    add_custom_command(TARGET ${CURR_TARGET} POST_BUILD
-                  COMMAND ${CMAKE_COMMAND} -E copy_directory
-                  ${PROJECT_SOURCE_DIR}/rstats_contrib $<TARGET_FILE_DIR:${CURR_TARGET}>/contrib)
-endif()
+add_custom_command(TARGET ${CURR_TARGET} POST_BUILD
+              COMMAND ${CMAKE_COMMAND} -E copy_directory
+              ${PROJECT_SOURCE_DIR}/rstats_config $<TARGET_FILE_DIR:${CURR_TARGET}>/config)
+
+add_custom_command(TARGET ${CURR_TARGET} POST_BUILD
+              COMMAND ${CMAKE_COMMAND} -E copy_directory
+              ${PROJECT_SOURCE_DIR}/rstats_contrib $<TARGET_FILE_DIR:${CURR_TARGET}>/contrib)
+
 
 
 

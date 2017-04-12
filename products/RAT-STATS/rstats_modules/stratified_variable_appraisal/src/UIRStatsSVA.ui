@@ -528,7 +528,7 @@
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_3">
     <layout class="QGridLayout" name="gridLayout_5">
-     <item row="4" column="0">
+     <item row="3" column="0">
       <widget class="QTableWidget" name="m_tblSizes">
        <property name="editTriggers">
         <set>QAbstractItemView::AllEditTriggers</set>
@@ -608,36 +608,6 @@
        </item>
        <item row="3" column="0">
         <widget class="QComboBox" name="m_cmbDataRowStartSizeTable"/>
-       </item>
-      </layout>
-     </item>
-     <item row="3" column="0">
-      <layout class="QHBoxLayout" name="horizontalLayout_5">
-       <property name="leftMargin">
-        <number>4</number>
-       </property>
-       <property name="topMargin">
-        <number>4</number>
-       </property>
-       <property name="rightMargin">
-        <number>4</number>
-       </property>
-       <property name="bottomMargin">
-        <number>4</number>
-       </property>
-       <item>
-        <widget class="QPushButton" name="m_btnAddRowSizeTable">
-         <property name="text">
-          <string>New Row</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="m_btnAddColumnSizeTable">
-         <property name="text">
-          <string>New Column</string>
-         </property>
-        </widget>
        </item>
       </layout>
      </item>
@@ -740,7 +710,7 @@
        <item row="0" column="0">
         <widget class="QLabel" name="m_lblDataRowStartDataTable">
          <property name="text">
-          <string>Data Row Start</string>
+          <string>Row Start</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -753,7 +723,7 @@
        <item row="2" column="0">
         <widget class="QLabel" name="m_lblAuditedDataTable">
          <property name="text">
-          <string>Audited Column</string>
+          <string>Audit Col.</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -763,7 +733,7 @@
        <item row="0" column="1">
         <widget class="QLabel" name="m_lblExaminedDataTable">
          <property name="text">
-          <string>Examined Column</string>
+          <string>Examine Col.</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -776,7 +746,7 @@
        <item row="2" column="1">
         <widget class="QLabel" name="m_lblDifferenceDataTable">
          <property name="text">
-          <string>Difference Column</string>
+          <string>Difference Col.</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -785,36 +755,6 @@
        </item>
        <item row="3" column="1">
         <widget class="QComboBox" name="m_cmbDifferenceDataTable"/>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_6">
-       <property name="leftMargin">
-        <number>4</number>
-       </property>
-       <property name="topMargin">
-        <number>4</number>
-       </property>
-       <property name="rightMargin">
-        <number>4</number>
-       </property>
-       <property name="bottomMargin">
-        <number>4</number>
-       </property>
-       <item>
-        <widget class="QPushButton" name="m_btnAddRowDataTable">
-         <property name="text">
-          <string>New Row</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="m_btnAddColumnDataTable">
-         <property name="text">
-          <string>New Column</string>
-         </property>
-        </widget>
        </item>
       </layout>
      </item>
@@ -921,15 +861,18 @@
      <x>0</x>
      <y>0</y>
      <width>1103</width>
-     <height>25</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="separator"/>
+    <addaction name="actionExecute"/>
+    <addaction name="separator"/>
     <addaction name="actionRecently_Used"/>
-    <addaction name="actionExit"/>
+    <addaction name="actionExit_2"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -961,6 +904,16 @@
     <string>Help</string>
    </property>
   </action>
+  <action name="actionExecute">
+   <property name="text">
+    <string>Execute...</string>
+   </property>
+  </action>
+  <action name="actionExit_2">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
  </widget>
  <tabstops>
   <tabstop>m_txtAuditName</tabstop>
@@ -976,8 +929,6 @@
   <tabstop>m_btnImportSampleSizeData</tabstop>
   <tabstop>m_cmbUniverseCountSizeTable</tabstop>
   <tabstop>m_cmbSampleCountSizeTable</tabstop>
-  <tabstop>m_btnAddRowSizeTable</tabstop>
-  <tabstop>m_btnAddColumnSizeTable</tabstop>
   <tabstop>m_tblSizes</tabstop>
   <tabstop>m_cmbDataInputSheets</tabstop>
   <tabstop>m_btnImportSampleInputData</tabstop>
@@ -985,8 +936,6 @@
   <tabstop>m_cmbExaminedDataTable</tabstop>
   <tabstop>m_cmbAuditedDataTable</tabstop>
   <tabstop>m_cmbDifferenceDataTable</tabstop>
-  <tabstop>m_btnAddRowDataTable</tabstop>
-  <tabstop>m_btnAddColumnDataTable</tabstop>
   <tabstop>m_tblData</tabstop>
   <tabstop>m_btnHelp</tabstop>
   <tabstop>m_btnExecute</tabstop>

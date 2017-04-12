@@ -33,7 +33,7 @@ RStatsSVASessionData::~RStatsSVASessionData()
 
 }
 
-void RStatsSVASessionData::setDataFormat(const RStatsDataFormatType & value)
+void RStatsSVASessionData::setDataFormat(const RStatsDataFormatType&  value)
 {
     m_dataFormat=value;
 }
@@ -48,87 +48,87 @@ void RStatsSVASessionData::setDataTableFilePath(const std::string& value)
     m_dataTableFilePath=value;
 }
 
-void RStatsSVASessionData::setSizeTableRowStart(const RStatsInteger & value)
+void RStatsSVASessionData::setSizeTableRowStart(const RStatsInteger&  value)
 {
     m_sizeTableRowStart=value;
 }
 
-void RStatsSVASessionData::setDataTableRowStart(const RStatsInteger & value)
+void RStatsSVASessionData::setDataTableRowStart(const RStatsInteger&  value)
 {
     m_dataTableRowStart=value;
 }
 
-void RStatsSVASessionData::setUniverseColumn(const std::string & value)
+void RStatsSVASessionData::setUniverseColumn(const std::string&  value)
 {
     m_universeColumn=value;
 }
 
-void RStatsSVASessionData::setSampleColumn(const std::string & value)
+void RStatsSVASessionData::setSampleColumn(const std::string&  value)
 {
     m_sampleColumn=value;
 }
 
-void RStatsSVASessionData::setDifferenceColumn(const std::string & value)
+void RStatsSVASessionData::setDifferenceColumn(const std::string&  value)
 {
     m_differenceColumn=value;
 }
 
-void RStatsSVASessionData::setAuditColumn(const std::string & value)
+void RStatsSVASessionData::setAuditColumn(const std::string&  value)
 {
     m_auditColumn=value;
 }
 
-void RStatsSVASessionData::setExamineColumn(const std::string & value)
+void RStatsSVASessionData::setExamineColumn(const std::string&  value)
 {
     m_examineColumn=value;
 }
 
-const RStatsDataFormatType &RStatsSVASessionData::getDataFormat() const
+const RStatsDataFormatType& RStatsSVASessionData::getDataFormat() const
 {
     return m_dataFormat;
 }
 
-const std::string &RStatsSVASessionData::getSizeTableFilePath() const
+const std::string& RStatsSVASessionData::getSizeTableFilePath() const
 {
     return m_sizeTableFilePath;
 }
 
-const std::string &RStatsSVASessionData::getDataTableFilePath() const
+const std::string& RStatsSVASessionData::getDataTableFilePath() const
 {
     return m_dataTableFilePath;
 }
 
-const RStatsInteger &RStatsSVASessionData::getSizeTableRowStart() const
+const RStatsInteger& RStatsSVASessionData::getSizeTableRowStart() const
 {
     return m_sizeTableRowStart;
 }
 
-const RStatsInteger &RStatsSVASessionData::getDataTableRowStart() const
+const RStatsInteger& RStatsSVASessionData::getDataTableRowStart() const
 {
     return m_dataTableRowStart;
 }
 
-const std::string &RStatsSVASessionData::getUniverseColumn() const
+const std::string& RStatsSVASessionData::getUniverseColumn() const
 {
     return m_universeColumn;
 }
 
-const std::string &RStatsSVASessionData::getSampleColumn() const
+const std::string& RStatsSVASessionData::getSampleColumn() const
 {
     return m_sampleColumn;
 }
 
-const std::string &RStatsSVASessionData::getDifferenceColumn() const
+const std::string& RStatsSVASessionData::getDifferenceColumn() const
 {
     return m_differenceColumn;
 }
 
-const std::string &RStatsSVASessionData::getAuditColumn() const
+const std::string& RStatsSVASessionData::getAuditColumn() const
 {
     return m_auditColumn;
 }
 
-const std::string &RStatsSVASessionData::getExamineColumn() const
+const std::string& RStatsSVASessionData::getExamineColumn() const
 {
     return m_examineColumn;
 }
@@ -138,7 +138,7 @@ std::string RStatsSVASessionData::getType() const
     return c_RECENT_SESSION_EXTENSION;
 }
 
-void RStatsSVASessionData::load(const std::string &url)
+void RStatsSVASessionData::load(const std::string& url)
 {
     XMLReader xml;
     xml.load(url);
@@ -157,39 +157,39 @@ void RStatsSVASessionData::load(const std::string &url)
         setDataTableSheetName(element->getChildElementData("dataTableSheetName"));
         setSizeTableSheetName(element->getChildElementData("sizeTableSheetName"));
         setSizeTableFilePath(element->getChildElementData("sizeTableFilePath"));
-        setDataTableFilePath(element->getChildElementData("dataTableFilePath"));
-        RStatsWorkbook dataWorkbook,sizeWorkbook;
+        setDataTableFilePath(element->getChildElementData("dataTableFilePath"));        
     }
 }
 
-void RStatsSVASessionData::save(const std::string &url)
+void RStatsSVASessionData::save(const std::string& url)
 {
     std::ostringstream out;
     XMLStreamWriter xml(out);
     xml.writeStartDocument();
     xml.writeStartElementNoAttributes("session");
-    RStatsModuleSessionDataImpl::save(xml);
-    xml.writeTextElement("dataTableFilePath", getDataTableFilePath());
-    xml.writeTextElement("sizeTableFilePath", getSizeTableFilePath());
+    RStatsModuleSessionDataImpl::save(xml);    
     xml.writeTextElement("dataFormat",StringUtils::toString(static_cast<int>(this->getDataFormat())));
     xml.writeTextElement("dataRowStart",StringUtils::toString(getDataTableRowStart()));
     xml.writeTextElement("sizeRowStart",StringUtils::toString(getSizeTableRowStart()));
     xml.writeTextElement("differenceColumn",getDifferenceColumn());
     xml.writeTextElement("examineColumn",getExamineColumn());
+    xml.writeTextElement("auditColumn",getAuditColumn());
     xml.writeTextElement("universeColumn",getUniverseColumn());
-    xml.writeTextElement("sampleColumn",getSampleColumn());
+    xml.writeTextElement("sampleColumn",getSampleColumn());    
     xml.writeTextElement("dataTableSheetName",getDataTableSheetName());
     xml.writeTextElement("sizeTableSheetName",getSizeTableSheetName());
+    xml.writeTextElement("dataTableFilePath", getDataTableFilePath());
+    xml.writeTextElement("sizeTableFilePath", getSizeTableFilePath());
     xml.writeEndElement("session");
     FileUtils::writeFileContents(url,out.str());
 }
 
-void RStatsSVASessionData::setSizeTableSheetName(const std::string &name)
+void RStatsSVASessionData::setSizeTableSheetName(const std::string& name)
 {
     m_sizeTableSheetName = name;
 }
 
-void RStatsSVASessionData::setDataTableSheetName(const std::string &name)
+void RStatsSVASessionData::setDataTableSheetName(const std::string& name)
 {
     m_dataTableSheetName = name;
 }

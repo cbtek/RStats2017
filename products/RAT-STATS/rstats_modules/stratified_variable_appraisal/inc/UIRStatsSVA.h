@@ -1,7 +1,5 @@
 /*
-    UIRStatsSVA.h
-    
-
+    UIRStatsSVA.h    
 */
 
 #pragma once
@@ -16,8 +14,8 @@
 #include "rstats_utils/inc/RStatsWorkbook.h"
 #include "rstats_utils/inc/RStatsConditionLogger.h"
 #include "rstats_ui/inc/UIRStatsWorkbook.h"
-#include "RStatsSVASessionData.h"
 
+#include "RStatsSVASessionData.h"
 
 class Ui_UIRStatsSVA;
 
@@ -42,6 +40,11 @@ public:
     ~UIRStatsSVA();
 
 protected:
+
+    /**
+     * @brief keyPressEvent
+     * @param evt
+     */
     void keyPressEvent(QKeyEvent*evt);
 
 private:
@@ -64,12 +67,19 @@ private:
      QLabel * m_currentTextFileOutputLabel;
      QLabel * m_currentCSVFileOutputLabel;
 
+     /**
+      * @brief Paths for importing the data and size sheet
+      */
      QString m_sizeTableImportFilePath;
      QString m_dataTableImportFilePath;
 
+     /**
+      * @brief Icons used by the validation console
+      */
      QIcon m_iconError;
      QIcon m_iconWarning;
      QIcon m_iconOK;
+
      /**
       * @brief Current data sheets/workbooks for data/size tables
       */
@@ -88,47 +98,195 @@ private:
       */
      oig::ratstats::ui::UIRStatsWorkbook * m_outputWorkbook;
 
+     /**
+      * @brief m_fullScreenToggle Toggles full screen mode to view output data
+      */
      bool m_fullScreenToggle;
 
-     void populateWithColumns(const std::set<size_t> &columns, QComboBox* comboBox);
-     void populateWithRows(const std::set<size_t> &rows, QComboBox* comboBox);
 
-     QActionGroup * m_recentSessionActionGroup;
-     std::map<std::string,utils::RStatsModuleSessionDataPtr> m_recentSessionsMap;
-     utils::RStatsDataFormatType m_dataFormatType;
+     /**
+      * @brief m_autoSetFileOutput Allows output checkboxes to be changed without signaling event for file browser
+      */
      bool m_autoSetFileOutput;
+
+     /**
+      * @brief m_recentSessionActionGroup Holds all the recently ran session actions
+      */
+     QActionGroup * m_recentSessionActionGroup;
+
+     /**
+      * @brief m_recentSessionsMap
+      */
+     std::map<std::string,utils::RStatsModuleSessionDataPtr> m_recentSessionsMap;
+
+     /**
+      * @brief m_dataFormatType
+      */
+     utils::RStatsDataFormatType m_dataFormatType;     
+
+     /**
+      * @brief m_currentDataFormat
+      */
+     oig::ratstats::utils::RStatsDataFormatType m_currentDataFormat;
+
+     /**
+      * @brief importDataTable
+      * @param dataTableFilePath
+      */
      void importDataTable(const std::string& dataTableFilePath);
+
+     /**
+      * @brief importSizeTable
+      * @param sizeTableFilePath
+      */
      void importSizeTable(const std::string& sizeTableFilePath);
 
+     /**
+      * @brief setCSVFileOutput
+      * @param csvFile
+      */
      void setCSVFileOutput(const std::string& csvFile);
+
+     /**
+      * @brief setTextFileOutput
+      * @param textFile
+      */
      void setTextFileOutput(const std::string& textFile);
+
+     /**
+      * @brief getSessionData Binds the view to the model data for sva
+      * @return The data fields relevent to sva
+      */
      RStatsSVASessionData getSessionData() const;
+
+     /**
+      * @brief setSessionData Binds the model data to the view for sva
+      * @param data The fields that are relevant to sva
+      */
      void setSessionData(const RStatsSVASessionData& data);
-     void updateRecentSessions();
+
+     /**
+      * @brief updateRecentSessions Updates the recently used sessions
+      */
+     void updateRecentSessions();     
+
+     /**
+      * @brief populateWithColumns Populates combobox with spreadsheet column labels
+      * @param columns set of column integers
+      * @param comboBox The view control to populate
+      */
+     void populateWithColumns(const std::set<size_t> &columns, QComboBox* comboBox);
+
+     /**
+      * @brief populateWithRows Populates combobox with spreadsheet row labels
+      * @param rows set of row integers
+      * @param comboBox The view control to populate
+      */
+     void populateWithRows(const std::set<size_t> &rows, QComboBox* comboBox);
+
+protected:
+     void resizeEvent(QResizeEvent*);
 
 protected slots:
+     /**
+      * @brief onClearRecentSessions
+      */
      void onClearRecentSessions();
+
+     /**
+      * @brief onRecentSessionSelected
+      * @param action
+      */
      void onRecentSessionSelected(QAction* action);
-     void onAddNewRowToDataTable();
-     void onAddNewRowToSizeTable();
-     void onAddNewColumnToDataTable();
-     void onAddNewColumnToSizeTable();
+
+     /**
+      * @brief onUpdateRowColumnExtentsForDataTable
+      */
      void onUpdateRowColumnExtentsForDataTable();
+
+     /**
+      * @brief onUpdateRowColumnExtentsForSizeTable
+      */
      void onUpdateRowColumnExtentsForSizeTable();
+
+     /**
+      * @brief onValidate
+      * @return
+      */
      bool onValidate();
+
+     /**
+      * @brief onUpdateClock
+      */
      void onUpdateClock();
+
+     /**
+      * @brief onExecute
+      */
      void onExecute();
+
+     /**
+      * @brief onExit
+      */
      void onExit();
+
+     /**
+      * @brief onToggleFullScreen
+      */
      void onToggleFullScreen();
+
+     /**
+      * @brief onSampleSizeInputSheetSelected
+      * @param sheet
+      */
      void onSampleSizeInputSheetSelected(const oig::ratstats::utils::RStatsWorksheet& sheet);
+
+     /**
+      * @brief onSampleDataInputSheetSelected
+      * @param sheet
+      */
      void onSampleDataInputSheetSelected(const oig::ratstats::utils::RStatsWorksheet& sheet);
+
+     /**
+      * @brief onComboSizeInputSheetSelected
+      * @param row
+      */
      void onComboSizeInputSheetSelected(int row);
+
+     /**
+      * @brief onComboDataInputSheetSelected
+      * @param row
+      */
      void onComboDataInputSheetSelected(int row);
+
+     /**
+      * @brief onImportDataInput
+      */
      void onImportDataInput();
+
+     /**
+      * @brief onImportSizeInput
+      */
      void onImportSizeInput();
+
+     /**
+      * @brief onHelp
+      */
      void onHelp();
+
+     /**
+      * @brief onSaveCSVFile
+      */
      void onSaveCSVFile();
+
+     /**
+      * @brief onSaveTextFile
+      */
      void onSaveTextFile();
+
+     /**
+      * @brief onUpdateDataFormatSelection
+      */
      void onUpdateDataFormatSelection();
 };
 

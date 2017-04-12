@@ -98,6 +98,45 @@ std::vector<std::string> RStatsWorkbook::getWorksheetNames() const
     return names;
 }
 
+RStatsWorksheet RStatsWorkbook::mergeSheets(RStatsWorkbookMergeDirection direction,size_t padding)
+{
+    RStatsWorksheet mergedSheet;
+    if (direction == RStatsWorkbookMergeDirection::MergeBottom)
+    {
+        size_t currentRow = 0;
+        for (const auto& currentSheet : m_worksheets)
+        {
+            for (size_t r = 0; r < currentSheet.getNumRows(); ++r)
+            {
+                for (size_t c = 0; c < currentSheet.getNumColumns(); ++c)
+                {
+                    mergedSheet(currentRow,c) = currentSheet(r,c);
+                }
+                ++currentRow;
+            }
+            currentRow += padding;
+        }
+    }
+
+    if (direction == RStatsWorkbookMergeDirection::MergeRight)
+    {
+        size_t currentColumn = 0;
+        for (const auto& currentSheet : m_worksheets)
+        {
+            for (size_t c = 0; c <currentSheet.getNumColumns(); ++c)
+            {
+                for (size_t r = 0; r < currentSheet.getNumRows(); ++r)
+                {
+                    mergedSheet(r,currentColumn) = currentSheet(r,c);
+                }
+                ++currentColumn;
+            }
+            currentColumn += padding;
+        }
+    }
+    return mergedSheet;
+}
+
 void RStatsWorkbook::clear()
 {
     m_worksheets.clear();

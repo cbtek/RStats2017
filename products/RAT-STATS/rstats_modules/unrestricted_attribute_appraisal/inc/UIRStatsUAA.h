@@ -37,6 +37,9 @@ public:
     
     //! Destructor for UIRStatsUAA
     ~UIRStatsUAA();
+
+protected:
+    void resizeEvent(QResizeEvent*);
 private:
 
     QIcon m_exitIcon;

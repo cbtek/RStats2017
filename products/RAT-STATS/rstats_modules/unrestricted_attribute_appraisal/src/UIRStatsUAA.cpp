@@ -25,7 +25,6 @@ using namespace cbtek::common::utility;
 using namespace oig::ratstats::ui;
 using namespace oig::ratstats::utils;
 
-
 namespace oig {
 namespace ratstats {
 namespace modules {
@@ -39,6 +38,7 @@ UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
     m_ui->m_dockOptions->setTitleBarWidget(new QWidget());
 
     connect(m_ui->m_btnExecute,SIGNAL(clicked()),this,SLOT(onExecute()));
+    connect(m_ui->actionExecute,SIGNAL(triggered()),this,SLOT(onExecute()));
     connect(m_ui->m_btnExit,SIGNAL(clicked()),this,SLOT(onExit()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked()),this,SLOT(onHelp()));
     connect(m_ui->m_spnSampleSize,SIGNAL(valueChanged(int)),this,SLOT(onUpdateSampleCount()));
@@ -66,7 +66,7 @@ UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
                                  nullptr,
                                  nullptr,
                                  nullptr,
-                                 nullptr,
+                                 m_ui->actionExecute,
                                  m_ui->actionExit,
                                  m_ui->actionHelp_Topics,
                                  m_ui->actionAbout,
@@ -98,63 +98,72 @@ void UIRStatsUAA::onHelp()
 
 void UIRStatsUAA::onExecute()
 {
-    RStatsInteger sampleSize = m_ui->m_spnSampleSize->value();
-    RStatsInteger universeSize = m_ui->m_spnUniverseSize->value();
-    RStatsInteger coiSize = m_ui->m_spnCOI->value();
-
-    std::string name = m_ui->m_txtAuditName->text().toStdString();
-    if (StringUtils::trimmed(name).empty())
+    try
     {
-        name = m_ui->m_txtAuditName->placeholderText().toStdString();
-    }
+        RStatsInteger sampleSize = m_ui->m_spnSampleSize->value();
+        RStatsInteger universeSize = m_ui->m_spnUniverseSize->value();
+        RStatsInteger coiSize = m_ui->m_spnCOI->value();
 
-    RStatsUAAConfidenceIntervalType type = RStatsUAAConfidenceIntervalType::TwoSided;
-    if (coiSize == 0 || coiSize == sampleSize)
-    {
-        int answer = QMessageBox::question(this,"One or Two sided confidence?","Would you like to compute a one-sided confidence interval?");
-        if (answer == QMessageBox::Yes)
+        std::string name = m_ui->m_txtAuditName->text().toStdString();
+        if (StringUtils::trimmed(name).empty())
         {
-            type = (coiSize == 0) ? RStatsUAAConfidenceIntervalType::OneSidedUpper : RStatsUAAConfidenceIntervalType::OneSidedLower;
+            name = m_ui->m_txtAuditName->placeholderText().toStdString();
         }
-    }
-    RStatsUAA::inst().execute(name,sampleSize,universeSize,coiSize,type);
-    RStatsWorksheet output;
-    RStatsUAA::inst().saveToWorksheet(output);
-    UIRStatsUtils::bindSheetToUI(output,m_ui->m_tblOutput,false,0,1);
 
-    //Save CSV file (for Excel/Access) if applicable
-    if (m_ui->m_chkCSVOutput->isChecked())
+        RStatsUAAConfidenceIntervalType type = RStatsUAAConfidenceIntervalType::TwoSided;
+        if (coiSize == 0 || coiSize == sampleSize)
+        {
+            int answer = QMessageBox::question(this,"One or Two sided confidence?","Would you like to compute a one-sided confidence interval?");
+            if (answer == QMessageBox::Yes)
+            {
+                type = (coiSize == 0) ? RStatsUAAConfidenceIntervalType::OneSidedUpper : RStatsUAAConfidenceIntervalType::OneSidedLower;
+            }
+        }
+        RStatsUAA::inst().execute(name,sampleSize,universeSize,coiSize,type);
+        RStatsWorksheet output;
+        RStatsUAA::inst().saveToWorksheet(output);
+        UIRStatsUtils::bindSheetToUI(output,m_ui->m_tblOutput,false,0,1);
+
+        //Save CSV file (for Excel/Access) if applicable
+        if (m_ui->m_chkCSVOutput->isChecked())
+        {
+            FileUtils::writeFileContents(m_currentCSVFileOutput.toStdString(),
+                                         output.toCommaDelimitedString());
+        }
+
+        //Save Text file, if applicable
+        if (m_ui->m_chkTextOutput->isChecked())
+        {
+            FileUtils::writeFileContents(m_currentTextFileOutput.toStdString(),
+                                         output.toEvenlySpacedString());
+        }
+
+
+        m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toCurrentShortDateString()));
+        m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::toCurrent12HourTimeString()));
+        m_ui->m_lblAudit->setText(QString::fromStdString(name));
+        m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+        m_ui->m_tblOutput->horizontalHeader()->hide();
+        m_ui->m_frmOutput->show();
+        m_ui->m_lblNoData->hide();
+        m_ui->m_tblOutput->setSelectionMode(QAbstractItemView::NoSelection);
+        m_ui->m_tblOutput->setGridStyle(Qt::NoPen);
+
+
+        //Save the session data
+        RStatsUAASessionData sessionData = getSessionData();
+        sessionData.setCreationDate(DateUtils::getCurrentDate());
+        sessionData.setCreationTime(TimeUtils::getCurrentTime());
+        m_recentSessionsMap[sessionData.getAuditName()] = RStatsModuleSessionDataPtr(new RStatsUAASessionData(sessionData));
+        RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getAuditName()]);
+        updateRecentSessions();
+    }
+    catch (std::exception& e)
     {
-        FileUtils::writeFileContents(m_currentCSVFileOutput.toStdString(),
-                                     output.toCommaDelimitedString());
+        UIRStatsErrorMessage("Error occured while executing \""+this->windowTitle().toStdString()+"\"",
+                             std::string(e.what()),false,this).exec();
+        return;
     }
-
-    //Save Text file, if applicable
-    if (m_ui->m_chkTextOutput->isChecked())
-    {
-        FileUtils::writeFileContents(m_currentTextFileOutput.toStdString(),
-                                     output.toEvenlySpacedString());
-    }
-
-
-    m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toCurrentShortDateString()));
-    m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::toCurrent12HourTimeString()));
-    m_ui->m_lblAudit->setText(QString::fromStdString(name));
-    m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    m_ui->m_tblOutput->horizontalHeader()->hide();
-    m_ui->m_frmOutput->show();
-    m_ui->m_lblNoData->hide();
-    m_ui->m_tblOutput->setSelectionMode(QAbstractItemView::NoSelection);
-    m_ui->m_tblOutput->setGridStyle(Qt::NoPen);
-
-
-    //Save the session data
-    RStatsUAASessionData sessionData = getSessionData();
-    sessionData.setCreationDate(DateUtils::getCurrentDate());
-    sessionData.setCreationTime(TimeUtils::getCurrentTime());
-    m_recentSessionsMap[sessionData.getAuditName()] = RStatsModuleSessionDataPtr(new RStatsUAASessionData(sessionData));
-    RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getAuditName()]);
-    updateRecentSessions();
 }
 
 void UIRStatsUAA::onExit()
@@ -263,8 +272,7 @@ void UIRStatsUAA::updateRecentSessions()
     }
 
 }
-
-void UIRStatsUAA::setTextFileOutput(const std::string &textFile)
+void UIRStatsUAA::setTextFileOutput(const std::string& textFile)
 {
     m_currentTextFileOutput = QString::fromStdString(textFile);
     if (!m_currentTextFileOutput.isEmpty())
@@ -273,16 +281,23 @@ void UIRStatsUAA::setTextFileOutput(const std::string &textFile)
         {
             m_currentTextFileOutputLabel = new QLabel;
             m_currentTextFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+
         }
         m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
-        m_currentTextFileOutputLabel->setText("<b>Text File:</b> "+m_currentTextFileOutput);
+
+        m_currentTextFileOutputLabel->setToolTip(m_currentTextFileOutput);
+        QString text = "<b>Text File:</b> "+m_currentTextFileOutput;
+        QFontMetrics metrics(this->font());
+        QString elidedText = metrics.elidedText(text, Qt::ElideMiddle, this->width() / 2);
+        m_currentTextFileOutputLabel->setText(elidedText);
+
         m_ui->m_statusBar->addPermanentWidget(m_currentTextFileOutputLabel);
         m_currentTextFileOutputLabel->show();
     }
     else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
 }
 
-void UIRStatsUAA::setCSVFileOutput(const std::string &csvFile)
+void UIRStatsUAA::setCSVFileOutput(const std::string& csvFile)
 {
     m_currentCSVFileOutput = QString::fromStdString(csvFile);
     if (!m_currentCSVFileOutput.isEmpty())
@@ -290,16 +305,33 @@ void UIRStatsUAA::setCSVFileOutput(const std::string &csvFile)
         if (m_currentCSVFileOutputLabel == nullptr)
         {
             m_currentCSVFileOutputLabel = new QLabel;
-            m_currentCSVFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+            m_currentCSVFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAFFFF;color:#000000;border:1px solid grey;}");
         }
         m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
-        m_currentCSVFileOutputLabel->setText("<b>CSV File</b>: "+m_currentCSVFileOutput);
+        m_currentCSVFileOutputLabel->setToolTip(m_currentCSVFileOutput);
+        QString text = "<b>CSV File:</b> "+m_currentCSVFileOutput;
+        QFontMetrics metrics(this->font());
+        QString elidedText = metrics.elidedText(text, Qt::ElideMiddle, this->width() / 2);
+        m_currentCSVFileOutputLabel->setText(elidedText);
+
         m_ui->m_statusBar->addPermanentWidget(m_currentCSVFileOutputLabel);
         m_currentCSVFileOutputLabel->show();
     }
     else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
 }
 
+
+void UIRStatsUAA::resizeEvent(QResizeEvent *)
+{
+    if (m_currentCSVFileOutputLabel)
+    {
+        setCSVFileOutput(m_currentCSVFileOutput.toStdString());
+    }
+    if (m_currentTextFileOutputLabel)
+    {
+        setTextFileOutput(m_currentTextFileOutput.toStdString());
+    }
+}
 
 
 }}}}//end namespace

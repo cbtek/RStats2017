@@ -15,83 +15,95 @@ namespace ratstats {
 namespace modules {
 namespace uva {
 
-
-RStatsUVASessionData::RStatsUVASessionData()
-{
-
-}
-
+RStatsUVASessionData::RStatsUVASessionData():
+    m_dataFormat(RStatsDataFormatType::Examine),
+    m_universeSize(0),
+    m_dataRowStart(0),
+    m_examineColumn("A"),
+    m_auditColumn("A"),
+    m_differenceColumn("A")
+    {}
 RStatsUVASessionData::~RStatsUVASessionData()
 {
 
 }
 
-void RStatsUVASessionData::setDataFormat(const RStatsDataFormatType & value)
+void RStatsUVASessionData::setDataFormat(const RStatsDataFormatType& value)
 {
     m_dataFormat=value;
 }
 
-void RStatsUVASessionData::setUniverseSize(const RStatsInteger & value)
+void RStatsUVASessionData::setUniverseSize(const RStatsInteger& value)
 {
     m_universeSize=value;
 }
 
-void RStatsUVASessionData::setDataRowStart(const RStatsInteger & value)
+void RStatsUVASessionData::setDataRowStart(const RStatsInteger& value)
 {
     m_dataRowStart=value;
 }
 
-void RStatsUVASessionData::setDataTable(const RStatsWorksheet & value)
+void RStatsUVASessionData::setDataTableFilePath(const std::string& value)
 {
-    m_dataTable=value;
+    m_dataTableFilePath=value;
 }
 
-void RStatsUVASessionData::setExamineColumn(const std::string & value)
+void RStatsUVASessionData::setDataTableSheetName(const std::string& value)
+{
+    m_dataTableSheetName = value;
+}
+
+void RStatsUVASessionData::setExamineColumn(const std::string& value)
 {
     m_examineColumn=value;
 }
 
-void RStatsUVASessionData::setAuditColumn(const std::string & value)
+void RStatsUVASessionData::setAuditColumn(const std::string& value)
 {
     m_auditColumn=value;
 }
 
-void RStatsUVASessionData::setDifferenceColumn(const std::string & value)
+void RStatsUVASessionData::setDifferenceColumn(const std::string& value)
 {
     m_differenceColumn=value;
 }
 
-const RStatsDataFormatType &RStatsUVASessionData::getDataFormat() const
+const RStatsDataFormatType& RStatsUVASessionData::getDataFormat() const
 {
     return m_dataFormat;
 }
 
-const RStatsInteger &RStatsUVASessionData::getUniverseSize() const
+const RStatsInteger& RStatsUVASessionData::getUniverseSize() const
 {
     return m_universeSize;
 }
 
-const RStatsInteger &RStatsUVASessionData::getDataRowStart() const
+const RStatsInteger& RStatsUVASessionData::getDataRowStart() const
 {
     return m_dataRowStart;
 }
 
-const RStatsWorksheet &RStatsUVASessionData::getDataTable() const
+const std::string& RStatsUVASessionData::getDataTableFilePath() const
 {
-    return m_dataTable;
+    return m_dataTableFilePath;
 }
 
-const std::string &RStatsUVASessionData::getExamineColumn() const
+const std::string& RStatsUVASessionData::getDataTableSheetName() const
+{
+    return m_dataTableSheetName;
+}
+
+const std::string& RStatsUVASessionData::getExamineColumn() const
 {
     return m_examineColumn;
 }
 
-const std::string &RStatsUVASessionData::getAuditColumn() const
+const std::string& RStatsUVASessionData::getAuditColumn() const
 {
     return m_auditColumn;
 }
 
-const std::string &RStatsUVASessionData::getDifferenceColumn() const
+const std::string& RStatsUVASessionData::getDifferenceColumn() const
 {
     return m_differenceColumn;
 }
@@ -101,16 +113,43 @@ std::string RStatsUVASessionData::getType() const
     return c_RECENT_SESSION_EXTENSION;
 }
 
-void RStatsUVASessionData::save(const std::string &url)
+void RStatsUVASessionData::load(const std::string& url)
 {
-
+    XMLReader xml;
+    xml.load(url);
+    XMLDataElement * element = xml.getElement("session");
+    if (element)
+    {
+        RStatsModuleSessionDataImpl::load(element);
+        long dataFormatType = element->getChildElementDataAsType<RStatsInteger>("dataFormat");
+        setDataFormat(static_cast<RStatsDataFormatType>(dataFormatType));
+        setDataRowStart(element->getChildElementDataAsType<RStatsInteger>("dataRowStart"));
+        setDifferenceColumn(element->getChildElementData("differenceColumn"));
+        setExamineColumn(element->getChildElementData("examineColumn"));
+        setAuditColumn(element->getChildElementData("auditColumn"));
+        setUniverseSize(element->getChildElementDataAsType<RStatsInteger>("universeSize"));
+        setDataTableFilePath(element->getChildElementData("dataTableFilePath"));
+    }
 }
 
-void RStatsUVASessionData::load(const std::string &url)
+void RStatsUVASessionData::save(const std::string& url)
 {
-
+    std::ostringstream out;
+    XMLStreamWriter xml(out);
+    xml.writeStartDocument();
+    xml.writeStartElementNoAttributes("session");
+    RStatsModuleSessionDataImpl::save(xml);
+    std::string dataFormat = StringUtils::toString(static_cast<int>(this->getDataFormat()));
+    xml.writeTextElement("dataTableFilePath", getDataTableFilePath());
+    xml.writeTextElement("dataFormat",dataFormat);
+    xml.writeTextElement("dataRowStart",StringUtils::toString(getDataRowStart()));
+    xml.writeTextElement("auditColumn",getAuditColumn());
+    xml.writeTextElement("differenceColumn",getDifferenceColumn());
+    xml.writeTextElement("examineColumn",getExamineColumn());
+    xml.writeTextElement("universeSize",StringUtils::toString(getUniverseSize()));
+    xml.writeEndElement("session");
+    FileUtils::writeFileContents(url,out.str());
 }
-
 }}}}//end namespace
 
 

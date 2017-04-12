@@ -369,7 +369,7 @@ RStatsSVAInputDataList RStatsSVA::buildInputDataList(const RStatsWorksheet &data
         for (RStatsInteger a1 = 0; a1 < stratum.sampleSize;++a1)
         {
             std::string value1 = dataSheet(static_cast<size_t>(a1+stratum.offset),
-                                           stratum.typeIndex.primaryIndex).text;
+                                           stratum.typeIndex.primaryDatasetColumnIndex).text;
             StringUtils::removeInPlace(value1,",");
             StringUtils::removeInPlace(value1,"$");
             stratum.samples(index,0) = StringUtils::toFloat64(value1);
@@ -377,7 +377,7 @@ RStatsSVAInputDataList RStatsSVA::buildInputDataList(const RStatsWorksheet &data
             if (isMultiDataFormat)
             {
                 value2 = dataSheet(static_cast<size_t>(a1+stratum.offset),
-                                   stratum.typeIndex.secondaryIndex).text;
+                                   stratum.typeIndex.secondaryDatasetColumnIndex).text;
                 StringUtils::removeInPlace(value2,",");
                 StringUtils::removeInPlace(value2,"$");
                 stratum.samples(index,1) = StringUtils::toFloat64(value2);
@@ -582,8 +582,8 @@ void RStatsSVA::initializeDataTypeFormat(RStatsDataFormatType dataTypeFormat,
     {
         if (inputData.samples.getNumDimensions() > 1)
         {
-            m_examValues.appendDimension(inputData.samples,0);
-            m_auditValues.appendDimension(inputData.samples,1);
+            m_examValues.addValues(inputData.samples,0);
+            m_auditValues.addValues(inputData.samples,1);
             m_differenceValues = RStatsUtils::getNumbersSubtracted(m_examValues,m_auditValues);
             m_examineSum = RStatsUtils::getSum(m_examValues);
             m_differenceSum = RStatsUtils::getSum(m_differenceValues);
@@ -602,8 +602,8 @@ void RStatsSVA::initializeDataTypeFormat(RStatsDataFormatType dataTypeFormat,
     {
         if (inputData.samples.getNumDimensions() > 1)
         {
-            m_examValues.appendDimension(inputData.samples,0);
-            m_differenceValues.appendDimension(inputData.samples,1);
+            m_examValues.addValues(inputData.samples,0);
+            m_differenceValues.addValues(inputData.samples,1);
             m_auditValues = RStatsUtils::getNumbersSubtracted(m_examValues,m_differenceValues);
             m_examineSum = RStatsUtils::getSum(m_examValues);
             m_differenceSum = RStatsUtils::getSum(m_differenceValues);
@@ -624,8 +624,8 @@ void RStatsSVA::initializeDataTypeFormat(RStatsDataFormatType dataTypeFormat,
     {
         if (inputData.samples.getNumDimensions() > 1)
         {
-            m_auditValues.appendDimension(inputData.samples,0);
-            m_differenceValues.appendDimension(inputData.samples,1);
+            m_auditValues.addValues(inputData.samples,0);
+            m_differenceValues.addValues(inputData.samples,1);
             m_examValues = RStatsUtils::getNumbersAdded(m_auditValues,m_differenceValues);
             m_examineSum = RStatsUtils::getSum(m_examValues);
             m_differenceSum = RStatsUtils::getSum(m_differenceValues);
@@ -659,9 +659,9 @@ void RStatsSVA::calculateMean(const RStatsSVAInputData& inputData)
 //'----------CALCULATE STANDARD DEVIATION----------
 void RStatsSVA::calculateStandardDeviation(const RStatsSVAInputData &inputData)
 {
-    for (RStatsInteger a1 = 0; a1 < 3; ++a1)
+    for (size_t a1 = 0; a1 < 3; ++a1)
     {
-        if (!RStatsUtils::isEqual<RStatsFloat>(m_outputSum(a1), 0.0) &&
+        if (!RStatsUtils::isEqual(m_outputSum(a1), 0.0) &&
             inputData.sampleSize > 1 &&
             m_dataFormatTypeAvailableFlag(a1))
         {
@@ -688,9 +688,9 @@ void RStatsSVA::calculateStandardDeviation(const RStatsSVAInputData &inputData)
 //'----------CALCULATE STANDARD ERROR----------
 void RStatsSVA::calculateStandardError(const RStatsSVAInputData& inputData)
 {
-    for (RStatsInteger a1 = 0; a1 < 3; ++a1)
+    for (size_t a1 = 0; a1 < 3; ++a1)
     {
-        if (!RStatsUtils::isEqual<RStatsFloat>(m_outputStdDev(a1), 0.0) &&
+        if (!RStatsUtils::isEqual(m_outputStdDev(a1), 0.0) &&
             inputData.sampleSize > 1 &&
             m_dataFormatTypeAvailableFlag(a1))
         {
@@ -700,7 +700,7 @@ void RStatsSVA::calculateStandardError(const RStatsSVAInputData& inputData)
             RStatsFloat tempValue = inputData.universeSize;
             tempValue *= (inputData.universeSize - inputData.sampleSize);
             tempValue *= (std::pow(m_outputStdDev(a1),2));
-            tempValue /= (RStatsFloat) inputData.sampleSize;
+            tempValue /= static_cast<RStatsFloat>(inputData.sampleSize);
             m_outputTermSE(a1) = tempValue;
             m_outputStdErrTemp(a1) += m_outputTermSE(a1);
             m_summaryStandardErrorMean += m_outputStdErrTemp(a1);
@@ -727,7 +727,7 @@ void RStatsSVA::calculateDegreesOfFreedom(const RStatsSVAInputData& inputData)
 //'----------CALCULATE POINT ESTIMATES------
 void RStatsSVA::calculatePointEstimates(const RStatsSVAInputData& inputData)
 {
-    for (RStatsInteger a1 = 0; a1 < 3; ++a1)
+    for (size_t a1 = 0; a1 < 3; ++a1)
     {
         m_outputPNTest(a1) = m_outputMean(a1) * (RStatsFloat)inputData.universeSize;
         m_outputPNTestTemp(a1) = m_outputPNTestTemp(a1) + m_outputPNTest(a1);
@@ -770,7 +770,7 @@ void RStatsSVA::calculateUpperAndLowerLimits(const RStatsSVAInputData& inputData
 //'----------CALCULATE SKEWNESS-----------
 void RStatsSVA::calculateSkewness(const RStatsSVAInputData& inputData)
 {
-    for (RStatsInteger a1 = 0; a1 < 3; ++a1)
+    for (size_t a1 = 0; a1 < 3; ++a1)
     {
         if (inputData.sampleSize > 0 &&
             m_currentNonZero > 0 &&
@@ -788,7 +788,7 @@ void RStatsSVA::calculateSkewness(const RStatsSVAInputData& inputData)
             {
                 temp2 = 0;
             }
-            if (temp2 > 1 || RStatsUtils::isEqual<RStatsFloat>(temp2, 1.))
+            if (temp2 > 1 || RStatsUtils::isEqual(temp2, 1.))
             {
                 m_outputSkewAmount(a1) = temp1 / std::pow(temp2,3);
             }
@@ -800,7 +800,7 @@ void RStatsSVA::calculateSkewness(const RStatsSVAInputData& inputData)
 //'----------CALCULATE KURTOSIS-------------
 void RStatsSVA::calculateKurtosis(const RStatsSVAInputData& inputData)
 {
-    for (RStatsInteger a1 = 0; a1 < 3; ++a1)
+    for (size_t a1 = 0; a1 < 3; ++a1)
     {
         if (inputData.sampleSize > 0 &&
             m_currentNonZero > 0 &&
@@ -809,7 +809,7 @@ void RStatsSVA::calculateKurtosis(const RStatsSVAInputData& inputData)
             RStatsFloat cubeRt = m_outputSumCbrt(a1);
             RStatsFloat quadRt = m_outputSumQdrt(a1);
             RStatsFloat sqRt = m_outputSumSqrt(a1);
-            RStatsFloat sampSize = (RStatsFloat)inputData.sampleSize;
+            RStatsFloat sampSize = static_cast<RStatsFloat>(inputData.sampleSize);
             RStatsFloat mean = m_outputMean(a1);
 
             RStatsFloat temp1 = quadRt / sampSize;
@@ -825,7 +825,7 @@ void RStatsSVA::calculateKurtosis(const RStatsSVAInputData& inputData)
             {
                 temp2 = 0;
             }
-            if (temp2 > 1 || RStatsUtils::isEqual<RStatsFloat>(temp2,1.))
+            if (temp2 > 1 || RStatsUtils::isEqual(temp2,1.))
             {
                 m_outputKurtosisAmount(a1) = temp1 / std::pow(temp2,4);
             }
@@ -927,7 +927,7 @@ void RStatsSVA::processStartLoop(const RStatsSVAInputData& inputData)
     }
 
     m_difference = fabsl(m_formulaVarT - m_formulaVarTLast) - m_eps;
-    if (m_difference < 0 || RStatsUtils::isEqual<RStatsFloat>(m_formulaVarT,0.))
+    if (m_difference < 0 || RStatsUtils::isEqual(m_formulaVarT,0.))
     {
         if (m_conditionCount == 1)
         {
@@ -1007,7 +1007,7 @@ void RStatsSVA::processFindTerms(const RStatsSVAInputData& inputData)
     RStatsFloat tempValue = m_formulaVarC0;
     m_valuesC(0) = m_formulaVarC0;
     RStatsFloat logOld = std::log(m_valuesC(0));
-    if (RStatsUtils::isEqual<RStatsFloat>(m_formulaVarX,0))
+    if (RStatsUtils::isEqual(m_formulaVarX,0))
     {
         tempValue = 0;
         processFindProbVal(tempValue);
@@ -1067,7 +1067,7 @@ void RStatsSVA::calculateIntervals(const RStatsSVAInputData & inputData)
     m_outputTValue90 = m_temporary90;
     m_outputTValue95 = m_temporary95;
 
-    for (RStatsInteger a1 = 0; a1 < 3; ++a1)
+    for (size_t a1 = 0; a1 < 3; ++a1)
     {
         if (m_outputNonZero(a1) > 0)
         {
@@ -1076,9 +1076,10 @@ void RStatsSVA::calculateIntervals(const RStatsSVAInputData & inputData)
             m_outputPrecision95(a1) = m_temporary95 * m_outputStdErr(a1);
         }
 
-        m_outputVPrecision80(a1) = m_outputPrecision80(a1) * (RStatsFloat)inputData.universeSize;
-        m_outputVPrecision90(a1) = m_outputPrecision90(a1) * (RStatsFloat)inputData.universeSize;
-        m_outputVPrecision95(a1) = m_outputPrecision95(a1) * (RStatsFloat)inputData.universeSize;
+        RStatsFloat universe = static_cast<RStatsFloat>(inputData.universeSize);
+        m_outputVPrecision80(a1) = m_outputPrecision80(a1) * universe;
+        m_outputVPrecision90(a1) = m_outputPrecision90(a1) * universe;
+        m_outputVPrecision95(a1) = m_outputPrecision95(a1) * universe;
     }
 
     calculateUpperAndLowerLimits(inputData);

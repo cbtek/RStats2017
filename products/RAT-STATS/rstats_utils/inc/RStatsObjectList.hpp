@@ -112,12 +112,18 @@ public:
     size_t getNumDimensions() const;
 
     /**
-     * @brief appendDimension
+     * @brief addValues
      * @param values
      * @param dimensionForValues
      */
-    void appendDimension(const RStatsObjectList<T> & values,
-                         size_t dimensionForValues = 0);
+    void addValues(const RStatsObjectList<T>& values,
+                   size_t sourceDimension = 0);
+
+    /**
+     * @brief addValues
+     * @param values
+     */
+    void addValues(const std::vector<T>& values);
 
 
     /**
@@ -271,7 +277,7 @@ size_t RStatsObjectList<T>::getNumDimensions() const
 }
 
 template<typename T>
-void RStatsObjectList<T>::appendDimension(const RStatsObjectList<T> &values,
+void RStatsObjectList<T>::addValues(const RStatsObjectList<T> &values,
                                        size_t dimensionForValues)
 {
     if (values.size()  == 0)
@@ -284,6 +290,16 @@ void RStatsObjectList<T>::appendDimension(const RStatsObjectList<T> &values,
     {
         m_values.back().push_back(values(a1,dimensionForValues));
     }
+}
+
+template<typename T>
+void RStatsObjectList<T>::addValues(const std::vector<T> &values)
+{
+    if (values.size()  == 0)
+    {
+        return;
+    }
+    m_values.push_back(values);
 }
 
 template<typename T>

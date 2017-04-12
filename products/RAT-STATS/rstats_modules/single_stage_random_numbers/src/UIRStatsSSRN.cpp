@@ -9,7 +9,9 @@
 #include "RStatsSSRN.h"
 
 #include "rstats_utils/inc/RStatsSettingsManager.h"
+
 #include "rstats_ui/inc/UIRStatsUtils.hpp"
+#include "rstats_ui/inc/UIRStatsErrorMessage.h"
 
 #include "utility/inc/DateTimeUtils.hpp"
 #include "utility/inc/TimeUtils.hpp"
@@ -44,6 +46,7 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
 
     connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));
     connect(m_ui->m_btnExecute,SIGNAL(clicked(bool)),this,SLOT(onExecute()));
+    connect(m_ui->actionExecute,SIGNAL(triggered(bool)),this,SLOT(onExecute()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
     connect(m_ui->m_spnHighNumber,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
     connect(m_ui->m_spnLowNumber,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
@@ -67,18 +70,29 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
                               static_cast<RStatsFloat>(m_rnd.next(10,1000)));
 
     m_ui->m_btnExecute->setEnabled(false);
+    m_ui->actionExecute->setEnabled(false);
 
     m_currentCSVFileOutputLabel = nullptr;
     m_currentTextFileOutputLabel = nullptr;
     onValidate();
-    UIRStatsUtils::initButton(m_ui->m_btnExecute,"img_run.png");
-    UIRStatsUtils::initButton(m_ui->m_btnExit,"img_exit.png");
-    UIRStatsUtils::initButton(m_ui->m_btnHelp,"img_help.png");
-    UIRStatsUtils::initAction(m_ui->actionExit,"img_exit.png","Alt+Q");
-    UIRStatsUtils::initAction(m_ui->actionAbout,"img_about.png","Alt+A");
-    UIRStatsUtils::initAction(m_ui->actionRecent,"img_clock.png","Alt+S");
-    UIRStatsUtils::initAction(m_ui->actionExecute,"img_run.png","Alt+R");
-    UIRStatsUtils::initAction(m_ui->actionSingle_Stage_Random_Numbers_Help_Guide,"img_help.png","Alt+H");
+    RStatsInteger buttonHeight = 32;
+    UIRStatsUtils::customUISetup(m_ui->m_btnExecute,
+                                 m_ui->m_btnExit,
+                                 m_ui->m_btnHelp,
+                                 nullptr,
+                                 nullptr,
+                                 nullptr,
+                                 nullptr,
+                                 nullptr,
+                                 nullptr,
+                                 nullptr,
+                                 m_ui->actionExecute,
+                                 m_ui->actionExit,
+                                 m_ui->actionSingle_Stage_Random_Numbers_Help_Guide,
+                                 m_ui->actionAbout,
+                                 m_ui->actionRecent,
+                                 buttonHeight,
+                                 this->font());
     m_ui->menuFile->setTitle("&File");
     m_ui->menuHelp->setTitle("&Help");
     updateRecentSessions();
@@ -120,6 +134,7 @@ void UIRStatsSSRN::onValidate()
     {
         m_ui->m_dockOutput->hide();
         m_ui->m_btnExecute->setEnabled(true);
+        m_ui->actionExecute->setEnabled(true);
         return;
     }
     m_ui->m_dockOptions->show();
@@ -146,8 +161,13 @@ void UIRStatsSSRN::onValidate()
     if (m_logger.hasError())
     {
         m_ui->m_btnExecute->setEnabled(false);
+        m_ui->actionExecute->setEnabled(false);
     }
-    else m_ui->m_btnExecute->setEnabled(true);
+    else
+    {
+        m_ui->m_btnExecute->setEnabled(true);
+        m_ui->actionExecute->setEnabled(true);
+    }
 }
 
 void UIRStatsSSRN::onSaveCSVFile()
@@ -191,62 +211,70 @@ void UIRStatsSSRN::onUpdateClock()
 
 void UIRStatsSSRN::onExecute()
 {
-
-    onUpdateClock();
-    m_ui->m_tblOutput->clear();
-    RStatsSSRN ssrn;
-    std::string name = m_ui->m_txtAuditName->text().toStdString();
-    if (StringUtils::isEmpty(name))
+    try
     {
-        name = m_ui->m_txtAuditName->placeholderText().toStdString();
+        onUpdateClock();
+        m_ui->m_tblOutput->clear();
+        RStatsSSRN ssrn;
+        std::string name = m_ui->m_txtAuditName->text().toStdString();
+        if (StringUtils::isEmpty(name))
+        {
+            name = m_ui->m_txtAuditName->placeholderText().toStdString();
+        }
+        RStatsSSRNOutputData outputData = ssrn.execute(name,
+                                                       m_ui->m_spnSeed->value(),
+                                                       m_ui->m_spnOrder->value(),
+                                                       m_ui->m_spnSpares->value(),
+                                                       m_ui->m_spnLowNumber->value(),
+                                                       m_ui->m_spnHighNumber->value());
+
+        RStatsWorksheet worksheet;
+        ssrn.saveToWorksheet(worksheet);
+        UIRStatsUtils::bindSheetToUI(worksheet,m_ui->m_tblOutput,false,0,0);
+
+        if (!StringUtils::isEmpty(m_currentTextFileOutput.toStdString()))
+        {
+            FileUtils::writeFileContents(m_currentTextFileOutput.toStdString(),
+                                         worksheet.toEvenlySpacedString());
+        }
+
+        if (!StringUtils::isEmpty(m_currentCSVFileOutput.toStdString()))
+        {
+            FileUtils::writeFileContents(m_currentCSVFileOutput.toStdString(),
+                                         worksheet.toCommaDelimitedString());
+        }
+
+        m_ui->m_tblOutput->resizeColumnsToContents();
+        m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+        m_ui->m_grpOutput->show();
+        m_ui->m_line->show();
+        m_ui->m_frmTotals->show();
+        m_ui->m_lblNoData->hide();
+
+        std::string totalStr = StringUtils::toString(m_ui->m_spnOrder->value()+m_ui->m_spnSpares->value(),true);
+        std::string frameSizeStr = StringUtils::toString((m_ui->m_spnHighNumber->value()-m_ui->m_spnLowNumber->value())+1,true);
+        std::string sumStr = StringUtils::toString(outputData.sum,true);
+
+        m_ui->m_lblTotalRandomNumbersValue->setText(QString::fromStdString(totalStr));
+        m_ui->m_lblTotalFrameSizeValue->setText(QString::fromStdString(frameSizeStr));
+        m_ui->m_lblOutputSummationValue->setText(QString::fromStdString(sumStr));
+
+        m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::to12HourTimeString(outputData.createTime)));
+        m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toShortDateString(outputData.createDate)));
+
+        RStatsSSRNSessionData sessionData = getSessionData();
+        sessionData.setCreationDate(DateUtils::getCurrentDate().toDateInteger());
+        sessionData.setCreationTime(TimeUtils::getCurrentTime().toTimeInteger());
+        m_recentSessionsMap[sessionData.getAuditName()]=RStatsModuleSessionDataPtr(new RStatsSSRNSessionData(sessionData));
+        RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getAuditName()]);
+        updateRecentSessions();
     }
-    RStatsSSRNOutputData outputData = ssrn.execute(name,
-                                                   m_ui->m_spnSeed->value(),
-                                                   m_ui->m_spnOrder->value(),
-                                                   m_ui->m_spnSpares->value(),
-                                                   m_ui->m_spnLowNumber->value(),
-                                                   m_ui->m_spnHighNumber->value());
-
-    RStatsWorksheet worksheet;
-    ssrn.saveToWorksheet(worksheet);
-    UIRStatsUtils::bindSheetToUI(worksheet,m_ui->m_tblOutput,false,0,0);
-
-    if (!StringUtils::isEmpty(m_currentTextFileOutput.toStdString()))
+    catch (std::exception& e)
     {
-        FileUtils::writeFileContents(m_currentTextFileOutput.toStdString(),
-                                     worksheet.toEvenlySpacedString());
+        UIRStatsErrorMessage("Error occured while executing \""+this->windowTitle().toStdString()+"\"",
+                             std::string(e.what()),false,this).exec();
+        return;
     }
-
-    if (!StringUtils::isEmpty(m_currentCSVFileOutput.toStdString()))
-    {
-        FileUtils::writeFileContents(m_currentCSVFileOutput.toStdString(),
-                                     worksheet.toCommaDelimitedString());
-    }
-
-    m_ui->m_tblOutput->resizeColumnsToContents();
-    m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    m_ui->m_grpOutput->show();
-    m_ui->m_line->show();
-    m_ui->m_frmTotals->show();
-    m_ui->m_lblNoData->hide();
-
-    std::string totalStr = StringUtils::toString(m_ui->m_spnOrder->value()+m_ui->m_spnSpares->value(),true);
-    std::string frameSizeStr = StringUtils::toString((m_ui->m_spnHighNumber->value()-m_ui->m_spnLowNumber->value())+1,true);
-    std::string sumStr = StringUtils::toString(outputData.sum,true);
-
-    m_ui->m_lblTotalRandomNumbersValue->setText(QString::fromStdString(totalStr));
-    m_ui->m_lblTotalFrameSizeValue->setText(QString::fromStdString(frameSizeStr));
-    m_ui->m_lblOutputSummationValue->setText(QString::fromStdString(sumStr));
-
-    m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::to12HourTimeString(outputData.createTime)));
-    m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toShortDateString(outputData.createDate)));
-
-    RStatsSSRNSessionData sessionData = getSessionData();
-    sessionData.setCreationDate(DateUtils::getCurrentDate().toDateInteger());
-    sessionData.setCreationTime(TimeUtils::getCurrentTime().toTimeInteger());
-    m_recentSessionsMap[sessionData.getAuditName()]=RStatsModuleSessionDataPtr(new RStatsSSRNSessionData(sessionData));
-    RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getAuditName()]);
-    updateRecentSessions();    
 }
 
 void UIRStatsSSRN::onHelp()
@@ -357,8 +385,7 @@ void UIRStatsSSRN::onSeedBoxToggled(bool toggle)
 
 }
 
-
-void UIRStatsSSRN::setTextFileOutput(const std::string &textFile)
+void UIRStatsSSRN::setTextFileOutput(const std::string& textFile)
 {
     m_currentTextFileOutput = QString::fromStdString(textFile);
     if (!m_currentTextFileOutput.isEmpty())
@@ -367,16 +394,23 @@ void UIRStatsSSRN::setTextFileOutput(const std::string &textFile)
         {
             m_currentTextFileOutputLabel = new QLabel;
             m_currentTextFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+
         }
         m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
-        m_currentTextFileOutputLabel->setText("<b>Text File:</b> "+m_currentTextFileOutput);
+
+        m_currentTextFileOutputLabel->setToolTip(m_currentTextFileOutput);
+        QString text = "<b>Text File:</b> "+m_currentTextFileOutput;
+        QFontMetrics metrics(this->font());
+        QString elidedText = metrics.elidedText(text, Qt::ElideMiddle, this->width() / 2);
+        m_currentTextFileOutputLabel->setText(elidedText);
+
         m_ui->m_statusBar->addPermanentWidget(m_currentTextFileOutputLabel);
         m_currentTextFileOutputLabel->show();
     }
     else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
 }
 
-void UIRStatsSSRN::setCSVFileOutput(const std::string &csvFile)
+void UIRStatsSSRN::setCSVFileOutput(const std::string& csvFile)
 {
     m_currentCSVFileOutput = QString::fromStdString(csvFile);
     if (!m_currentCSVFileOutput.isEmpty())
@@ -384,16 +418,33 @@ void UIRStatsSSRN::setCSVFileOutput(const std::string &csvFile)
         if (m_currentCSVFileOutputLabel == nullptr)
         {
             m_currentCSVFileOutputLabel = new QLabel;
-            m_currentCSVFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+            m_currentCSVFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAFFFF;color:#000000;border:1px solid grey;}");
         }
         m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
-        m_currentCSVFileOutputLabel->setText("<b>CSV File</b>: "+m_currentCSVFileOutput);
+        m_currentCSVFileOutputLabel->setToolTip(m_currentCSVFileOutput);
+        QString text = "<b>CSV File:</b> "+m_currentCSVFileOutput;
+        QFontMetrics metrics(this->font());
+        QString elidedText = metrics.elidedText(text, Qt::ElideMiddle, this->width() / 2);
+        m_currentCSVFileOutputLabel->setText(elidedText);
+
         m_ui->m_statusBar->addPermanentWidget(m_currentCSVFileOutputLabel);
         m_currentCSVFileOutputLabel->show();
     }
     else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
 }
 
+
+void UIRStatsSSRN::resizeEvent(QResizeEvent *)
+{
+    if (m_currentCSVFileOutputLabel)
+    {
+        setCSVFileOutput(m_currentCSVFileOutput.toStdString());
+    }
+    if (m_currentTextFileOutputLabel)
+    {
+        setTextFileOutput(m_currentTextFileOutput.toStdString());
+    }
+}
 
 }}}}//end namespace
 

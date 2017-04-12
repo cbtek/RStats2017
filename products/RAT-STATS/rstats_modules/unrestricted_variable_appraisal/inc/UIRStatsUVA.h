@@ -8,6 +8,7 @@
 #include <QActionGroup>
 #include <QLabel>
 #include <QComboBox>
+#include <QTimer>
 
 #include "rstats_utils/inc/RStatsWorkbook.h"
 #include "rstats_utils/inc/RStatsConditionLogger.h"
@@ -39,27 +40,36 @@ public:
     
     //! Destructor for UIRStatsUVA
     ~UIRStatsUVA();
+
+protected:
+    void resizeEvent(QResizeEvent * e);
 private:
     /** 
     * MOC generated ui class for this widget
     */
      Ui_UIRStatsUVA *m_ui;
 
-     QIcon m_exitIcon;
-     QIcon m_runIcon;
-     QIcon m_helpIcon;
+     /**
+      * @brief Validation Console Icons
+      */
+     QIcon m_iconError;
+     QIcon m_iconOK;
+    QIcon m_iconWarning;
+
+    QTimer m_clock;
+
      QActionGroup* m_recentSessionActionGroup;
      std::map<std::string,utils::RStatsModuleSessionDataPtr> m_recentSessionsMap;
 
     /**
-    * @brief Labels/Strings for output
+    * @brief PushButtons/Strings for output
     */
     QString m_currentTextFileOutput;
     QString m_currentCSVFileOutput;
     QString m_dataTableImportFilePath;
 
-    QLabel * m_currentTextFileOutputLabel;
-    QLabel * m_currentCSVFileOutputLabel;
+    QLabel * m_currentTextFileOutputPushButton;
+    QLabel * m_currentCSVFileOutputPushButton;
 
     bool m_autoSetFileOutput;
 
@@ -78,13 +88,15 @@ private:
 
     void importDataTable(const std::string& dataTableFilePath);
     void importSizeTable(const std::string& sizeTableFilePath);
-    void populateWithColumns(const std::set<size_t> &columns, QComboBox* comboBox);
-    void populateWithRows(const std::set<size_t> &rows, QComboBox* comboBox);
+    void populateWithColumns(const std::set<size_t>& columns, QComboBox* comboBox);
+    void populateWithRows(const std::set<size_t>& rows, QComboBox* comboBox);
     void setTextFileOutput(const std::string& textFile);
     void setCSVFileOutput(const std::string& csvFile);
     RStatsUVASessionData getSessionData() const;
     void setSessionData(const RStatsUVASessionData& data);
     void updateRecentSessions();
+
+    oig::ratstats::utils::RStatsDataFormatType m_currentDataFormat;
 
  private slots:
       void onImportDataInput();
@@ -101,7 +113,10 @@ private:
       void onHelp();
       void onExecute();
       void onExit();
-    
+      bool onValidate();
+      void onUpdateClock();
+      void onLaunchCSVOutputProgram();
+      void onLaunchTextOutputProgram();
 };
 
 }}}}//end namespace
