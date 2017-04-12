@@ -46,6 +46,7 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
 
     connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));
     connect(m_ui->m_btnExecute,SIGNAL(clicked(bool)),this,SLOT(onExecute()));
+    connect(m_ui->actionExecute,SIGNAL(triggered(bool)),this,SLOT(onExecute()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
     connect(m_ui->m_spnHighNumber,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
     connect(m_ui->m_spnLowNumber,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
@@ -69,6 +70,7 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
                               static_cast<RStatsFloat>(m_rnd.next(10,1000)));
 
     m_ui->m_btnExecute->setEnabled(false);
+    m_ui->actionExecute->setEnabled(false);
 
     m_currentCSVFileOutputLabel = nullptr;
     m_currentTextFileOutputLabel = nullptr;
@@ -84,7 +86,7 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
                                  nullptr,
                                  nullptr,
                                  nullptr,
-                                 nullptr,
+                                 m_ui->actionExecute,
                                  m_ui->actionExit,
                                  m_ui->actionSingle_Stage_Random_Numbers_Help_Guide,
                                  m_ui->actionAbout,
@@ -132,6 +134,7 @@ void UIRStatsSSRN::onValidate()
     {
         m_ui->m_dockOutput->hide();
         m_ui->m_btnExecute->setEnabled(true);
+        m_ui->actionExecute->setEnabled(true);
         return;
     }
     m_ui->m_dockOptions->show();
@@ -158,8 +161,13 @@ void UIRStatsSSRN::onValidate()
     if (m_logger.hasError())
     {
         m_ui->m_btnExecute->setEnabled(false);
+        m_ui->actionExecute->setEnabled(false);
     }
-    else m_ui->m_btnExecute->setEnabled(true);
+    else
+    {
+        m_ui->m_btnExecute->setEnabled(true);
+        m_ui->actionExecute->setEnabled(true);
+    }
 }
 
 void UIRStatsSSRN::onSaveCSVFile()
@@ -377,8 +385,7 @@ void UIRStatsSSRN::onSeedBoxToggled(bool toggle)
 
 }
 
-
-void UIRStatsSSRN::setTextFileOutput(const std::string &textFile)
+void UIRStatsSSRN::setTextFileOutput(const std::string& textFile)
 {
     m_currentTextFileOutput = QString::fromStdString(textFile);
     if (!m_currentTextFileOutput.isEmpty())
@@ -387,16 +394,23 @@ void UIRStatsSSRN::setTextFileOutput(const std::string &textFile)
         {
             m_currentTextFileOutputLabel = new QLabel;
             m_currentTextFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+
         }
         m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
-        m_currentTextFileOutputLabel->setText("<b>Text File:</b> "+m_currentTextFileOutput);
+
+        m_currentTextFileOutputLabel->setToolTip(m_currentTextFileOutput);
+        QString text = "<b>Text File:</b> "+m_currentTextFileOutput;
+        QFontMetrics metrics(this->font());
+        QString elidedText = metrics.elidedText(text, Qt::ElideMiddle, this->width() / 2);
+        m_currentTextFileOutputLabel->setText(elidedText);
+
         m_ui->m_statusBar->addPermanentWidget(m_currentTextFileOutputLabel);
         m_currentTextFileOutputLabel->show();
     }
     else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
 }
 
-void UIRStatsSSRN::setCSVFileOutput(const std::string &csvFile)
+void UIRStatsSSRN::setCSVFileOutput(const std::string& csvFile)
 {
     m_currentCSVFileOutput = QString::fromStdString(csvFile);
     if (!m_currentCSVFileOutput.isEmpty())
@@ -404,16 +418,33 @@ void UIRStatsSSRN::setCSVFileOutput(const std::string &csvFile)
         if (m_currentCSVFileOutputLabel == nullptr)
         {
             m_currentCSVFileOutputLabel = new QLabel;
-            m_currentCSVFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+            m_currentCSVFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAFFFF;color:#000000;border:1px solid grey;}");
         }
         m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
-        m_currentCSVFileOutputLabel->setText("<b>CSV File</b>: "+m_currentCSVFileOutput);
+        m_currentCSVFileOutputLabel->setToolTip(m_currentCSVFileOutput);
+        QString text = "<b>CSV File:</b> "+m_currentCSVFileOutput;
+        QFontMetrics metrics(this->font());
+        QString elidedText = metrics.elidedText(text, Qt::ElideMiddle, this->width() / 2);
+        m_currentCSVFileOutputLabel->setText(elidedText);
+
         m_ui->m_statusBar->addPermanentWidget(m_currentCSVFileOutputLabel);
         m_currentCSVFileOutputLabel->show();
     }
     else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
 }
 
+
+void UIRStatsSSRN::resizeEvent(QResizeEvent *)
+{
+    if (m_currentCSVFileOutputLabel)
+    {
+        setCSVFileOutput(m_currentCSVFileOutput.toStdString());
+    }
+    if (m_currentTextFileOutputLabel)
+    {
+        setTextFileOutput(m_currentTextFileOutput.toStdString());
+    }
+}
 
 }}}}//end namespace
 

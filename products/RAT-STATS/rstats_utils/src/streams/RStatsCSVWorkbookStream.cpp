@@ -51,11 +51,11 @@ void RStatsCSVWorkbookStream::write(const RStatsWorkbook &workbook)
         {
             if (StringUtils::isEmpty(sheetName) )
             {
-                m_filePaths.push_back(rootFilePath+"_sheet["+StringUtils::toString(count)+"].dif");
+                m_filePaths.push_back(rootFilePath+"_sheet["+StringUtils::toString(count)+"].csv");
             }
             else
             {
-                m_filePaths.push_back(rootFilePath+"_"+FileUtils::getSanitizedPathName(sheetName)+".dif");
+                m_filePaths.push_back(rootFilePath+"_"+FileUtils::getSanitizedPathName(sheetName)+".csv");
             }
             ++count;
         }

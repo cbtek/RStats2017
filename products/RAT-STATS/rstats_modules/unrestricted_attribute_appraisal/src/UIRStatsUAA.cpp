@@ -38,6 +38,7 @@ UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
     m_ui->m_dockOptions->setTitleBarWidget(new QWidget());
 
     connect(m_ui->m_btnExecute,SIGNAL(clicked()),this,SLOT(onExecute()));
+    connect(m_ui->actionExecute,SIGNAL(triggered()),this,SLOT(onExecute()));
     connect(m_ui->m_btnExit,SIGNAL(clicked()),this,SLOT(onExit()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked()),this,SLOT(onHelp()));
     connect(m_ui->m_spnSampleSize,SIGNAL(valueChanged(int)),this,SLOT(onUpdateSampleCount()));
@@ -65,7 +66,7 @@ UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
                                  nullptr,
                                  nullptr,
                                  nullptr,
-                                 nullptr,
+                                 m_ui->actionExecute,
                                  m_ui->actionExit,
                                  m_ui->actionHelp_Topics,
                                  m_ui->actionAbout,
@@ -271,8 +272,7 @@ void UIRStatsUAA::updateRecentSessions()
     }
 
 }
-
-void UIRStatsUAA::setTextFileOutput(const std::string &textFile)
+void UIRStatsUAA::setTextFileOutput(const std::string& textFile)
 {
     m_currentTextFileOutput = QString::fromStdString(textFile);
     if (!m_currentTextFileOutput.isEmpty())
@@ -281,16 +281,23 @@ void UIRStatsUAA::setTextFileOutput(const std::string &textFile)
         {
             m_currentTextFileOutputLabel = new QLabel;
             m_currentTextFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+
         }
         m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
-        m_currentTextFileOutputLabel->setText("<b>Text File:</b> "+m_currentTextFileOutput);
+
+        m_currentTextFileOutputLabel->setToolTip(m_currentTextFileOutput);
+        QString text = "<b>Text File:</b> "+m_currentTextFileOutput;
+        QFontMetrics metrics(this->font());
+        QString elidedText = metrics.elidedText(text, Qt::ElideMiddle, this->width() / 2);
+        m_currentTextFileOutputLabel->setText(elidedText);
+
         m_ui->m_statusBar->addPermanentWidget(m_currentTextFileOutputLabel);
         m_currentTextFileOutputLabel->show();
     }
     else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
 }
 
-void UIRStatsUAA::setCSVFileOutput(const std::string &csvFile)
+void UIRStatsUAA::setCSVFileOutput(const std::string& csvFile)
 {
     m_currentCSVFileOutput = QString::fromStdString(csvFile);
     if (!m_currentCSVFileOutput.isEmpty())
@@ -298,16 +305,33 @@ void UIRStatsUAA::setCSVFileOutput(const std::string &csvFile)
         if (m_currentCSVFileOutputLabel == nullptr)
         {
             m_currentCSVFileOutputLabel = new QLabel;
-            m_currentCSVFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+            m_currentCSVFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAFFFF;color:#000000;border:1px solid grey;}");
         }
         m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
-        m_currentCSVFileOutputLabel->setText("<b>CSV File</b>: "+m_currentCSVFileOutput);
+        m_currentCSVFileOutputLabel->setToolTip(m_currentCSVFileOutput);
+        QString text = "<b>CSV File:</b> "+m_currentCSVFileOutput;
+        QFontMetrics metrics(this->font());
+        QString elidedText = metrics.elidedText(text, Qt::ElideMiddle, this->width() / 2);
+        m_currentCSVFileOutputLabel->setText(elidedText);
+
         m_ui->m_statusBar->addPermanentWidget(m_currentCSVFileOutputLabel);
         m_currentCSVFileOutputLabel->show();
     }
     else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
 }
 
+
+void UIRStatsUAA::resizeEvent(QResizeEvent *)
+{
+    if (m_currentCSVFileOutputLabel)
+    {
+        setCSVFileOutput(m_currentCSVFileOutput.toStdString());
+    }
+    if (m_currentTextFileOutputLabel)
+    {
+        setTextFileOutput(m_currentTextFileOutput.toStdString());
+    }
+}
 
 
 }}}}//end namespace

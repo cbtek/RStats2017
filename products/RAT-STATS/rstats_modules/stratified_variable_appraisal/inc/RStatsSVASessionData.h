@@ -30,7 +30,7 @@ public:
     * @brief Setter for m_dataFormat
     * @param Value to replace m_dataFormat
     */
-    void setDataFormat(const utils::RStatsDataFormatType & value);
+    void setDataFormat(const utils::RStatsDataFormatType&  value);
 
     /**
     * @brief Setter for m_sizeTable
@@ -48,50 +48,50 @@ public:
     * @brief Setter for m_sizeTableRowStart
     * @param Value to replace m_sizeTableRowStart
     */
-    void setSizeTableRowStart(const utils::RStatsInteger & value);
+    void setSizeTableRowStart(const utils::RStatsInteger&  value);
 
     /**
     * @brief Setter for m_dataTableRowStart
     * @param Value to replace m_dataTableRowStart
     */
-    void setDataTableRowStart(const utils::RStatsInteger & value);
+    void setDataTableRowStart(const utils::RStatsInteger&  value);
 
     /**
     * @brief Setter for m_universeColumn
     * @param Value to replace m_universeColumn
     */
-    void setUniverseColumn(const std::string & value);
+    void setUniverseColumn(const std::string&  value);
 
     /**
     * @brief Setter for m_sampleColumn
     * @param Value to replace m_sampleColumn
     */
-    void setSampleColumn(const std::string & value);
+    void setSampleColumn(const std::string&  value);
 
     /**
     * @brief Setter for m_differenceColumn
     * @param Value to replace m_differenceColumn
     */
-    void setDifferenceColumn(const std::string & value);
+    void setDifferenceColumn(const std::string&  value);
 
     /**
     * @brief Setter for m_auditColumn
     * @param Value to replace m_auditColumn
     */
-    void setAuditColumn(const std::string & value);
+    void setAuditColumn(const std::string&  value);
 
     /**
     * @brief Setter for m_examineColumn
     * @param Value to replace m_examineColumn
     */
-    void setExamineColumn(const std::string & value);
+    void setExamineColumn(const std::string&  value);
 
 
         /**
     * @brief Getter for m_dataFormat
     * @return Return copy of m_dataFormat
     */
-    const utils::RStatsDataFormatType & getDataFormat() const;
+    const utils::RStatsDataFormatType&  getDataFormat() const;
 
     /**
     * @brief Getter for m_sizeTable
@@ -109,43 +109,43 @@ public:
     * @brief Getter for m_sizeTableRowStart
     * @return Return copy of m_sizeTableRowStart
     */
-    const utils::RStatsInteger & getSizeTableRowStart() const;
+    const utils::RStatsInteger&  getSizeTableRowStart() const;
 
     /**
     * @brief Getter for m_dataTableRowStart
     * @return Return copy of m_dataTableRowStart
     */
-    const utils::RStatsInteger & getDataTableRowStart() const;
+    const utils::RStatsInteger&  getDataTableRowStart() const;
 
     /**
     * @brief Getter for m_universeColumn
     * @return Return copy of m_universeColumn
     */
-    const std::string & getUniverseColumn() const;
+    const std::string&  getUniverseColumn() const;
 
     /**
     * @brief Getter for m_sampleColumn
     * @return Return copy of m_sampleColumn
     */
-    const std::string & getSampleColumn() const;
+    const std::string&  getSampleColumn() const;
 
     /**
     * @brief Getter for m_differenceColumn
     * @return Return copy of m_differenceColumn
     */
-    const std::string & getDifferenceColumn() const;
+    const std::string&  getDifferenceColumn() const;
 
     /**
     * @brief Getter for m_auditColumn
     * @return Return copy of m_auditColumn
     */
-    const std::string & getAuditColumn() const;
+    const std::string&  getAuditColumn() const;
 
     /**
     * @brief Getter for m_examineColumn
     * @return Return copy of m_examineColumn
     */
-    const std::string & getExamineColumn() const;
+    const std::string&  getExamineColumn() const;
 
     /**
      * @brief getType

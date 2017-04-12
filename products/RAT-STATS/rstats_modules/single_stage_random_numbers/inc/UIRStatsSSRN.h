@@ -36,6 +36,10 @@ public:
 
     //! Destructor for UIRStatsSSRN
     ~UIRStatsSSRN();
+
+protected:
+    void resizeEvent(QResizeEvent *);
+
 private:
 
 

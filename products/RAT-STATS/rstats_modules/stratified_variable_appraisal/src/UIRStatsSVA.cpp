@@ -58,6 +58,8 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     m_iconOK = UIRStatsUtils::getIcon("img_ok.png");
     m_iconWarning = UIRStatsUtils::getIcon("img_warning.png");
 
+    m_currentDataFormat = RStatsDataFormatType::Examine;
+
     //Initialize button/action elements
     UIRStatsUtils::customUISetup(m_ui->m_btnExecute,
                                  m_ui->m_btnExit,
@@ -69,7 +71,7 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
                                  nullptr,
                                  nullptr,
                                  nullptr,
-                                 nullptr,
+                                 m_ui->actionExecute,
                                  m_ui->actionExit,
                                  m_ui->actionHelp,
                                  m_ui->actionAbout,
@@ -95,6 +97,7 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
     connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));
     connect(m_ui->m_btnExecute,SIGNAL(clicked(bool)),this,SLOT(onExecute()));
+    connect(m_ui->actionExecute,SIGNAL(triggered(bool)),this,SLOT(onExecute()));
     connect(m_ui->m_cmbDataInputSheets,SIGNAL(currentIndexChanged(int)),this,SLOT(onComboDataInputSheetSelected(int)));
     connect(m_ui->m_cmbSizeInputSheets,SIGNAL(currentIndexChanged(int)),this,SLOT(onComboSizeInputSheetSelected(int)));
     connect(&m_clock,SIGNAL(timeout()),this,SLOT(onUpdateClock()));    
@@ -252,6 +255,7 @@ bool UIRStatsSVA::onValidate()
 
 
          m_ui->m_btnExecute->setEnabled(true);
+         m_ui->actionExecute->setEnabled(true);
          return true;
      }     
      if (!m_fullScreenToggle)
@@ -284,8 +288,13 @@ bool UIRStatsSVA::onValidate()
      if (m_conditionLogger.hasError())
      {
          m_ui->m_btnExecute->setEnabled(false);
+         m_ui->actionExecute->setEnabled(false);
      }
-     else m_ui->m_btnExecute->setEnabled(true);
+     else
+     {
+         m_ui->m_btnExecute->setEnabled(true);
+         m_ui->actionExecute->setEnabled(true);
+     }
      return false;
 }
 
@@ -349,35 +358,35 @@ void UIRStatsSVA::onExecute()
         if (m_ui->m_rdbAudited->isChecked())
         {
             dfIndex.type = RStatsDataFormatType::Audit;
-            dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbAuditedDataTable->currentText().toStdString());
+            dfIndex.primaryDatasetColumnIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbAuditedDataTable->currentText().toStdString());
         }
         else if (m_ui->m_rdbDifference->isChecked())
         {
             dfIndex.type = RStatsDataFormatType::Difference;
-            dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbDifferenceDataTable->currentText().toStdString());
+            dfIndex.primaryDatasetColumnIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbDifferenceDataTable->currentText().toStdString());
         }
         else if (m_ui->m_rdbExamined->isChecked())
         {
             dfIndex.type = RStatsDataFormatType::Examine;
-            dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbExaminedDataTable->currentText().toStdString());
+            dfIndex.primaryDatasetColumnIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbExaminedDataTable->currentText().toStdString());
         }
         else if (m_ui->m_rdbAuditedAndDifference->isChecked())
         {
             dfIndex.type = RStatsDataFormatType::AuditAndDifference;
-            dfIndex.secondaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbDifferenceDataTable->currentText().toStdString());
-            dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbAuditedDataTable->currentText().toStdString());
+            dfIndex.secondaryDatasetColumnIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbDifferenceDataTable->currentText().toStdString());
+            dfIndex.primaryDatasetColumnIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbAuditedDataTable->currentText().toStdString());
         }
         else if (m_ui->m_rdbExaminedAndDifference->isChecked())
         {
             dfIndex.type = RStatsDataFormatType::ExamineAndDifference;
-            dfIndex.secondaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbDifferenceDataTable->currentText().toStdString());
-            dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbExaminedDataTable->currentText().toStdString());
+            dfIndex.secondaryDatasetColumnIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbDifferenceDataTable->currentText().toStdString());
+            dfIndex.primaryDatasetColumnIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbExaminedDataTable->currentText().toStdString());
         }
         else if (m_ui->m_rdbExaminedAndAudited->isChecked())
         {
             dfIndex.type = RStatsDataFormatType::ExamineAndAudit;
-            dfIndex.secondaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbAuditedDataTable->currentText().toStdString());
-            dfIndex.primaryIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbExaminedDataTable->currentText().toStdString());
+            dfIndex.secondaryDatasetColumnIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbAuditedDataTable->currentText().toStdString());
+            dfIndex.primaryDatasetColumnIndex  = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbExaminedDataTable->currentText().toStdString());
         }
         m_dataFormatType = dfIndex.type;
 
@@ -618,32 +627,39 @@ void UIRStatsSVA::onUpdateDataFormatSelection()
     m_ui->m_cmbAuditedDataTable->setEnabled(false);
     m_ui->m_cmbExaminedDataTable->setEnabled(false);
     m_ui->m_cmbDifferenceDataTable->setEnabled(false);
+
     if (m_ui->m_rdbAudited->isChecked())
     {
         m_ui->m_cmbAuditedDataTable->setEnabled(true);
+        m_currentDataFormat = RStatsDataFormatType::Audit;
     }
     else if (m_ui->m_rdbDifference->isChecked())
     {
         m_ui->m_cmbDifferenceDataTable->setEnabled(true);
+        m_currentDataFormat = RStatsDataFormatType::Difference;
     }
     else if (m_ui->m_rdbExamined->isChecked())
     {
         m_ui->m_cmbExaminedDataTable->setEnabled(true);
+        m_currentDataFormat = RStatsDataFormatType::Examine;
     }
     else if (m_ui->m_rdbAuditedAndDifference->isChecked())
     {
         m_ui->m_cmbDifferenceDataTable->setEnabled(true);
         m_ui->m_cmbAuditedDataTable->setEnabled(true);
+        m_currentDataFormat = RStatsDataFormatType::AuditAndDifference;
     }
     else if (m_ui->m_rdbExaminedAndDifference->isChecked())
     {
         m_ui->m_cmbDifferenceDataTable->setEnabled(true);
         m_ui->m_cmbExaminedDataTable->setEnabled(true);
+        m_currentDataFormat = RStatsDataFormatType::ExamineAndDifference;
     }
     else if (m_ui->m_rdbExaminedAndAudited->isChecked())
     {
         m_ui->m_cmbAuditedDataTable->setEnabled(true);
         m_ui->m_cmbExaminedDataTable->setEnabled(true);
+        m_currentDataFormat = RStatsDataFormatType::ExamineAndAudit;
     }
 }
 
@@ -675,7 +691,12 @@ RStatsSVASessionData UIRStatsSVA::getSessionData() const
 
 void UIRStatsSVA::setSessionData(const RStatsSVASessionData &data)
 {
-    m_ui->m_txtAuditName->setText(QString::fromStdString(data.getAuditName()));
+    std::string text = (data.getAuditName());
+    if (StringUtils::isEmpty(text))
+    {
+        text = RStatsUtils::getAuditName();
+    }
+    m_ui->m_txtAuditName->setText(QString::fromStdString(text));
     m_currentDataWorkbook.clear();
     m_currentSizeWorkbook.clear();
     m_currentDataSheet.setWorksheetTitle("Data Sheet");
@@ -686,10 +707,24 @@ void UIRStatsSVA::setSessionData(const RStatsSVASessionData &data)
     {
         importDataTable(data.getDataTableFilePath());
     }
+    else
+    {
+        UIRStatsErrorMessage("Could not load recently saved session...",
+                             "The file located at \""+data.getDataTableFilePath()+"\" appears to be missing or in a read-only state.  Please manually import the file again before continuing.",false).exec();
+        onValidate();
+        return;
+    }
 
     if (FileUtils::fileExists(data.getSizeTableFilePath()))
     {
         importSizeTable(data.getSizeTableFilePath());
+    }
+    else
+    {
+        UIRStatsErrorMessage("Could not load recently saved session...",
+                             "The file located at \""+data.getSizeTableFilePath()+"\" appears to be missing or in a read-only state.  Please manually import the file again before continuing.",false).exec();
+        onValidate();
+        return;
     }
     onUpdateRowColumnExtentsForDataTable();
     onUpdateRowColumnExtentsForSizeTable();
@@ -700,6 +735,7 @@ void UIRStatsSVA::setSessionData(const RStatsSVASessionData &data)
     {
         m_ui->m_cmbDataInputSheets->setCurrentText(QString::fromStdString(data.getDataTableSheetName()));
     }
+
     if (!StringUtils::isEmpty(data.getSizeTableSheetName()))
     {
         m_ui->m_cmbSizeInputSheets->setCurrentText(QString::fromStdString(data.getSizeTableSheetName()));
@@ -801,8 +837,7 @@ void UIRStatsSVA::updateRecentSessions()
     }
 
 }
-
-void UIRStatsSVA::setTextFileOutput(const std::string &textFile)
+void UIRStatsSVA::setTextFileOutput(const std::string& textFile)
 {
     m_currentTextFileOutput = QString::fromStdString(textFile);
     if (!m_currentTextFileOutput.isEmpty())
@@ -811,16 +846,23 @@ void UIRStatsSVA::setTextFileOutput(const std::string &textFile)
         {
             m_currentTextFileOutputLabel = new QLabel;
             m_currentTextFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+
         }
         m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
-        m_currentTextFileOutputLabel->setText("<b>Text File:</b> "+m_currentTextFileOutput);
+
+        m_currentTextFileOutputLabel->setToolTip(m_currentTextFileOutput);
+        QString text = "<b>Text File:</b> "+m_currentTextFileOutput;
+        QFontMetrics metrics(this->font());
+        QString elidedText = metrics.elidedText(text, Qt::ElideMiddle, this->width() / 2);
+        m_currentTextFileOutputLabel->setText(elidedText);
+
         m_ui->m_statusBar->addPermanentWidget(m_currentTextFileOutputLabel);
         m_currentTextFileOutputLabel->show();
     }
     else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
 }
 
-void UIRStatsSVA::setCSVFileOutput(const std::string &csvFile)
+void UIRStatsSVA::setCSVFileOutput(const std::string& csvFile)
 {
     m_currentCSVFileOutput = QString::fromStdString(csvFile);
     if (!m_currentCSVFileOutput.isEmpty())
@@ -828,16 +870,33 @@ void UIRStatsSVA::setCSVFileOutput(const std::string &csvFile)
         if (m_currentCSVFileOutputLabel == nullptr)
         {
             m_currentCSVFileOutputLabel = new QLabel;
-            m_currentCSVFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+            m_currentCSVFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAFFFF;color:#000000;border:1px solid grey;}");
         }
         m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
-        m_currentCSVFileOutputLabel->setText("<b>CSV File</b>: "+m_currentCSVFileOutput);
+        m_currentCSVFileOutputLabel->setToolTip(m_currentCSVFileOutput);
+        QString text = "<b>CSV File:</b> "+m_currentCSVFileOutput;
+        QFontMetrics metrics(this->font());
+        QString elidedText = metrics.elidedText(text, Qt::ElideMiddle, this->width() / 2);
+        m_currentCSVFileOutputLabel->setText(elidedText);
+
         m_ui->m_statusBar->addPermanentWidget(m_currentCSVFileOutputLabel);
         m_currentCSVFileOutputLabel->show();
     }
     else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
 }
 
+
+void UIRStatsSVA::resizeEvent(QResizeEvent *)
+{
+    if (m_currentCSVFileOutputLabel)
+    {
+        setCSVFileOutput(m_currentCSVFileOutput.toStdString());
+    }
+    if (m_currentTextFileOutputLabel)
+    {
+        setTextFileOutput(m_currentTextFileOutput.toStdString());
+    }
+}
 
 }}}}//end namespace
 

@@ -13,7 +13,6 @@
 
 #include "rstats_utils/inc/RStatsWorkbook.h"
 #include "rstats_utils/inc/RStatsConditionLogger.h"
-
 #include "rstats_ui/inc/UIRStatsWorkbook.h"
 
 #include "RStatsSVASessionData.h"
@@ -41,6 +40,11 @@ public:
     ~UIRStatsSVA();
 
 protected:
+
+    /**
+     * @brief keyPressEvent
+     * @param evt
+     */
     void keyPressEvent(QKeyEvent*evt);
 
 private:
@@ -99,11 +103,31 @@ private:
       */
      bool m_fullScreenToggle;
 
-     QActionGroup * m_recentSessionActionGroup;
-     std::map<std::string,utils::RStatsModuleSessionDataPtr> m_recentSessionsMap;
-     utils::RStatsDataFormatType m_dataFormatType;
+
+     /**
+      * @brief m_autoSetFileOutput Allows output checkboxes to be changed without signaling event for file browser
+      */
      bool m_autoSetFileOutput;
 
+     /**
+      * @brief m_recentSessionActionGroup Holds all the recently ran session actions
+      */
+     QActionGroup * m_recentSessionActionGroup;
+
+     /**
+      * @brief m_recentSessionsMap
+      */
+     std::map<std::string,utils::RStatsModuleSessionDataPtr> m_recentSessionsMap;
+
+     /**
+      * @brief m_dataFormatType
+      */
+     utils::RStatsDataFormatType m_dataFormatType;     
+
+     /**
+      * @brief m_currentDataFormat
+      */
+     oig::ratstats::utils::RStatsDataFormatType m_currentDataFormat;
 
      /**
       * @brief importDataTable
@@ -160,6 +184,8 @@ private:
       */
      void populateWithRows(const std::set<size_t> &rows, QComboBox* comboBox);
 
+protected:
+     void resizeEvent(QResizeEvent*);
 
 protected slots:
      /**

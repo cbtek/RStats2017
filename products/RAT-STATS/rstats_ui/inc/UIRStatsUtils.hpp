@@ -38,6 +38,14 @@ namespace ui {
 
 namespace UIRStatsUtils
 {
+    /**
+     * @brief setButtonStyle
+     * @param button
+     * @param font
+     * @param icon
+     * @param buttonHeight
+     * @param squareButton
+     */
     inline void setButtonStyle(QAbstractButton * button,
                                  const QFont& font,
                                  const QIcon& icon,
@@ -56,6 +64,11 @@ namespace UIRStatsUtils
         }
     }
 
+    /**
+     * @brief getIcon
+     * @param iconFileName
+     * @return
+     */
     inline QIcon getIcon(const std::string & iconFileName)
     {
         if (cbtek::common::utility::FileUtils::fileExists(iconFileName))
@@ -73,6 +86,10 @@ namespace UIRStatsUtils
         return icon;
     }
 
+    /**
+     * @brief getCurrentTheme
+     * @return
+     */
     inline std::string getCurrentTheme()
     {
         std::string path = utils::RStatsUtils::getThemeSettingsFilePath();
@@ -88,6 +105,10 @@ namespace UIRStatsUtils
         return "DEFAULT";
     }
 
+    /**
+     * @brief loadThemeSettings
+     * @param app
+     */
     inline void loadThemeSettings(QApplication * app)
     {
 
@@ -247,6 +268,14 @@ namespace UIRStatsUtils
         table->show();
     }
 
+
+    /**
+     * @brief setOutputFile
+     * @param checkBox
+     * @param title
+     * @param extension
+     * @return
+     */
     inline QString setOutputFile(QCheckBox * checkBox,
                               const QString& title,
                               const QString& extension)
@@ -270,8 +299,14 @@ namespace UIRStatsUtils
         return "";
     }
 
-
-
+    /**
+     * @brief buildRecentSessions
+     * @param parent
+     * @param menuRecentAction
+     * @param sessionMapOut
+     * @param sessionExtension
+     * @return
+     */
     template<typename ModuleType>
     inline std::pair<QActionGroup *, QAction*> buildRecentSessions(
                                      QWidget * parent,
@@ -332,6 +367,26 @@ namespace UIRStatsUtils
         return std::make_pair(recentSessionActionGroup,clearRecentSessionsAction);
     }
 
+    /**
+     * @brief customUISetup
+     * @param executeButton
+     * @param exitButton
+     * @param helpButton
+     * @param folderBrowse1Button
+     * @param folderBrowse2Button
+     * @param folderBrowse3Button
+     * @param addRowButton1
+     * @param addColumnButton1
+     * @param addRowButton2
+     * @param addColumnButton2
+     * @param executeAction
+     * @param exitAction
+     * @param helpAction
+     * @param aboutAction
+     * @param recentAction
+     * @param buttonHeight
+     * @param font
+     */
     inline void customUISetup(QPushButton* executeButton = nullptr,
                             QPushButton* exitButton = nullptr,
                             QPushButton* helpButton = nullptr,
@@ -362,18 +417,22 @@ namespace UIRStatsUtils
         if (aboutAction)
         {
             aboutAction->setIcon(UIRStatsUtils::getIcon("img_about.png"));
+            aboutAction->setShortcut(QKeySequence("Alt+A"));
         }
         if (helpAction)
         {
             helpAction->setIcon(iconHelp);
+            helpAction->setShortcut(QKeySequence("Alt+H"));
         }
         if (exitAction)
         {
             exitAction->setIcon(iconExit);
+            exitAction->setShortcut(QKeySequence("Alt+Q"));
         }
         if (executeAction)
         {
             executeAction->setIcon(iconRun);
+            executeAction->setShortcut(QKeySequence("Alt+R"));
         }
         if (executeButton)
         {

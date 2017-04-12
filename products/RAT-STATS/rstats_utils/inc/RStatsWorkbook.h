@@ -14,6 +14,12 @@ namespace oig {
 namespace ratstats {
 namespace utils {
 
+enum class RStatsWorkbookMergeDirection
+{
+    MergeBottom,
+    MergeRight
+};
+
 class RStatsWorkbook 
 {
 public:
@@ -85,6 +91,12 @@ public:
      * @return
      */
     std::vector<std::string> getWorksheetNames() const;
+
+    /**
+     * @brief mergeSheets
+     * @return
+     */
+    RStatsWorksheet mergeSheets(RStatsWorkbookMergeDirection direction = RStatsWorkbookMergeDirection::MergeBottom, size_t padding = 1);
 
     /**
      * @brief clear

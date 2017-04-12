@@ -82,7 +82,8 @@ enum class RStatsDataFormatType
 struct RStatsDataFormatTypeIndex
 {
     RStatsDataFormatType type;
-    size_t primaryIndex,secondaryIndex;
+    size_t primaryDatasetColumnIndex;
+    size_t secondaryDatasetColumnIndex;
 };
 
 
@@ -98,6 +99,46 @@ enum class RStatsConditionalOperatorType
 
 namespace RStatsUtils
 {
+
+inline static bool isAHalfFraction(double value, double rf)
+{
+    double frac;
+    double integral;
+
+    frac = modf(value, &integral);
+
+    if (round(frac * 10) / 10 != 0.5 && round(frac * 10) / 10 != -0.5)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
+inline double vbRound2(double value, double rf = 100.)
+{
+    double tmp;
+
+    value *= rf;
+    if (!isAHalfFraction(value, rf))
+    {
+        return std::round(value) / rf;
+    }
+
+    tmp = floor(value);
+
+    if ((int)tmp % 2 == 0)
+    {
+        return tmp / rf;
+    }
+    else
+    {
+        return (tmp + 1) / rf;
+    }
+}
+
 
 template <class T>
 inline RStatsInteger vbRound(T value)
@@ -181,11 +222,10 @@ inline RStatsInteger vbRound(T value)
      * @param value1
      * @param value2
      * @return
-     */
-    template <typename Float>
-    inline bool isEqual(Float value1, Float value2)
-    {
-        return (value1 - value2) < FLT_EPSILON;
+     */    
+    inline bool isEqual(double value1, double value2)
+    {        
+        return std::fabs(value1 - value2) < DBL_EPSILON;
     }
 
     /**
