@@ -19,6 +19,7 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QPushButton>
+#include <QPixmap>
 
 #include <map>
 
@@ -38,6 +39,14 @@ namespace ui {
 
 namespace UIRStatsUtils
 {
+    /**
+     * @brief setButtonStyle
+     * @param button
+     * @param font
+     * @param icon
+     * @param buttonHeight
+     * @param squareButton
+     */
     inline void setButtonStyle(QAbstractButton * button,
                                  const QFont& font,
                                  const QIcon& icon,
@@ -56,6 +65,33 @@ namespace UIRStatsUtils
         }
     }
 
+    /**
+     * @brief getPixmap
+     * @param pixmapFileName
+     * @return
+     */
+    inline QPixmap getPixmap(const std::string & pixmapFileName)
+    {
+        if (cbtek::common::utility::FileUtils::fileExists(pixmapFileName))
+        {
+            return QPixmap(QString::fromStdString(pixmapFileName));
+        }
+
+        QPixmap pixmap;
+        std::string iconResource = cbtek::common::utility::FileUtils::buildFilePath(utils::RStatsUtils::getResourcePath(),pixmapFileName);
+        if (cbtek::common::utility::FileUtils::fileExists(iconResource))
+        {
+            pixmap = QPixmap(QString::fromStdString(iconResource));
+        }
+
+        return pixmap;
+    }
+
+    /**
+     * @brief getIcon
+     * @param iconFileName
+     * @return
+     */
     inline QIcon getIcon(const std::string & iconFileName)
     {
         if (cbtek::common::utility::FileUtils::fileExists(iconFileName))
@@ -73,6 +109,10 @@ namespace UIRStatsUtils
         return icon;
     }
 
+    /**
+     * @brief getCurrentTheme
+     * @return
+     */
     inline std::string getCurrentTheme()
     {
         std::string path = utils::RStatsUtils::getThemeSettingsFilePath();
@@ -88,6 +128,10 @@ namespace UIRStatsUtils
         return "DEFAULT";
     }
 
+    /**
+     * @brief loadThemeSettings
+     * @param app
+     */
     inline void loadThemeSettings(QApplication * app)
     {
 
@@ -332,6 +376,45 @@ namespace UIRStatsUtils
         menuRecentAction->setMenu(recentMenu);
         return std::make_pair(recentSessionActionGroup,clearRecentSessionsAction);
     }
+
+    /**
+     * @brief initAction
+     * @param action
+     * @param icon
+     * @param shortcut
+     * @param font
+     */
+    inline void initAction(QAction* action,
+                           const QString& icon,
+                           const QString& shortcut,
+                           const QFont& font = QFont(),
+                           int height = 32)
+    {
+        action->setIcon(UIRStatsUtils::getIcon(icon));
+        action->setShortcut(QKeySequence(shortcut));
+        action->setIconSize(QSize(height-4,height-4));
+        action->setFont(font);
+    }
+
+    /**
+     * @brief initButton
+     * @param button
+     * @param icon
+     * @param font
+     * @param height
+     */
+    inline void initButton(QPushButton* button,
+                           const QString& icon,
+                           const QFont& font = QFont(),
+                           int height = 32)
+    {
+        button->setIcon(UIRStatsUtils::getIcon(icon));
+        button->setIconSize(QSize(height-4,height-4));
+        button->setMinimumHeight(height);
+        button->setMaximumHeight(height + 8);
+        button->setFont(font);
+    }
+
 
     inline void customUISetup(QPushButton* executeButton = nullptr,
                             QPushButton* exitButton = nullptr,

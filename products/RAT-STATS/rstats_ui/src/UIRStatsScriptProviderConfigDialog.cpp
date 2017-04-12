@@ -42,7 +42,31 @@ UIRStatsScriptProviderConfigDialog::UIRStatsScriptProviderConfigDialog(const uti
 {
     m_ui->setupUi(this);
     m_props = props;
+
+
+    UIRStatsUtils::customUISetup(nullptr,
+                                 m_ui->m_btnCancel,
+                                 nullptr,
+                                 m_ui->m_btnBrowseLocation,
+                                 nullptr,
+                                 nullptr,
+                                 m_ui->m_btnCancel,
+                                 nullptr,
+                                 m_ui->m_btnSetIcon,
+                                 m_ui->m_btnBrowseLocation);
+
+    UIRStatsUtils::setButtonStyle(m_ui->m_btnSave,
+                                  this->font(),
+                                  UIRStatsUtils::getIcon("img_ok.png"),
+                                  32,false);
+
     onInit();
+
+    //Setup signal/slot connections
+    connect(m_ui->m_btnSave,SIGNAL(clicked(bool)),this,SLOT(onOk()));
+    connect(m_ui->m_btnCancel,SIGNAL(clicked(bool)),this,SLOT(close()));
+    connect(m_ui->m_btnBrowseLocation,SIGNAL(clicked(bool)),this,SLOT(onBrowseProviderPath()));
+    connect(m_ui->m_btnSetIcon,SIGNAL(clicked(bool)),this,SLOT(onBrowseProviderIcon()));
 }
 
 UIRStatsScriptProviderConfigDialog::~UIRStatsScriptProviderConfigDialog()
@@ -51,10 +75,7 @@ UIRStatsScriptProviderConfigDialog::~UIRStatsScriptProviderConfigDialog()
 }
 
 void UIRStatsScriptProviderConfigDialog::onInit()
-{
-    m_ui->m_btnSave->setIcon(UIRStatsUtils::getIcon("img_ok.png"));
-    m_ui->m_btnCancel->setIcon(UIRStatsUtils::getIcon("img_exit.png"));
-    m_ui->m_btnSetIcon->setIcon(UIRStatsUtils::getIcon("img_folder.png"));
+{    
 
     m_ui->m_txtName->setText(QString::fromStdString(m_props.getName()));
     m_ui->m_txtLocation->setText(QString::fromStdString(m_props.getPath()));
@@ -66,13 +87,7 @@ void UIRStatsScriptProviderConfigDialog::onInit()
     if (!icon.isNull())
     {
         m_ui->m_btnSetIcon->setIcon(icon);
-    }    
-
-    //Setup signal/slot connections
-    connect(m_ui->m_btnSave,SIGNAL(clicked(bool)),this,SLOT(onOk()));
-    connect(m_ui->m_btnCancel,SIGNAL(clicked(bool)),this,SLOT(close()));
-    connect(m_ui->m_btnBrowseLocation,SIGNAL(clicked(bool)),this,SLOT(onBrowseProviderPath()));
-    connect(m_ui->m_btnSetIcon,SIGNAL(clicked(bool)),this,SLOT(onBrowseProviderIcon()));
+    }      
 }
 
 void UIRStatsScriptProviderConfigDialog::onOk()

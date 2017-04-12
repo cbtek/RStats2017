@@ -45,7 +45,7 @@ UIRStatsSettingsManager::UIRStatsSettingsManager(QWidget *parent) :
     m_deleteButtons = nullptr;
     onInitScriptProviders();
     onInitThemes();
-    onInitKeyBindings();
+    onInitKeyBindings();    
     connect(m_ui->m_btnClose,SIGNAL(clicked(bool)),this,SLOT(onClose()));    
     m_ui->m_btnClose->setIcon(m_exitIcon);
     m_ui->m_btnNewScriptProvider->setIcon(m_addIcon);
@@ -63,6 +63,7 @@ void UIRStatsSettingsManager::onClose()
 
 void UIRStatsSettingsManager::onInitScriptProviders()
 {    
+    connect(m_ui->m_btnNewScriptProvider,SIGNAL(clicked(bool)),this,SLOT(onAddScriptProvider()));
     if (m_editButtons)
     {
         delete m_editButtons;
@@ -140,9 +141,7 @@ void UIRStatsSettingsManager::onInitScriptProviders()
     table->setShowGrid(false);
     table->setAlternatingRowColors(true);
     connect(m_editButtons,SIGNAL(buttonClicked(QAbstractButton*)),this,SLOT(onEditScriptProvider(QAbstractButton*)));
-    connect(m_deleteButtons,SIGNAL(buttonClicked(QAbstractButton*)),this,SLOT(onDeleteScriptProvider(QAbstractButton*)));
-    connect(m_ui->m_btnNewScriptProvider,SIGNAL(clicked(bool)),this,SLOT(onAddScriptProvider()));
-
+    connect(m_deleteButtons,SIGNAL(buttonClicked(QAbstractButton*)),this,SLOT(onDeleteScriptProvider(QAbstractButton*)));    
 }
 
 void UIRStatsSettingsManager::onInitThemes()

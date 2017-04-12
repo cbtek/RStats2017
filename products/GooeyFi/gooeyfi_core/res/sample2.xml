@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<GooeyFiApp title="Sample2" icon="">
-    <GooeyFiPage title="PageSample" layout="VERTICAL">
-        <GooeyFiWidget label="Text" id="TEXTINPUT" value="" style="MULTI"/>
-        <GooeyFiWidget label="Browse" id="PATHBROWSER" value="" style="FILE"/>
-        <GooeyFiWidget label="Value" id="NUMERIC" value="0.000000" min="0.000000" max="10.000000" increment="1.000000" style="INTEGER"/>
-        <GooeyFiWidget label="Launch" id="BUTTON" value="" style="ACTION"/>
-    </GooeyFiPage>
-</GooeyFiApp>

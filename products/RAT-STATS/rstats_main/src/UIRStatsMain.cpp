@@ -31,10 +31,11 @@
 #include "rstats_utils/inc/RStatsUtils.hpp"
 #include "rstats_utils/inc/RStatsWorkbook.h"
 
-#include "rstats_ui/inc/UIRStatsSettingsManager.h"
 #include "rstats_ui/inc/UIRStatsAbout.h"
-#include "rstats_ui/inc/UIRStatsUtils.hpp"
+#include "rstats_ui/inc/UIRStatsErrorMessage.h"
 #include "rstats_ui/inc/UIRStatsLaunchConfigDialog.h"
+#include "rstats_ui/inc/UIRStatsSettingsManager.h"
+#include "rstats_ui/inc/UIRStatsUtils.hpp"
 
 
 using namespace cbtek::common::utility;
@@ -49,8 +50,16 @@ namespace main {
 UIRStatsMain::UIRStatsMain(QWidget *parent) :
     QMainWindow(parent),
     m_ui(new Ui_UIRStatsMain)
-{
+{    
     m_ui->setupUi(this);              
+
+    //Set UI Font
+    this->setFont(QFont("arial",12));
+
+    //Remove title bar widget from category dock
+    m_ui->m_dockCategories->setTitleBarWidget(new QWidget());
+
+    //Set images for all icons
     m_iconFolder = UIRStatsUtils::getIcon("img_folder.png");
     m_iconModule = UIRStatsUtils::getIcon("img_module.png");
     m_iconEdit = UIRStatsUtils::getIcon("img_edit.png");
@@ -61,23 +70,26 @@ UIRStatsMain::UIRStatsMain(QWidget *parent) :
     m_iconAbout = UIRStatsUtils::getIcon("img_about.png");
     m_iconRemove = UIRStatsUtils::getIcon("img_remove.png");
 
+    //Set icons to actions/buttons
     m_ui->m_actionExit->setIcon(m_iconExit);
     m_ui->m_actionAbout_RAT_STATS_2017->setIcon(m_iconAbout);
     m_ui->m_actionHelp_Topics->setIcon(m_iconHelp);
     m_ui->m_actionAdd_New_Module->setIcon(m_iconAdd);
     m_ui->m_actionSettings_Manager->setIcon(m_iconSettings);
 
-    m_buttonHeight = 32;
+    //Set default values
+    m_buttonHeight = 40;
     m_currentTable = nullptr;
     m_tableHasFocus = false;
-    m_ui->m_lstModules->setStyleSheet("QListWidget:item{height:32px;padding:1px;}");
+    m_ui->m_lstCategories->setStyleSheet("QListWidget:item{height:"+QString::number(m_buttonHeight+8)+"px;padding:1px;}");
     onInitialize(0);
 
+    //Create SIGNAL/SLOT connections for all actions/buttons and other widgets
     connect(m_ui->m_actionExit,SIGNAL(triggered(bool)),this,SLOT(onExit()));
     connect(m_ui->m_actionSettings_Manager,SIGNAL(triggered(bool)),this,SLOT(onLaunchSettingsManager()));
     connect(m_ui->m_actionAbout_RAT_STATS_2017,SIGNAL(triggered(bool)),this,SLOT(onLaunchAbout()));
     connect(m_ui->m_actionAdd_New_Module,SIGNAL(triggered(bool)),this,SLOT(onAddNewModule()));
-    connect(m_ui->m_lstModules,SIGNAL(currentRowChanged(int)),this,SLOT(onTabChanged(int)));    
+    connect(m_ui->m_lstCategories,SIGNAL(currentRowChanged(int)),this,SLOT(onTabChanged(int)));
 
 }
 
@@ -88,8 +100,10 @@ UIRStatsMain::~UIRStatsMain()
 
 void UIRStatsMain::onInitialize(int defaultCategoryIndex)
 {
+    //Clear all launch buttons
     m_allLaunchButtons.clear();
 
+    //Delete launch button maps
     for (const auto& it : m_launchButtonMap.toStdMap())
     {
         delete m_launchButtonMap[it.first];
@@ -105,7 +119,10 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
         delete m_removeButtonMap[it.first];
     }
 
-    m_ui->m_lstModules->clear();
+    //Clear modules
+    m_ui->m_lstCategories->clear();
+
+    //Create new layout
     QVBoxLayout * mainLayout = dynamic_cast<QVBoxLayout*>(m_ui->m_lytModules->layout());
     for (const auto & it : m_tableMap.toStdMap())
     {
@@ -114,6 +131,7 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
     }
     m_tableMap.clear();
 
+    //Grab the modules
     std::vector<RStatsModuleProperties> propsList;
     try
     {
@@ -123,12 +141,12 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
     {
         RStatsUtils::createValidPath("config/.rstats_module_properties");
         RStatsUtils::createValidPath("config/.rstats_script_provider_properties");
-        QMessageBox::information(this, "No Modules", "You have no modules available to launch.  You may create modules by pressing [Alt + N] or by clicking the \"Create new Module\" link in the file menu");
+        UIRStatsErrorMessage("No Modules Detected", "You have no modules available to launch.  You may create modules by pressing [Alt + N] or by clicking the \"Create new Module\" link in the file menu").exec();
         return;
     }
 
+    //Loop over modules and determine which groups they belong to
     std::map<std::string, std::vector<RStatsModuleProperties> > groupedModules;
-
     for(const RStatsModuleProperties& props : propsList)
     {
         std::string category = props.getCategory();
@@ -139,6 +157,7 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
         groupedModules[category].push_back(props);
     }
 
+    //Lets loop over all modules by group and populate the module tables
     size_t tableIndex = 0;    
     for (const auto& it : groupedModules)
     {
@@ -170,13 +189,30 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
             layout->setProperty("name",name);                        
             std::string properPath = StringUtils::replace(props.getPath(),"\\","/");
             bool hasPathSeperator = StringUtils::contains(properPath,"/");
-            bool isDisabled = !hasPathSeperator || !FileUtils::fileExists(props.getPath());
-#ifdef __WIN32            
+            bool isDisabled = !hasPathSeperator || !FileUtils::fileExists(props.getPath());            
+            #ifdef __WIN32
+                if (isDisabled)
+                {
+                    isDisabled = !hasPathSeperator || !FileUtils::fileExists(props.getPath()+".exe") || !FileUtils::fileExists(props.getPath()+".EXE");
+                }
+            #endif
+
+            //if module is disabled check to see if its in executable path
             if (isDisabled)
             {
-                isDisabled = !hasPathSeperator || !FileUtils::fileExists(props.getPath()+".exe") || !FileUtils::fileExists(props.getPath()+".EXE");
+                #ifdef __WIN32
+                    std::string propsPath = FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),props.getPath()+".exe");
+                #else
+                    std::string propsPath = FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),props.getPath());
+                #endif
+                if (FileUtils::fileExists(propsPath))
+                {
+                    props.setPath(propsPath);
+                    isDisabled = false;
+                    props.saveConfig();
+                }
             }
-#endif
+
             QString path = QString::fromStdString(props.getDefinitionPath());
 
             //Setup edit button
@@ -214,57 +250,81 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
             frame->resize(frame->width(),m_buttonHeight);
             frame->setLayout(layout);
             table->setCellWidget(row,0,frame);
-            table->setRowHeight(row,m_buttonHeight+4);
+            table->setRowHeight(row,m_buttonHeight+8);
 
+            //Setup shortcut key for module and edit/remove/launch buttons
             QString removeKeyString,editKeyString,launchKeyString;
             QKeySequence editKey = this->getKeyEditSequence(row, editKeyString);
             QKeySequence removeKey = this->getKeyRemoveSequence(row, removeKeyString);
             QKeySequence launchKey = this->getKeyLaunchSequence(row, launchKeyString);
-
-            QTableWidgetItem * verticalItem = new QTableWidgetItem;
-            verticalItem->setFont(QFont("arial",11,4));
+            QTableWidgetItem * verticalItem = new QTableWidgetItem;            
             verticalItem->setText(launchKeyString);
             verticalItem->setData(Qt::UserRole,activeRow);
-            table->setVerticalHeaderItem(row,verticalItem);
 
+
+            if (isDisabled)
+            {
+                verticalItem->setBackground(QBrush(QColor(255,255,255)));
+                verticalItem->setForeground(QBrush(QColor(127,127,127)));
+                verticalItem->setTextColor(QColor(127,127,127));
+                verticalItem->setFont(QFont("arial",10,-1,true));
+            }
+            else
+            {
+                verticalItem->setBackground(QBrush(QColor(127,255,127)));
+                verticalItem->setForeground(QBrush(QColor(0,0,0)));
+                verticalItem->setTextColor(QColor(0,0,0));
+                verticalItem->setFont(QFont("arial",12,8,false));
+            }
+
+            table->setVerticalHeaderItem(row,verticalItem);                    
             UIRStatsShortcut * editShortcut = new UIRStatsShortcut(editKey,table);
             UIRStatsShortcut * removeShortcut = new UIRStatsShortcut(removeKey,table);
-            UIRStatsShortcut * launchShortcut = new UIRStatsShortcut(launchKey,table);
+            UIRStatsShortcut * launchShortcut = new UIRStatsShortcut(launchKey,table);            
             editShortcut->setProperty("index",row);
             removeShortcut->setProperty("index",row);
             launchShortcut->setProperty("index",row);
             editShortcut->setProperty("path",path);
             removeShortcut->setProperty("path",path);
             launchShortcut->setProperty("path",path);
+
+            //Connect signal to slots for editing, removing and launching a module via shortcut
             connect(editShortcut,SIGNAL(activated(QShortcut*)),this,SLOT(onEditModuleShortcut(QShortcut*)));
             connect(removeShortcut,SIGNAL(activated(QShortcut*)),this,SLOT(onRemoveModuleShortcut(QShortcut*)));
             connect(launchShortcut,SIGNAL(activated(QShortcut*)),this,SLOT(onLaunchModuleShortcut(QShortcut*)));            
             ++row;
         }
+
+        //Set first row as default row
         if (table->rowCount() > 0)
         {
             table->selectRow(0);
         }
+
+        //set table properties and add current group name to category list
         table->horizontalHeader()->setSectionResizeMode(0,QHeaderView::Stretch);
         m_tableMap[tableIndex] = table;
         mainLayout->addWidget(table);
-        m_ui->m_lstModules->addItem(new QListWidgetItem(m_iconFolder,name));
+        m_ui->m_lstCategories->addItem(new QListWidgetItem(m_iconFolder,name));
         ++tableIndex;
         connect(launchButtons,SIGNAL(buttonClicked(QAbstractButton*)),this,SLOT(onLaunchModule(QAbstractButton*)));
         connect(editButtons,SIGNAL(buttonClicked(QAbstractButton*)),this,SLOT(onEditModule(QAbstractButton*)));
         connect(removeButtons,SIGNAL(buttonClicked(QAbstractButton*)),this,SLOT(onRemoveModule(QAbstractButton*)));
     }      
 
-    if (defaultCategoryIndex < m_ui->m_lstModules->count())
+    //Set the default category index if this function was called from an remove/update/new call
+    if (defaultCategoryIndex < m_ui->m_lstCategories->count())
     {
         onTabChanged(defaultCategoryIndex);
-        m_ui->m_lstModules->setCurrentRow(defaultCategoryIndex);
+        m_ui->m_lstCategories->setCurrentRow(defaultCategoryIndex);
     }   
 }
 
 
 QString UIRStatsMain::getKeyAssignment(int count) const
 {
+
+    //set up unique shortcut key for up to 180 modules per group
     QString keyString;
     if (count < 36)
     {
@@ -338,7 +398,7 @@ void UIRStatsMain::showEvent(QShowEvent *)
         }
     }
 
-    if(m_ui->m_lstModules->count() > 0)
+    if(m_ui->m_lstCategories->count() > 0)
     {
         onTabChanged(0);
     }
@@ -387,13 +447,13 @@ void UIRStatsMain::onTabChanged(int tab)
 void UIRStatsMain::onAddNewModule()
 {
     utils::RStatsModuleProperties props;
-    QListWidgetItem * item = m_ui->m_lstModules->currentItem();
+    QListWidgetItem * item = m_ui->m_lstCategories->currentItem();
     if (item)
     {
         props.setCategory(item->text().toStdString());
     }
     UIRStatsLaunchConfigDialog(props).exec();
-    this->onInitialize(m_ui->m_lstModules->currentRow());
+    this->onInitialize(m_ui->m_lstCategories->currentRow());
 }
 
 void UIRStatsMain::onLaunchModuleShortcut(QShortcut *button)
@@ -435,7 +495,7 @@ void UIRStatsMain::editModule(const QString &propsPath)
         props.loadConfig(path);
         if (UIRStatsLaunchConfigDialog(props).launch())
         {
-            onInitialize(m_ui->m_lstModules->currentRow());
+            onInitialize(m_ui->m_lstCategories->currentRow());
             if (m_currentTable && m_currentTable->rowCount() > 0)
             {
                 m_currentTable->selectRow(0);
@@ -461,7 +521,7 @@ void UIRStatsMain::removeModule(const QString &propsPath)
         if (answer == QMessageBox::Yes)
         {
             props.removeConfig();
-            onInitialize(m_ui->m_lstModules->currentRow());
+            onInitialize(m_ui->m_lstCategories->currentRow());
             if (m_currentTable && m_currentTable->rowCount() > 0)
             {
                 m_currentTable->selectRow(0);
@@ -512,7 +572,7 @@ void UIRStatsMain::keyPressEvent(QKeyEvent *event)
         if (m_tableHasFocus)
         {
             m_tableHasFocus = false;
-            m_ui->m_lstModules->setFocus();
+            m_ui->m_lstCategories->setFocus();
         }
         else
         {
@@ -563,34 +623,5 @@ void UIRStatsMain::keyPressEvent(QKeyEvent *event)
         }
     }
 }
-
-void UIRStatsMain::setVisualZoom(RStatsMainVisualZoom zoom)
-{
-    switch(zoom)
-    {
-        case RStatsMainVisualZoom::Normal:
-        {
-            m_font = QFont("arial",10);
-            m_buttonHeight = 32;
-            onInitialize(m_ui->m_lstModules->currentRow());
-        }
-        break;
-        case RStatsMainVisualZoom::Larger:
-        {
-            m_font = QFont("arial",12);
-            m_buttonHeight = 48;
-            onInitialize(m_ui->m_lstModules->currentRow());
-        }
-        break;
-        case RStatsMainVisualZoom::Largest:
-        {
-            m_font = QFont("arial",14);
-            m_buttonHeight = 64;
-            onInitialize(m_ui->m_lstModules->currentRow());
-        }
-        break;
-    }
-}
-
 }}}//end namespace
 

@@ -99,6 +99,12 @@ enum class RStatsConditionalOperatorType
 namespace RStatsUtils
 {
 
+
+/**
+ * @brief vbRound This function attempts to simulate VB / VBA bankers rounding
+ * @param value
+ * @return rounded integer value
+ */
 template <class T>
 inline RStatsInteger vbRound(T value)
 {
@@ -156,10 +162,10 @@ inline RStatsInteger vbRound(T value)
 }
 
     /**
-     * @brief ipow
-     * @param base
-     * @param exp
-     * @return
+     * @brief ipow Custom pow function for integers
+     * @param base The base value
+     * @param exp The exponential value
+     * @return Computed base raised to exp
      */
     template <typename Integer>
     inline Integer ipow(Integer base, Integer exp)
@@ -177,10 +183,10 @@ inline RStatsInteger vbRound(T value)
 
 
     /**
-     * @brief isEqual
-     * @param value1
-     * @param value2
-     * @return
+     * @brief isEqual Compares to floating point values
+     * @param value1 First floating point value
+     * @param value2 Second floating point value
+     * @return True if the floats are equal, false otherwise
      */
     template <typename Float>
     inline bool isEqual(Float value1, Float value2)
@@ -189,10 +195,10 @@ inline RStatsInteger vbRound(T value)
     }
 
     /**
-     * @brief getSum
-     * @param values
-     * @param dimension
-     * @return
+     * @brief getSum Return sum of list of numbers
+     * @param values List of numbers to sum
+     * @param dimension Dimension of numbers to sum
+     * @return total sum of all values
      */
     template <typename Number>
     inline Number getSum(const RStatsObjectList<Number>& values,
@@ -208,11 +214,11 @@ inline RStatsInteger vbRound(T value)
     }
 
     /**
-     * @brief getSumRaisedTo
-     * @param values
-     * @param power
-     * @param dimension
-     * @return
+     * @brief getSumRaisedTo Return sum of values raised to power
+     * @param values List of numbers to sum
+     * @param power The power to raise each number to
+     * @param dimension The dimension of the numbers to sum
+     * @return total sum of all raised values
      */
     template <typename Float>
     inline Float getSumRaisedTo(const RStatsObjectList<Float>& values,
@@ -232,12 +238,13 @@ inline RStatsInteger vbRound(T value)
     }
 
     /**
-     * @brief getNumItemsThatMatchCondition
-     * @param condition
-     * @param values
-     * @param value
-     * @param dimension
-     * @return
+     * @brief getNumItemsThatMatchCondition Attempts to return the number of items in values that match
+     * the condition.  Conditions can be =, !=, >, <, >= or <=
+     * @param condition The condition to check
+     * @param values List of values
+     * @param value Number to compare to list of values
+     * @param dimension Dimension of values to check
+     * @return total count of values that match condition
      */
     template <typename Number>
     inline size_t getNumItemsThatMatchCondition(RStatsConditionalOperatorType condition,

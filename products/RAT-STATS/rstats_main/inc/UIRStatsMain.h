@@ -1,7 +1,5 @@
 /*
     UIRStatsMain.h
-    
-
 */
 
 #pragma once
@@ -27,19 +25,13 @@ namespace oig {
 namespace ratstats {
 namespace main {
 
-enum class RStatsMainVisualZoom
-{
-    Normal,
-    Larger,
-    Largest
-};
-
 class UIRStatsMain : public QMainWindow
 {
     Q_OBJECT
 
 public:
-	//! Constructor for UIRStatsMain
+
+    //! Constructor for UIRStatsMain
 	/*!
 		Detailed description for UIRStatsMain
         @param      parent points to embedding super widget. Defaults to null.
@@ -55,16 +47,14 @@ private:
     */
      Ui_UIRStatsMain *m_ui;
 
-     void onInitialize(int defaultCategoryIndex = 0);    
+     //Private data memebers
      QVector<QToolButton*> m_allLaunchButtons;
      QMap<size_t, QTableWidget*> m_tableMap;
      QMap<size_t, QButtonGroup*> m_launchButtonMap;
      QMap<size_t, QButtonGroup*> m_editButtonMap;
      QMap<size_t, QButtonGroup*> m_removeButtonMap;
-//     QMap<int, QVector<QAbstractButton*>> m_currentLaunchButtonMap;
-//     QMap<int, QVector<QAbstractButton*>> m_currentEditButtonMap;
-//     QMap<int, QVector<QAbstractButton*>> m_currentRemoveButtonMap;
 
+     //Icons for the UI
      QIcon m_iconEdit;
      QIcon m_iconHelp;
      QIcon m_iconModule;
@@ -75,17 +65,25 @@ private:
      QIcon m_iconObject;
      QIcon m_iconAbout;
      QIcon m_iconAdd;
+
+     //Font used by UI
+     QFont m_font;
+
+     //Default height of buttons on UI
+     int m_buttonHeight;
+
+     //Determines if table has user (keyboard) focus
+     bool m_tableHasFocus;
+
+     //GUI Table to hold all modules
+     QTableWidget * m_currentTable;
+
+     //Functions used internally
+     void onInitialize(int defaultCategoryIndex = 0);
      QString getKeyAssignment(int count) const;
      QKeySequence getKeyLaunchSequence(int count, QString & keyString) const;
      QKeySequence getKeyEditSequence(int count, QString & keyString) const;
      QKeySequence getKeyRemoveSequence(int count, QString & keyString) const;
-
-     QFont m_font;
-     int m_buttonHeight;
-     bool m_tableHasFocus;
-     QTableWidget * m_currentTable;
-
-
 
 protected:
     void showEvent(QShowEvent *);
@@ -95,7 +93,7 @@ protected:
     void launchModule(const QString &propsPath);
     void paintEvent(QPaintEvent* event);
     void keyPressEvent(QKeyEvent * event);
-    void setVisualZoom(RStatsMainVisualZoom zoom);
+
 protected slots:
     void onExit();    
     void onLaunchSettingsManager();

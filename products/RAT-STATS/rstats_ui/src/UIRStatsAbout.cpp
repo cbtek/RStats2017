@@ -8,6 +8,8 @@
 #include "UIRStatsAbout.h"
 #include "ui_UIRStatsAbout.h"
 
+#include "UIRStatsUtils.hpp"
+
 #include "utility/inc/SystemUtils.hpp"
 #include "utility/inc/FileUtils.hpp"
 
@@ -23,18 +25,9 @@ UIRStatsAbout::UIRStatsAbout(QWidget *parent) :
     m_ui(new Ui_UIRStatsAbout)
 {
     m_ui->setupUi(this);
-    connect(m_ui->m_btnOK,SIGNAL(clicked(bool)),this,SLOT(onOK()));
-    QString logoPath = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"resx/img_logo_desktop.png"));
-    if (FileUtils::fileExists(logoPath.toStdString()))
-    {
-        m_ui->m_lblCreditsBackup->hide();
-        m_ui->m_lblCreditsLogo->setPixmap(QPixmap(logoPath));
-    }
-    else
-    {
-        m_ui->m_lblCreditsBackup->show();
-        m_ui->m_lblCreditsLogo->hide();
-    }
+    connect(m_ui->m_btnOK,SIGNAL(clicked(bool)),this,SLOT(onOK()));        
+    m_ui->m_lblRStatsLogo->setPixmap(UIRStatsUtils::getPixmap("img_logo.png"));
+    m_ui->m_lblTeamCBTekLogo->setPixmap(UIRStatsUtils::getPixmap("img_team_cbtek_text_logo_small.png"));
 }
 
 

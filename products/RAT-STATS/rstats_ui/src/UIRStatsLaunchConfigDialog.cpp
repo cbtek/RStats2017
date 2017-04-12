@@ -47,7 +47,10 @@ UIRStatsLaunchConfigDialog::UIRStatsLaunchConfigDialog(const utils::RStatsModule
                                  m_ui->m_btnSetIcon,
                                  m_ui->m_btnBrowseLocation);
 
-    m_ui->m_btnSave->setIcon(UIRStatsUtils::getIcon("img_ok.png"));
+    UIRStatsUtils::setButtonStyle(m_ui->m_btnSave,
+                                  this->font(),
+                                  UIRStatsUtils::getIcon("img_ok.png"),
+                                  32,false);
     onInit();
 
     //Setup signal/slot connections
