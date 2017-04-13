@@ -422,9 +422,6 @@ void RStatsUVA::calculateStandardDeviation()
             {
                 m_standardDeviation(a1) = 0;
             }
-            m_totalStandardDeviation(a1) += (std::pow(m_standardDeviation(a1),2) * std::pow(m_universeSize,2));
-            //std::cerr << "StdDev1:" <<m_standardDeviation(a1)<<std::endl;
-            //std::cerr << "StdDev2:" <<m_totalStandardDeviation(a1)<<std::endl;
         }
     }
 }

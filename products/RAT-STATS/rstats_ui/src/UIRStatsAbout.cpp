@@ -26,6 +26,7 @@ UIRStatsAbout::UIRStatsAbout(QWidget *parent) :
 {
     m_ui->setupUi(this);
     connect(m_ui->m_btnOK,SIGNAL(clicked(bool)),this,SLOT(onOK()));        
+    UIRStatsUtils::initButton(m_ui->m_btnOK,"img_ok.png");
     m_ui->m_lblRStatsLogo->setPixmap(UIRStatsUtils::getPixmap("img_logo.png"));
     m_ui->m_lblTeamCBTekLogo->setPixmap(UIRStatsUtils::getPixmap("img_team_cbtek_text_logo_small.png"));
 }

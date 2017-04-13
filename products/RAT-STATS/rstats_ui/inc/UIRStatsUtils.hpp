@@ -142,14 +142,19 @@ namespace UIRStatsUtils
         xmlReader.load(path);
 
         cbtek::common::utility::XMLDataElement * theme = xmlReader.getElement("theme");
-        app->setStyleSheet("");
+        app->setStyleSheet("QWidget{font-size:12px;} QLineEdit{padding:6px;} QComboBox{padding:6px;} QComboBox::item{padding:6px;} QPushButton{padding:4px;}");
+
+        #ifdef __WIN32
+            app->setStyle(QStyleFactory::create("windowsvista"));
+        #endif
+
         if (theme)
         {
             cbtek::common::utility::XMLDataElement * style = theme->getChild("style");
             std::string styleStr = cbtek::common::utility::StringUtils::toUpperTrimmed(style->getElementData());
             if (styleStr == "FUSION")
             {
-                app->setStyle(QStyleFactory::create("fusion"));
+                app->setStyle(QStyleFactory::create("fusion"));                
             }
             else if (styleStr == "DARK")
             {
@@ -387,12 +392,10 @@ namespace UIRStatsUtils
     inline void initAction(QAction* action,
                            const QString& icon,
                            const QString& shortcut,
-                           const QFont& font = QFont(),
-                           int height = 32)
+                           const QFont& font = QFont())
     {
-        action->setIcon(UIRStatsUtils::getIcon(icon));
+        action->setIcon(UIRStatsUtils::getIcon(icon.toStdString()));
         action->setShortcut(QKeySequence(shortcut));
-        action->setIconSize(QSize(height-4,height-4));
         action->setFont(font);
     }
 
@@ -408,107 +411,11 @@ namespace UIRStatsUtils
                            const QFont& font = QFont(),
                            int height = 32)
     {
-        button->setIcon(UIRStatsUtils::getIcon(icon));
-        button->setIconSize(QSize(height-4,height-4));
-        button->setMinimumHeight(height);
+        button->setIcon(UIRStatsUtils::getIcon(icon.toStdString()));
+        button->setIconSize(QSize(height-8,height-8));
+        button->setMinimumHeight(height + 8);
         button->setMaximumHeight(height + 8);
         button->setFont(font);
-    }
-
-
-    inline void customUISetup(QPushButton* executeButton = nullptr,
-                            QPushButton* exitButton = nullptr,
-                            QPushButton* helpButton = nullptr,
-                            QPushButton* folderBrowse1Button = nullptr,
-                            QPushButton* folderBrowse2Button = nullptr,
-                            QPushButton* folderBrowse3Button = nullptr,
-                            QPushButton* addRowButton1 = nullptr,
-                            QPushButton* addColumnButton1 = nullptr,
-                            QPushButton* addRowButton2 = nullptr,
-                            QPushButton* addColumnButton2 = nullptr,
-                            QAction* executeAction = nullptr,
-                            QAction* exitAction = nullptr,
-                            QAction* helpAction = nullptr,
-                            QAction* aboutAction = nullptr,
-                            QAction* recentAction = nullptr,
-                            int buttonHeight = 32,
-                            QFont font = QFont())
-    {
-        QIcon iconFolder = UIRStatsUtils::getIcon("img_folder.png");
-        QIcon iconHelp = UIRStatsUtils::getIcon("img_help.png");
-        QIcon iconExit = UIRStatsUtils::getIcon("img_exit.png");
-        QIcon iconRun = UIRStatsUtils::getIcon("img_run.png");
-        QIcon iconAdd = UIRStatsUtils::getIcon("img_add.png");
-        if (recentAction)
-        {
-            recentAction->setIcon(UIRStatsUtils::getIcon("img_clock.png"));
-        }
-        if (aboutAction)
-        {
-            aboutAction->setIcon(UIRStatsUtils::getIcon("img_about.png"));
-        }
-        if (helpAction)
-        {
-            helpAction->setIcon(iconHelp);
-        }
-        if (exitAction)
-        {
-            exitAction->setIcon(iconExit);
-        }
-        if (executeAction)
-        {
-            executeAction->setIcon(iconRun);
-        }
-        if (executeButton)
-        {
-            UIRStatsUtils::setButtonStyle(executeButton,font,iconRun,buttonHeight,false);
-        }
-
-        if (helpButton)
-        {
-            UIRStatsUtils::setButtonStyle(helpButton,font,iconHelp,buttonHeight,false);
-        }
-
-        if (exitButton)
-        {
-            UIRStatsUtils::setButtonStyle(exitButton,font,iconExit,buttonHeight,false);
-        }
-
-
-        if (folderBrowse1Button)
-        {
-            UIRStatsUtils::setButtonStyle(folderBrowse1Button,font,iconFolder,buttonHeight,false);
-        }
-
-        if (folderBrowse2Button)
-        {
-            UIRStatsUtils::setButtonStyle(folderBrowse2Button,font,iconFolder,buttonHeight,false);
-        }
-
-        if (folderBrowse3Button)
-        {
-            UIRStatsUtils::setButtonStyle(folderBrowse3Button,font,iconFolder,buttonHeight,false);
-        }
-
-        if (addRowButton1)
-        {
-            UIRStatsUtils::setButtonStyle(addRowButton1,font,iconAdd,buttonHeight,false);
-        }
-
-        if (addColumnButton1)
-        {
-            UIRStatsUtils::setButtonStyle(addColumnButton1,font,iconAdd,buttonHeight,false);
-        }
-        if (addRowButton2)
-        {
-            UIRStatsUtils::setButtonStyle(addRowButton2,font,iconAdd,buttonHeight,false);
-        }
-
-        if (addColumnButton2)
-        {
-            UIRStatsUtils::setButtonStyle(addColumnButton2,font,iconAdd,buttonHeight,false);
-        }
-
     }
 }
 }}}//end namespace

@@ -82,6 +82,11 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
           <property name="styleSheet">
            <string notr="true">QListWidget:item
 {
@@ -130,22 +135,31 @@
     <string>Settings...</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+S</string>
+    <string>Alt+S</string>
    </property>
   </action>
   <action name="m_actionExit">
    <property name="text">
     <string>Exit</string>
    </property>
+   <property name="shortcut">
+    <string>Alt+Q</string>
+   </property>
   </action>
   <action name="m_actionHelp_Topics">
    <property name="text">
     <string>Help Topics</string>
    </property>
+   <property name="shortcut">
+    <string>Alt+K</string>
+   </property>
   </action>
   <action name="m_actionAbout_RAT_STATS_2017">
    <property name="text">
     <string>About RAT-STATS</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+A</string>
    </property>
   </action>
   <action name="m_actionAdd_New_Module">
@@ -156,7 +170,7 @@
     <string>Create a new module</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+N</string>
+    <string>Alt+N</string>
    </property>
   </action>
   <action name="actionNormal">

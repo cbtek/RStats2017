@@ -26,11 +26,7 @@ set (ENABLE_RSTATS_UTILS_UNIT_TESTS ON)
 #Project Directories
 include_directories("${PROJECT_SOURCE_DIR}/common")
 include_directories("${PROJECT_SOURCE_DIR}/products/RAT-STATS")
-include_directories("${PROJECT_SOURCE_DIR}/products/GooeyFi")
 
 #Projects
 add_subdirectory("${PROJECT_SOURCE_DIR}/common/utility")
 add_subdirectory("${PROJECT_SOURCE_DIR}/products/RAT-STATS")
-
-#Added simple testbed project.  
-add_subdirectory("${PROJECT_SOURCE_DIR}/products/test_TeamCBTek")

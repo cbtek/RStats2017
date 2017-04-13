@@ -47,6 +47,11 @@ typedef std::chrono::seconds Seconds;
 
 namespace TimeUtils {
 
+/**
+ * @brief toString
+ * @param value
+ * @return
+ */
 template <typename T>
 static inline std::string toString(T value)
 {
@@ -55,11 +60,19 @@ static inline std::string toString(T value)
     return out.str();
 }
 
+/**
+ * @brief getSecondsNow
+ * @return
+ */
 static inline uint64_t getSecondsNow()
 {
     return time(NULL);
 }
 
+/**
+ * @brief getNanosecondsNow
+ * @return
+ */
 static inline double getNanosecondsNow()
 {
     HighResolutionTimePoint tp = HighResolutionClock::now();
@@ -67,6 +80,10 @@ static inline double getNanosecondsNow()
     return secs.count();
 }
 
+/**
+ * @brief getMicrosecondsNow
+ * @return
+ */
 static inline double getMicrosecondsNow()
 {
     HighResolutionTimePoint tp = HighResolutionClock::now();
@@ -74,6 +91,21 @@ static inline double getMicrosecondsNow()
     return secs.count();
 }
 
+/**
+ * @brief getCurrentMilliseconds
+ * @return
+ */
+static inline std::uint64_t getCurrentMilliseconds()
+{
+    std::chrono::milliseconds ms = std::chrono::duration_cast< std::chrono::milliseconds >(
+    std::chrono::system_clock::now().time_since_epoch());
+    return ms.count();
+}
+
+/**
+ * @brief getMillisecondsNow
+ * @return
+ */
 static inline double getMillisecondsNow()
 {
     HighResolutionTimePoint tp = HighResolutionClock::now();
@@ -81,11 +113,21 @@ static inline double getMillisecondsNow()
     return secs.count();
 }
 
+/**
+ * @brief toTimeString
+ * @param time
+ * @return
+ */
 static inline std::string toTimeString(const TimeEntity &time)
 {
     return (time.getHour()<10?"0":"")+toString(time.getHour())+":"+(time.getMinute()<10?"0":"")+toString(time.getMinute())+":"+(time.getSecond()<10?"0":"")+toString(time.getSecond());
 }
 
+/**
+ * @brief to12HourTimeString
+ * @param time
+ * @return
+ */
 static inline std::string to12HourTimeString(const TimeEntity &time)
 {
     std::string extension="AM";
@@ -107,7 +149,10 @@ static inline std::string to12HourTimeString(const TimeEntity &time)
     return (hour<10?"0":"")+toString(hour)+":"+(time.getMinute()<10?"0":"")+toString(time.getMinute())+":"+(time.getSecond()<10?"0":"")+toString(time.getSecond())+ " "+extension;
 }
 
-
+/**
+ * @brief getCurrentTime
+ * @return
+ */
 static inline TimeEntity getCurrentTime()
 {
     time_t t = time(0);
@@ -115,6 +160,11 @@ static inline TimeEntity getCurrentTime()
     return TimeEntity(now->tm_hour,now->tm_min,now->tm_sec);
 }
 
+/**
+ * @brief getTimeFromSeconds
+ * @param secs
+ * @return
+ */
 static inline TimeEntity getTimeFromSeconds(const uint64_t &secs)
 {
     TimeEntity tm;
@@ -124,17 +174,29 @@ static inline TimeEntity getTimeFromSeconds(const uint64_t &secs)
     return tm;
 }
 
+/**
+ * @brief getTimeFromMilliseconds
+ * @param ms
+ * @return
+ */
 static inline TimeEntity getTimeFromMilliseconds(const uint64_t &ms)
 {
     return getTimeFromSeconds(ms/1000);
 }
 
-
+/**
+ * @brief toCurrentTimeString
+ * @return
+ */
 static inline std::string toCurrentTimeString()
 {
     return toTimeString(getCurrentTime());
 }
 
+/**
+ * @brief toCurrent12HourTimeString
+ * @return
+ */
 static inline std::string toCurrent12HourTimeString()
 {
     return to12HourTimeString(getCurrentTime());

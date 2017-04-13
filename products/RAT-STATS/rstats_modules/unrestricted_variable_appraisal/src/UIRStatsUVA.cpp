@@ -39,29 +39,23 @@ UIRStatsUVA::UIRStatsUVA(QWidget *parent) :
     m_ui->setupUi(this);
     m_currentCSVFileOutputPushButton = nullptr;
     m_currentTextFileOutputPushButton = nullptr;
+
     int buttonHeight = 32;
     m_iconError = UIRStatsUtils::getIcon("img_error.png");
     m_iconWarning = UIRStatsUtils::getIcon("img_warning.png");
     m_iconOK = UIRStatsUtils::getIcon("img_ok.png");
     m_ui->m_txtAuditName->setPlaceholderText(QString::fromStdString(RStatsUtils::getAuditName()));
     m_currentDataFormat = RStatsDataFormatType::Examine;
-    UIRStatsUtils::customUISetup(m_ui->m_btnExecute,
-                                 m_ui->m_btnExit,
-                                 m_ui->m_btnHelp,
-                                 m_ui->m_btnImportSampleInputData,
-                                 nullptr,
-                                 nullptr,
-                                 nullptr,
-                                 nullptr,
-                                 nullptr,//m_ui->m_btnAddRowDataTable,
-                                 nullptr,//m_ui->m_btnAddColumnDataTable,
-                                 m_ui->actionExecute,
-                                 m_ui->actionExit,
-                                 m_ui->actionHelp_Topics,
-                                 m_ui->actionAbout,
-                                 m_ui->actionRecently_Used,
-                                 buttonHeight,
-                                 this->font());
+
+    UIRStatsUtils::initButton(m_ui->m_btnImportSampleInputData, "img_folder.png");
+    UIRStatsUtils::initButton(m_ui->m_btnExecute, "img_run.png");
+    UIRStatsUtils::initButton(m_ui->m_btnExit, "img_exit.png");
+    UIRStatsUtils::initButton(m_ui->m_btnHelp, "img_help.png");
+    UIRStatsUtils::initAction(m_ui->actionAbout,"img_about.png","Alt+A");
+    UIRStatsUtils::initAction(m_ui->actionExecute,"img_run.png","Alt+R");
+    UIRStatsUtils::initAction(m_ui->actionExit,"img_exit.png","Alt+Q");
+    UIRStatsUtils::initAction(m_ui->actionHelp_Topics,"img_help.png","Alt+H");
+    UIRStatsUtils::initAction(m_ui->actionRecently_Used,"img_clock.png","Alt+S");
 
     m_ui->m_dockOptions->setTitleBarWidget(new QWidget());
     m_ui->m_frmOutput->hide();
@@ -70,8 +64,6 @@ UIRStatsUVA::UIRStatsUVA(QWidget *parent) :
 
     connect(m_ui->m_chkTextOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveTextFile()));
     connect(m_ui->m_chkCSVOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveCSVFile()));
-//    connect(m_ui->m_btnAddRowDataTable,SIGNAL(clicked(bool)),this,SLOT(onAddNewRowToDataTable()));
-//    connect(m_ui->m_btnAddColumnDataTable,SIGNAL(clicked(bool)),this,SLOT(onAddNewColumnToDataTable()));
     connect(m_ui->m_btnImportSampleInputData,SIGNAL(clicked(bool)),this,SLOT(onImportDataInput()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
     connect(m_ui->actionHelp_Topics,SIGNAL(triggered()),this,SLOT(onHelp()));

@@ -45,7 +45,7 @@ RStatsWorkbook RStatsXLSXWorkbookStream::read()
     if (FileUtils::isDirectoryWritable(outputPath))
     {
         args << " -o -q -d \""<<outputPath<<"\" \""<<m_filePath<<"\"";
-        SystemUtils::execute(unzipPath+args.str());
+        SystemUtils::execute(unzipPath,args.str());
     }
     std::string worksheetsPath = FileUtils::buildFilePath(outputPath,"xl/worksheets");
     std::string workbookPath = FileUtils::buildFilePath(outputPath,"xl/workbook.xml");

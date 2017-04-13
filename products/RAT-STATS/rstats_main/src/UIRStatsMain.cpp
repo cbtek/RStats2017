@@ -51,10 +51,7 @@ UIRStatsMain::UIRStatsMain(QWidget *parent) :
     QMainWindow(parent),
     m_ui(new Ui_UIRStatsMain)
 {    
-    m_ui->setupUi(this);              
-
-    //Set UI Font
-    this->setFont(QFont("arial",12));
+    m_ui->setupUi(this);                 
 
     //Remove title bar widget from category dock
     m_ui->m_dockCategories->setTitleBarWidget(new QWidget());
@@ -162,7 +159,7 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
     for (const auto& it : groupedModules)
     {
         QString name = QString::fromStdString(it.first);        
-        QTableWidget * table = new QTableWidget;
+        QTableWidget * table = new QTableWidget;        
         m_launchButtonMap[tableIndex] = new QButtonGroup;
         m_editButtonMap[tableIndex] = new QButtonGroup;
         m_removeButtonMap[tableIndex] = new QButtonGroup;
@@ -447,6 +444,8 @@ void UIRStatsMain::onTabChanged(int tab)
 void UIRStatsMain::onAddNewModule()
 {
     utils::RStatsModuleProperties props;
+    std::string path = FileUtils::buildFilePath(RStatsUtils::getModulePropertiesPath(),"module_"+DateTimeUtils::getTimeStamp()+".xml");
+    props.setDefinitionPath(path);
     QListWidgetItem * item = m_ui->m_lstCategories->currentItem();
     if (item)
     {
@@ -539,6 +538,12 @@ void UIRStatsMain::removeModule(const QString &propsPath)
 void UIRStatsMain::launchModule(const QString &propsPath)
 {
     std::string launcherPath = FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_launcher");
+
+    #ifdef __WIN32
+        launcherPath += ".exe";
+    #endif
+
+    std::cerr << launcherPath << std::endl;
     if (m_currentTable)
     {
         m_currentTable->setFocus();

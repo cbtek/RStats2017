@@ -44,21 +44,9 @@ UIRStatsScriptProviderConfigDialog::UIRStatsScriptProviderConfigDialog(const uti
     m_props = props;
 
 
-    UIRStatsUtils::customUISetup(nullptr,
-                                 m_ui->m_btnCancel,
-                                 nullptr,
-                                 m_ui->m_btnBrowseLocation,
-                                 nullptr,
-                                 nullptr,
-                                 m_ui->m_btnCancel,
-                                 nullptr,
-                                 m_ui->m_btnSetIcon,
-                                 m_ui->m_btnBrowseLocation);
-
-    UIRStatsUtils::setButtonStyle(m_ui->m_btnSave,
-                                  this->font(),
-                                  UIRStatsUtils::getIcon("img_ok.png"),
-                                  32,false);
+    UIRStatsUtils::initButton(m_ui->m_btnSave, "img_ok.png");
+    UIRStatsUtils::initButton(m_ui->m_btnCancel, "img_exit.png");
+    UIRStatsUtils::initButton(m_ui->m_btnBrowseLocation, "img_folder.png");
 
     onInit();
 

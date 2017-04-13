@@ -22,11 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
-#ifndef _CBTEK_COMMON_UTILITY_FONTFACTORY_H
-#define _CBTEK_COMMON_UTILITY_FONTFACTORY_H
+
+#pragma once
 
 #include "utility/inc/Font.h"
-
 
 namespace cbtek {
 namespace common {
@@ -56,8 +55,18 @@ class FontFactory
 {
 
 public:
+    /**
+     * @brief create
+     * @param style
+     * @return
+     */
     static Font create(const fontStyle::FontStyle & style);
 
+    /**
+     * @brief create
+     * @param fontString
+     * @return
+     */
     static Font create(const std::string & fontString);
 
 private:
@@ -67,4 +76,3 @@ private:
 };
 
 }}}//namespace
-#endif // FONTFACTORY_H

@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
-#ifndef _CBTEK_COMMON_UTILITY_DATETIMEUTILS_HPP_
-#define _CBTEK_COMMON_UTILITY_DATETIMEUTILS_HPP_
+
+#pragma once
 
 #include "TimeUtils.hpp"
 #include "DateUtils.hpp"
@@ -34,32 +34,58 @@ namespace common{
 namespace utility{
 namespace DateTimeUtils{
 
+/**
+ * @brief getDisplayTimeStamp
+ * @param dateEntity
+ * @param timeEntity
+ * @return
+ */
 inline std::string getDisplayTimeStamp(const DateEntity& dateEntity,
                                        const TimeEntity& timeEntity)
 {
     return (DateUtils::toShortDateString(dateEntity,"mm/dd/yyyy")+" at "+StringUtils::toString(TimeUtils::to12HourTimeString(timeEntity)));
 }
 
+/**
+ * @brief getDisplayTimeStamp
+ * @return
+ */
 inline std::string getDisplayTimeStamp()
 {
     return getDisplayTimeStamp(DateUtils::getCurrentDate(),TimeUtils::getCurrentTime());
 }
 
+/**
+ * @brief getTimeStampInteger
+ * @param dateEntity
+ * @param timeEntity
+ * @return
+ */
 inline std::uint64_t getTimeStampInteger(const DateEntity& dateEntity=DateUtils::getCurrentDate(),
                                          const TimeEntity& timeEntity=TimeUtils::getCurrentTime())
 {
     return StringUtils::toUInt(std::to_string(dateEntity.toDateInteger())+std::to_string(timeEntity.toTimeInteger()));
 }
 
+/**
+ * @brief getTimeStamp
+ * @return
+ */
 inline std::string getTimeStamp()
 {
     return (DateUtils::toShortDateString(DateUtils::getCurrentDate(),"yyyymmdd")+"T"+StringUtils::toString(TimeUtils::getCurrentTime().toTimeInteger())+"."+StringUtils::toString((std::uint64_t)TimeUtils::getMillisecondsNow()));
 }
 
+/**
+ * @brief getTimeStamp
+ * @param dateEntity
+ * @param timeEntity
+ * @return
+ */
 inline std::string getTimeStamp(const DateEntity& dateEntity,
                                 const TimeEntity& timeEntity)
 {
     return (DateUtils::toShortDateString(dateEntity,"yyyymmdd")+"T"+StringUtils::toString(timeEntity.toTimeInteger()));
 }
+
 }}}} //namespace
-#endif //_CBTEK_COMMON_UTILITY_DATETIMEUTILS_HPP_

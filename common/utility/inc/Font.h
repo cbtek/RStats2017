@@ -22,9 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
-#ifndef _CBTEK_COMMON_UTILITY_FONT_H
-#define _CBTEK_COMMON_UTILITY_FONT_H
 
+#pragma once
 #include <string>
 
 #include "utility/inc/Color.h"
@@ -67,64 +66,130 @@ class Font
 {
 public:
 
+    /**
+     * @brief Font
+     */
     Font();
 
+    /**
+     * @brief Font
+     * @param fontFamily
+     * @param pointSize
+     * @param isBold
+     * @param isItalic
+     * @param isUnderlined
+     */
     Font(std::string fontFamily,
          size_t pointSize=10,
          bool isBold=false,
          bool isItalic = false,
          bool isUnderlined=false);
 
+    /**
+     * @brief operator ==
+     * @param font
+     * @return
+     */
     bool operator==(const Font & font);
 
+    /**
+     * @brief setFontFamily
+     * @param fontFamily
+     */
     void setFontFamily(const std::string & fontFamily);
 
+    /**
+     * @brief setPointSize
+     * @param pointSize
+     */
     void setPointSize(const size_t & pointSize);
 
+    /**
+     * @brief setBold
+     * @param enabled
+     */
     void setBold(const bool & enabled);
 
+    /**
+     * @brief setItalic
+     * @param enabled
+     */
     void setItalic(const bool & enabled);
 
+    /**
+     * @brief setUnderlined
+     * @param enabled
+     */
     void setUnderlined(const bool & enabled);
 
+    /**
+     * @brief isBold
+     * @return
+     */
     bool isBold() const;
 
+    /**
+     * @brief isItalic
+     * @return
+     */
     bool isItalic() const;
 
+    /**
+     * @brief isUnderlined
+     * @return
+     */
     bool isUnderlined() const;
 
+    /**
+     * @brief getFontFamily
+     * @return
+     */
     std::string getFontFamily() const;
 
+    /**
+     * @brief getPointSize
+     * @return
+     */
     size_t getPointSize()const;
 
+    /**
+     * @brief toString
+     * @return
+     */
     std::string toString() const;
 
+    /**
+     * @brief hasDefaultChanged
+     * @return
+     */
     bool hasDefaultChanged() const;
 
+    /**
+     * @brief setChanged
+     * @param flag
+     */
     void setChanged(bool flag);
 
+    /**
+     * @brief setFontColor
+     * @param c
+     */
     void setFontColor(const Color &c);
 
+    /**
+     * @brief getFontColor
+     * @return
+     */
     Color getFontColor() const;
 
 private:
-
     bool m_changed;
-
     bool m_isUnderlined;
-
     bool m_isBold;
-
     bool m_isItalic;
-
     size_t m_pointSize;
-
     std::string m_fontFamily;
-
     Color m_color;
-
 };
 
 }}}//namespace
-
-#endif // _CBTEK_COMMON_UTILITY_FONT_H

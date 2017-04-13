@@ -23,8 +23,7 @@ SOFTWARE.
 
 */
 
-#ifndef _CBTEK_COMMON_UTILITY_FILEUTILS_HPP_
-#define _CBTEK_COMMON_UTILITY_FILEUTILS_HPP_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -75,7 +74,6 @@ namespace FileUtils {
  * @return Formated version of dirPath that is ready
  * for directory searching
  */
-
 inline std::string getSearchPath(const std::string & dirPath)
 {
 #ifdef _WIN32
@@ -995,4 +993,3 @@ static std::vector<std::string> getFileEntries(const std::string& dirPath,
     return entries;
 }
 }}}}
-#endif // _CBTEK_COMMON_UTILITY_FILEUTILS_HPP_

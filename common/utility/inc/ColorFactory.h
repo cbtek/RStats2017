@@ -22,16 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
-#ifndef _CBTEK_COMMON_UTILITY_COLORFACTORY_H
-#define _CBTEK_COMMON_UTILITY_COLORFACTORY_H
-#include "Color.h"
+#pragma once
 
+#include "Color.h"
 
 namespace cbtek {
 namespace common {
 namespace utility {
-
-
 namespace colors{
 
     enum ColorType
@@ -1162,32 +1159,68 @@ class ColorFactory
 {
 
 public:
-
+    /**
+     * @brief create
+     * @param rgba
+     * @return
+     */
     static Color create(const std::string & rgba);
 
+    /**
+     * @brief create
+     * @param color
+     * @return
+     */
     static Color create(const colors::ColorType & color);
 
+    /**
+     * @brief create
+     * @param r
+     * @param g
+     * @param b
+     * @param a
+     * @return
+     */
     static Color create(const float & r, const float & g, const float & b, const float & a=1.0f);
 
+    /**
+     * @brief createNextColor
+     * @return
+     */
     static Color createNextColor();
 
+    /**
+     * @brief createRandomNamedColor
+     * @return
+     */
     static Color createRandomNamedColor();
 
+    /**
+     * @brief createRandomColor
+     * @return
+     */
     static Color createRandomColor();
 
+    /**
+     * @brief createRandomDarkColor
+     * @return
+     */
     static Color createRandomDarkColor();
 
+    /**
+     * @brief createRandomLightColor
+     * @return
+     */
     static Color createRandomLightColor();
 
+    /**
+     * @brief resetNextColor
+     */
     static void resetNextColor();
 
 private:
-
-
     ColorFactory();
     ColorFactory(const ColorFactory &);
     ColorFactory & operator=(const ColorFactory &);
 };
-
 }}}//namespace
-#endif // COLORFACTORY_H

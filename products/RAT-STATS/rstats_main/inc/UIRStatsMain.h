@@ -85,28 +85,34 @@ private:
      QKeySequence getKeyEditSequence(int count, QString & keyString) const;
      QKeySequence getKeyRemoveSequence(int count, QString & keyString) const;
 
-protected:
+protected:     
+     //Qt Events
     void showEvent(QShowEvent *);
     void resizeEvent(QResizeEvent *event);
-    void editModule(const QString &propsPath);
-    void removeModule(const QString &propsPath);
-    void launchModule(const QString &propsPath);
     void paintEvent(QPaintEvent* event);
     void keyPressEvent(QKeyEvent * event);
 
+    //Functions to modify property module state
+    void editModule(const QString &propsPath);
+    void removeModule(const QString &propsPath);
+    void launchModule(const QString &propsPath);    
+
 protected slots:
     void onExit();    
+
+    //SLots for launching other windows
     void onLaunchSettingsManager();
     void onLaunchAbout();
     void onLaunchHelp();
-    void onTabChanged(int tab);
-    void onAddNewModule();
-    void onLaunchModuleShortcut(QShortcut* button);
-    void onEditModuleShortcut(QShortcut* button);
-    void onRemoveModuleShortcut(QShortcut* button);
     void onLaunchModule(QAbstractButton* button);
-    void onEditModule(QAbstractButton* button);
-    void onRemoveModule(QAbstractButton* button);    
+    void onLaunchModuleShortcut(QShortcut* button);
+
+    void onTabChanged(int tab);
+    void onAddNewModule();        
+    void onRemoveModuleShortcut(QShortcut* button);
+    void onRemoveModule(QAbstractButton* button);
+    void onEditModuleShortcut(QShortcut* button);
+    void onEditModule(QAbstractButton* button);    
 };
 
 }}}//end namespace

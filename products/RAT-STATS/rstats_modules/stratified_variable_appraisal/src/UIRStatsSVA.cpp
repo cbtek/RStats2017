@@ -51,7 +51,6 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     m_currentTextFileOutputLabel = nullptr;
 
     m_ui->m_dockOptions->setTitleBarWidget(new QWidget());
-    int buttonHeight = 32;
 
     //Load icons used by validation console
     m_iconError = UIRStatsUtils::getIcon("img_error.png");
@@ -61,23 +60,19 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     m_currentDataFormat = RStatsDataFormatType::Examine;
 
     //Initialize button/action elements
-    UIRStatsUtils::customUISetup(m_ui->m_btnExecute,
-                                 m_ui->m_btnExit,
-                                 m_ui->m_btnHelp,
-                                 m_ui->m_btnImportSampleInputData,
-                                 m_ui->m_btnImportSampleSizeData,
-                                 nullptr,
-                                 nullptr,
-                                 nullptr,
-                                 nullptr,
-                                 nullptr,
-                                 m_ui->actionExecute,
-                                 m_ui->actionExit,
-                                 m_ui->actionHelp,
-                                 m_ui->actionAbout,
-                                 m_ui->actionRecently_Used,
-                                 buttonHeight,
-                                 this->font());
+    int buttonHeight = 32;
+
+    UIRStatsUtils::initButton(m_ui->m_btnImportSampleInputData, "img_folder.png");
+    UIRStatsUtils::initButton(m_ui->m_btnImportSampleSizeData, "img_folder.png");
+    UIRStatsUtils::initButton(m_ui->m_btnExecute, "img_run.png");
+    UIRStatsUtils::initButton(m_ui->m_btnExit, "img_exit.png");
+    UIRStatsUtils::initButton(m_ui->m_btnHelp, "img_help.png");
+    UIRStatsUtils::initAction(m_ui->actionAbout,"img_about.png","Alt+A");
+    UIRStatsUtils::initAction(m_ui->actionExecute,"img_run.png","Alt+R");
+    UIRStatsUtils::initAction(m_ui->actionExit,"img_exit.png","Alt+Q");
+    UIRStatsUtils::initAction(m_ui->actionHelp,"img_help.png","Alt+H");
+    UIRStatsUtils::initAction(m_ui->actionRecently_Used,"img_clock.png","Alt+S");
+
 
     //Initialize worksheet combo boxes
     m_ui->m_cmbDataInputSheets->addItem("No Sheets Available");
@@ -88,10 +83,6 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     //Create connections for UI/View elements
     connect(m_ui->m_chkTextOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveTextFile()));
     connect(m_ui->m_chkCSVOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveCSVFile()));
-//    connect(m_ui->m_btnAddRowDataTable,SIGNAL(clicked(bool)),this,SLOT(onAddNewRowToDataTable()));
-//    connect(m_ui->m_btnAddColumnDataTable,SIGNAL(clicked(bool)),this,SLOT(onAddNewColumnToDataTable()));
-//    connect(m_ui->m_btnAddRowSizeTable,SIGNAL(clicked(bool)),this,SLOT(onAddNewRowToSizeTable()));
-//    connect(m_ui->m_btnAddColumnSizeTable,SIGNAL(clicked(bool)),this,SLOT(onAddNewColumnToSizeTable()));
     connect(m_ui->m_btnImportSampleInputData,SIGNAL(clicked(bool)),this,SLOT(onImportDataInput()));
     connect(m_ui->m_btnImportSampleSizeData,SIGNAL(clicked(bool)),this,SLOT(onImportSizeInput()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
@@ -158,37 +149,6 @@ void UIRStatsSVA::populateWithRows(const std::set<size_t>& rows,
         comboBox->addItem(QString::number(row + 1));
     }
 }
-//Took out these features for now.  Running out of time to validate them
-//This basically allows user to edit spreadsheet information within application
-//void UIRStatsSVA::onAddNewRowToDataTable()
-//{
-//    m_ui->m_tblData->setRowCount(m_ui->m_tblData->rowCount() + 1);
-//}
-
-//void UIRStatsSVA::onAddNewRowToSizeTable()
-//{
-//    m_ui->m_tblSizes->setRowCount(m_ui->m_tblSizes->rowCount() + 1);
-//}
-
-//void UIRStatsSVA::onAddNewColumnToDataTable()
-//{
-//    m_ui->m_tblData->setColumnCount(m_ui->m_tblData->columnCount() + 1);
-//    size_t index = static_cast<size_t>(m_ui->m_tblData->columnCount() - 1);
-//    std::string headerLabel = RStatsUtils::getColumnLabelFromIndex(index);
-//    QTableWidgetItem * item = new QTableWidgetItem;
-//    item->setText(QString::fromStdString(headerLabel));
-//    m_ui->m_tblData->setHorizontalHeaderItem(m_ui->m_tblData->columnCount() - 1,item);
-//}
-
-//void UIRStatsSVA::onAddNewColumnToSizeTable()
-//{
-//    m_ui->m_tblSizes->setColumnCount(m_ui->m_tblSizes->columnCount() + 1);
-//    size_t index = static_cast<size_t>(m_ui->m_tblSizes->columnCount() - 1);
-//    std::string headerLabel = RStatsUtils::getColumnLabelFromIndex(index);
-//    QTableWidgetItem * item = new QTableWidgetItem;
-//    item->setText(QString::fromStdString(headerLabel));
-//    m_ui->m_tblSizes->setHorizontalHeaderItem(m_ui->m_tblSizes->columnCount() - 1,item);
-//}
 
 void UIRStatsSVA::onUpdateRowColumnExtentsForDataTable()
 {

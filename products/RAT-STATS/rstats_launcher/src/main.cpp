@@ -28,14 +28,16 @@ int main(int argc, char ** argv)
         if (FileUtils::fileExists(modulePath))
         {
             props.loadConfig(modulePath);            
-            if (!props.isConsoleShown())
+            bool launchUI = false;
+            if (!launchUI)
             {
                 std::string command;
                 props.generateApplicationCommand(command);
                 StringUtils::trimmedInPlace(command);
                 if (FileUtils::fileExists(command))
                 {
-                    QProcess::startDetached(QString::fromStdString(command));
+                    //QProcess::startDetached(QString::fromStdString(command));
+                    system(command.c_str());
                 }
                 else
                 {

@@ -44,6 +44,8 @@ SOFTWARE.
 #include "utility/inc/StringUtils.hpp"
 #include "utility/inc/VBRoundUtils.hpp"
 
+#include "contrib/tiny-process/process.hpp"
+
 namespace oig {
 namespace ratstats {
 namespace utils {
@@ -82,7 +84,8 @@ enum class RStatsDataFormatType
 struct RStatsDataFormatTypeIndex
 {
     RStatsDataFormatType type;
-    size_t primaryIndex,secondaryIndex;
+    size_t primaryDatasetColumnIndex;
+    size_t secondaryDatasetColumnIndex;
 };
 
 
@@ -98,6 +101,58 @@ enum class RStatsConditionalOperatorType
 
 namespace RStatsUtils
 {
+
+
+/**
+ * @brief isAHalfFraction
+ * @param value
+ * @param rf
+ * @return
+ */
+inline static bool isAHalfFraction(double value, double rf)
+{
+    double frac;
+    double integral;
+
+    frac = modf(value, &integral);
+
+    if (round(frac * 10) / 10 != 0.5 && round(frac * 10) / 10 != -0.5)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
+/**
+ * @brief vbRound2
+ * @param value
+ * @param rf
+ * @return
+ */
+inline double vbRound2(double value, double rf = 100.)
+{
+    double tmp;
+
+    value *= rf;
+    if (!isAHalfFraction(value, rf))
+    {
+        return std::round(value) / rf;
+    }
+
+    tmp = floor(value);
+
+    if ((int)tmp % 2 == 0)
+    {
+        return tmp / rf;
+    }
+    else
+    {
+        return (tmp + 1) / rf;
+    }
+}
 
 
 /**
@@ -187,11 +242,10 @@ inline RStatsInteger vbRound(T value)
      * @param value1 First floating point value
      * @param value2 Second floating point value
      * @return True if the floats are equal, false otherwise
-     */
-    template <typename Float>
-    inline bool isEqual(Float value1, Float value2)
+     */    
+    inline bool isEqual(RStatsFloat value1, RStatsFloat value2)
     {
-        return (value1 - value2) < FLT_EPSILON;
+        return (value1 - value2) < DBL_EPSILON;
     }
 
     /**

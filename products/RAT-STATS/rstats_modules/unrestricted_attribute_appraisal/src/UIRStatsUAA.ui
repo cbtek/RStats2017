@@ -189,14 +189,13 @@
       </property>
       <property name="font">
        <font>
-        <pointsize>28</pointsize>
+        <pointsize>-1</pointsize>
        </font>
       </property>
       <property name="styleSheet">
-       <string notr="true">QLabel
+       <string notr="true">#m_lblNoData
 {
-	border:6px solid gray;
-	border-radius:10px;
+	border:6px solid gray;	border-radius:10px;	font-size:28px;
 }</string>
       </property>
       <property name="text">

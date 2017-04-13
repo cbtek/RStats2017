@@ -38,17 +38,16 @@ UIRStatsSettingsManager::UIRStatsSettingsManager(QWidget *parent) :
 {
     m_ui->setupUi(this);
     m_removeIcon = UIRStatsUtils::getIcon("img_remove.png");
-    m_editIcon = UIRStatsUtils::getIcon("img_edit.png");
-    m_exitIcon = UIRStatsUtils::getIcon("img_exit.png");
-    m_addIcon = UIRStatsUtils::getIcon("img_add.png");
+    m_editIcon = UIRStatsUtils::getIcon("img_edit.png");    
     m_editButtons = nullptr;
     m_deleteButtons = nullptr;
     onInitScriptProviders();
     onInitThemes();
     onInitKeyBindings();    
     connect(m_ui->m_btnClose,SIGNAL(clicked(bool)),this,SLOT(onClose()));    
-    m_ui->m_btnClose->setIcon(m_exitIcon);
-    m_ui->m_btnNewScriptProvider->setIcon(m_addIcon);
+
+    UIRStatsUtils::initButton(m_ui->m_btnClose, "img_exit.png");
+    UIRStatsUtils::initButton(m_ui->m_btnNewScriptProvider, "img_add.png");
 }
 
 UIRStatsSettingsManager::~UIRStatsSettingsManager()
@@ -102,18 +101,18 @@ void UIRStatsSettingsManager::onInitScriptProviders()
         QLabel * icon = new QLabel;
         QPushButton * deleteButton = new QPushButton;
         QPushButton * editButton = new QPushButton;
-        deleteButton->setIconSize(QSize(32,32));
-        editButton->setIconSize(QSize(32,32));        
-        editButton->setMinimumSize(32,32);
-        editButton->setMaximumSize(48,48);
-        deleteButton->setMinimumSize(32,32);
-        deleteButton->setMaximumSize(48,48);
-        icon->setMinimumSize(32,32);
-        icon->setMaximumSize(48,48);
-        QPixmap pixmapIcon = UIRStatsUtils::getIcon(prop.getIcon()).pixmap(48,48);
+        deleteButton->setIconSize(QSize(24,24));
+        editButton->setIconSize(QSize(24,24));
+        editButton->setMinimumSize(24,24);
+        editButton->setMaximumSize(32,32);
+        deleteButton->setMinimumSize(24,24);
+        deleteButton->setMaximumSize(32,32);
+        icon->setMinimumSize(24,24);
+        icon->setMaximumSize(32,32);
+        QPixmap pixmapIcon = UIRStatsUtils::getIcon(prop.getIcon()).pixmap(32,32);
         if (pixmapIcon.isNull())
         {
-            pixmapIcon = UIRStatsUtils::getIcon("img_terminal.png").pixmap(48,48);
+            pixmapIcon = UIRStatsUtils::getIcon("img_terminal.png").pixmap(32,32);
         }
         icon->setPixmap(pixmapIcon);
         deleteButton->setIcon(m_removeIcon);
@@ -130,7 +129,7 @@ void UIRStatsSettingsManager::onInitScriptProviders()
         m_deleteButtons->addButton(deleteButton);
         cellFrame->setLayout(layout);
         table->setCellWidget(row,0,cellFrame);
-        table->setRowHeight(row,64);
+        table->setRowHeight(row,48);
         ++row;
 
     }

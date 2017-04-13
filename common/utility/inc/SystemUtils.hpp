@@ -1,20 +1,6 @@
-///
-/// CBTek LLC ("COMPANY") CONFIDENTIAL
-/// Copyright (c) 2016 CBTek, All Rights Reserved.
-///
-/// NOTICE:  All information contained herein is, and remains the property of COMPANY. The intellectual and technical concepts contained
-/// herein are proprietary to COMPANY and may be covered by U.S. and Foreign Patents, patents in process, and are protected by trade secret or copyright law.
-/// Dissemination of this information or reproduction of this material is strictly forbidden unless prior written permission is obtained
-/// from COMPANY.  Access to the source code contained herein is hereby forbidden to anyone except current COMPANY employees, managers or contractors who have executed
-/// Confidentiality and Non-disclosure agreements explicitly covering such access.
-///
-/// The copyright notice above does not evidence any actual or intended publication or disclosure  of  this source code, which includes
-/// information that is confidential and/or proprietary, and is a trade secret, of  COMPANY.   ANY REPRODUCTION, MODIFICATION, DISTRIBUTION, PUBLIC  PERFORMANCE,
-/// OR PUBLIC DISPLAY OF OR THROUGH USE  OF THIS  SOURCE CODE  WITHOUT  THE EXPRESS WRITTEN CONSENT OF COMPANY IS STRICTLY PROHIBITED, AND IN VIOLATION OF APPLICABLE
-/// LAWS AND INTERNATIONAL TREATIES.  THE RECEIPT OR POSSESSION OF  THIS SOURCE CODE AND/OR RELATED INFORMATION DOES NOT CONVEY OR IMPLY ANY RIGHTS
-/// TO REPRODUCE, DISCLOSE OR DISTRIBUTE ITS CONTENTS, OR TO MANUFACTURE, USE, OR SELL ANYTHING THAT IT  MAY DESCRIBE, IN WHOLE OR IN PART.
-///
-
+/**
+  * SystemUtils.hpp
+  */
 #pragma once
 
 #include "utility/inc/StringUtils.hpp"
@@ -22,6 +8,9 @@
 #include "utility/inc/Exception.hpp"
 
 #include <chrono>
+#include <locale>
+#include <codecvt>
+#include <string>
 
 #ifdef _WIN32
 #   include <windows.h>
@@ -46,15 +35,10 @@ namespace common {
 namespace utility {
 namespace SystemUtils {
 
-static inline std::uint64_t getCurrentMilliseconds()
-{
-    std::chrono::milliseconds ms = std::chrono::duration_cast< std::chrono::milliseconds >(
-    std::chrono::system_clock::now().time_since_epoch());
-    return ms.count();
-}
-
-
-
+/**
+ * @brief getUserHomeDirectory Gets user home directory
+ * @return Returns string representing user home directory
+ */
 static inline std::string getUserHomeDirectory()
 {
 #ifdef _WIN32
@@ -70,21 +54,31 @@ static inline std::string getUserHomeDirectory()
 #endif
 }
 
+/**
+ * @brief getUserAppDirectory Gets current user application directory
+ * @return Return string representing the current users application directory
+ */
 static inline std::string getUserAppDirectory()
 {
 #ifdef _WIN32
     char dir[c_MAX_PATH];
-
     SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, dir);
-
     std::string dirStr(dir);
     StringUtils::replaceInPlace(dirStr,"\\","/");
     return dirStr;
 #else
-    return getUserHomeDirectory() + "/.local/share"; // TODO: Reconsider this
+    std::string path = FileUtils::buildFilePath(getUserHomeDirectory(), ".local");
+    FileUtils::createDirectory(path);
+    path = FileUtils::buildFilePath(getUserHomeDirectory(), ".local/share");
+    FileUtils::createDirectory(path);
+    return path;
 #endif
 }
 
+/**
+ * @brief getUserTempDirectory Gets temporary directory for current user
+ * @return Returns string representing the current users temporary directory
+ */
 static inline std::string getUserTempDirectory()
 {
 #ifdef _WIN32
@@ -101,6 +95,10 @@ static inline std::string getUserTempDirectory()
 #endif
 }
 
+/**
+ * @brief getUserName Gets the login name of the current user
+ * @return Returns string representing current users login name
+ */
 static inline std::string getUserName()
 {
 #ifdef _WIN32
@@ -115,12 +113,32 @@ static inline std::string getUserName()
 #endif
 }
 
-static inline int execute(const std::string &command)
+/**
+ * @brief execute
+ * @param command
+ * @param args
+ * @return
+ */
+static inline int execute(const std::string& command,
+                          const std::string& args)
 {
-    int retCode = system(command.c_str());  //one day this will do more
-    return retCode;
+    return system((command+" "+args).c_str());  //one day this will do more
 }
 
+/**
+ * @brief execute Simple command to start an external application
+ * @param command Full path to the command to run
+ * @return
+ */
+static inline int execute(const std::string &command)
+{
+    return execute(command,"");
+}
+
+/**
+ * @brief getCurrentDirectory Gets the current directory
+ * @return Returns string representing the current directory
+ */
 static inline std::string getCurrentDirectory()
 {
     char dir[c_MAX_PATH];
@@ -136,6 +154,10 @@ static inline std::string getCurrentDirectory()
     return std::string(dir);
 }
 
+/**
+ * @brief getCurrentExecutableDirectory Gets the executable directory
+ * @return Returns string representing directory where executable launched from
+ */
 static inline std::string getCurrentExecutableDirectory()
 {
     std::string appPath;

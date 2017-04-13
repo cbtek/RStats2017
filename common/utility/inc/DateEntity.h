@@ -22,8 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
-#ifndef _CBTEK_COMMON_UTILITY_DATEENTITY_H
-#define _CBTEK_COMMON_UTILITY_DATEENTITY_H
+#pragma once
 
 #include <cstdlib>
 #include <string>
@@ -35,46 +34,130 @@ class DateEntity
 {
 
 public:
+
+    /**
+     * @brief DateEntity
+     */
     DateEntity();
 
+    /**
+     * @brief DateEntity
+     * @param month
+     * @param day
+     * @param year
+     */
     DateEntity(const size_t & month, const size_t & day, const size_t & year);
 
+    /**
+     * @brief DateEntity
+     * @param dateInteger
+     */
     DateEntity(const size_t & dateInteger);
 
+    /**
+     * @brief getMonth
+     * @return
+     */
     size_t getMonth() const;
 
+    /**
+     * @brief getDay
+     * @return
+     */
     size_t getDay() const;
 
+    /**
+     * @brief getYear
+     * @return
+     */
     size_t getYear() const;
 
+    /**
+     * @brief setMonth
+     * @param month
+     */
     void setMonth(const size_t & month);
 
+    /**
+     * @brief setDay
+     * @param day
+     */
     void setDay(const size_t & day);
 
+    /**
+     * @brief setYear
+     * @param year
+     */
     void setYear(const size_t & year);
 
+    /**
+     * @brief toDateInteger
+     * @return
+     */
     size_t toDateInteger() const;
 
+    /**
+     * @brief operator <
+     * @param date
+     * @return
+     */
     bool operator<(const DateEntity & date) const;
 
+    /**
+     * @brief operator <=
+     * @param date
+     * @return
+     */
     bool operator<=(const DateEntity & date) const;
 
+    /**
+     * @brief operator >
+     * @param date
+     * @return
+     */
     bool operator>(const DateEntity & date) const;
 
+    /**
+     * @brief operator >=
+     * @param date
+     * @return
+     */
     bool operator>=(const DateEntity & date) const;
 
+    /**
+     * @brief operator ==
+     * @param date
+     * @return
+     */
     bool operator==(const DateEntity & date) const;
 
+    /**
+     * @brief operator !=
+     * @param date
+     * @return
+     */
     bool operator!=(const DateEntity & date) const;
 
+    /**
+     * @brief operator -
+     * @param date
+     * @return
+     */
     size_t operator-(const DateEntity& date)const;
 
+    /**
+     * @brief isLeapYear
+     * @return
+     */
     bool isLeapYear() const;
 
+    /**
+     * @brief getDays
+     * @return
+     */
     size_t getDays() const;
+
 private:   
     size_t m_month,m_day,m_year;
-
 };
 }}}//namespace
-#endif // _CBTEK_COMMON_UTILITY_DATEENTITY_H

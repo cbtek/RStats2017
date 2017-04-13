@@ -56,23 +56,15 @@ UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
     updateRecentSessions();
 
     int buttonHeight = 32;
-    UIRStatsUtils::customUISetup(m_ui->m_btnExecute,
-                                 m_ui->m_btnExit,
-                                 m_ui->m_btnHelp,
-                                 nullptr,
-                                 nullptr,
-                                 nullptr,
-                                 nullptr,
-                                 nullptr,
-                                 nullptr,
-                                 nullptr,
-                                 m_ui->actionExecute,
-                                 m_ui->actionExit,
-                                 m_ui->actionHelp_Topics,
-                                 m_ui->actionAbout,
-                                 m_ui->actionRecentlyUsed,
-                                 buttonHeight,
-                                 this->font());
+
+    UIRStatsUtils::initButton(m_ui->m_btnExecute, "img_run.png");
+    UIRStatsUtils::initButton(m_ui->m_btnExit, "img_exit.png");
+    UIRStatsUtils::initButton(m_ui->m_btnHelp, "img_help.png");
+    UIRStatsUtils::initAction(m_ui->actionAbout,"img_about.png","Alt+A");
+    UIRStatsUtils::initAction(m_ui->actionExecute,"img_run.png","Alt+R");
+    UIRStatsUtils::initAction(m_ui->actionExit,"img_exit.png","Alt+Q");
+    UIRStatsUtils::initAction(m_ui->actionHelp_Topics,"img_help.png","Alt+H");
+    UIRStatsUtils::initAction(m_ui->actionRecentlyUsed,"img_clock.png","Alt+S");
 
 }
 

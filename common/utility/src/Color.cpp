@@ -23,8 +23,9 @@ SOFTWARE.
 
 */
 #include "Color.h"
-#include <sstream>
 #include "ColorFactory.h"
+
+#include <sstream>
 
 using namespace cbtek::common::utility;
 

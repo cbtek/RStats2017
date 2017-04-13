@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
-#ifndef _CBTEK_COMMON_UTILITY_COLOR_H
-#define _CBTEK_COMMON_UTILITY_COLOR_H
+
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -50,72 +50,166 @@ class Color
 {
 public:
 
+    /**
+     * @brief Color
+     */
     Color();
 
+    /**
+     * @brief Color
+     * @param color
+     */
     Color(std::uint32_t color);
 
+    /**
+     * @brief Color
+     * @param rgbaHex
+     */
     Color(const std::string & rgbaHex);
 
+    /**
+     * @brief Color
+     * @param name
+     * @param red
+     * @param green
+     * @param blue
+     * @param alpha
+     */
     Color(const std::string & name,const uint8_t & red,
           const uint8_t & green,
           const uint8_t & blue,
           const uint8_t & alpha=255);
 
+    /**
+     * @brief Color
+     * @param red
+     * @param green
+     * @param blue
+     * @param alpha
+     */
     Color(const uint8_t & red,
           const uint8_t & green,
           const uint8_t & blue,
           const uint8_t & alpha=255);
 
-
+    /**
+     * @brief set
+     * @param red
+     * @param green
+     * @param blue
+     * @param alpha
+     */
     void set (const uint8_t & red,
               const uint8_t & green,
               const uint8_t & blue,
               const uint8_t & alpha=255);
 
+    /**
+     * @brief set
+     * @param htmlColor
+     */
     void set(const std::string& htmlColor);
 
+    /**
+     * @brief setRed
+     * @param red
+     */
     void setRed(const uint8_t & red);
 
+    /**
+     * @brief setGreen
+     * @param green
+     */
     void setGreen(const uint8_t & green);
 
+    /**
+     * @brief setBlue
+     * @param blue
+     */
     void setBlue(const uint8_t & blue);
 
+    /**
+     * @brief setAlpha
+     * @param alpha
+     */
     void setAlpha(const uint8_t & alpha);
 
+    /**
+     * @brief getRed
+     * @return
+     */
     uint8_t getRed() const;
 
+    /**
+     * @brief toInteger
+     * @return
+     */
     std::uint32_t toInteger() const;
 
+    /**
+     * @brief operator ==
+     * @param color
+     * @return
+     */
     bool operator==(const Color & color) const;
 
+    /**
+     * @brief operator !=
+     * @param color
+     * @return
+     */
     bool operator!=(const Color & color) const;
 
+    /**
+     * @brief getGreen
+     * @return
+     */
     uint8_t getGreen() const;
 
+    /**
+     * @brief getBlue
+     * @return
+     */
     uint8_t getBlue() const;
 
+    /**
+     * @brief getAlpha
+     * @return
+     */
     uint8_t getAlpha() const;
 
+    /**
+     * @brief toString
+     * @param style
+     * @return
+     */
     std::string toString(const colorStringStyle::ColorStringStyle &style=colorStringStyle::RGBA_255) const;
 
+    /**
+     * @brief isTransparent
+     * @return
+     */
     bool isTransparent() const;
 
+    /**
+     * @brief getName
+     * @return
+     */
     std::string getName() const;
 
+    /**
+     * @brief setName
+     * @param name
+     */
     void setName(const std::string & name);
+
 private:
 
     uint8_t m_red;
-
     uint8_t m_green;
-
     uint8_t m_blue;
-
     uint8_t m_alpha;
-
     std::string m_name;
-
 };
 typedef std::shared_ptr<Color> ColorPtr;
 }}}//namespace
-#endif // _CBTEK_COMMON_UTILITY_COLOR_H

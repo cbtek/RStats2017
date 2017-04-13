@@ -75,24 +75,15 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     m_currentCSVFileOutputLabel = nullptr;
     m_currentTextFileOutputLabel = nullptr;
     onValidate();
-    RStatsInteger buttonHeight = 32;
-    UIRStatsUtils::customUISetup(m_ui->m_btnExecute,
-                                 m_ui->m_btnExit,
-                                 m_ui->m_btnHelp,
-                                 nullptr,
-                                 nullptr,
-                                 nullptr,
-                                 nullptr,
-                                 nullptr,
-                                 nullptr,
-                                 nullptr,
-                                 m_ui->actionExecute,
-                                 m_ui->actionExit,
-                                 m_ui->actionSingle_Stage_Random_Numbers_Help_Guide,
-                                 m_ui->actionAbout,
-                                 m_ui->actionRecent,
-                                 buttonHeight,
-                                 this->font());
+
+    UIRStatsUtils::initButton(m_ui->m_btnExecute, "img_run.png");
+    UIRStatsUtils::initButton(m_ui->m_btnExit, "img_exit.png");
+    UIRStatsUtils::initButton(m_ui->m_btnHelp, "img_help.png");
+    UIRStatsUtils::initAction(m_ui->actionAbout,"img_about.png","Alt+A");
+    UIRStatsUtils::initAction(m_ui->actionExecute,"img_run.png","Alt+R");
+    UIRStatsUtils::initAction(m_ui->actionExit,"img_exit.png","Alt+Q");
+    UIRStatsUtils::initAction(m_ui->actionSingle_Stage_Random_Numbers_Help_Guide,"img_help.png","Alt+H");
+    UIRStatsUtils::initAction(m_ui->actionRecent,"img_clock.png","Alt+S");
     m_ui->menuFile->setTitle("&File");
     m_ui->menuHelp->setTitle("&Help");
     updateRecentSessions();

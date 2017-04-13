@@ -22,11 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
-#ifndef _CBTEK_COMMON_UTILITY_COLORUTILS_H
-#define _CBTEK_COMMON_UTILITY_COLORUTILS_H
-
+#pragma once
 #include "ColorFactory.h"
 #include "Color.h"
 #include "ColorLoop.h"
-
-#endif

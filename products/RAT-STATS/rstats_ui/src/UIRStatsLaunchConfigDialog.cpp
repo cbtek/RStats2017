@@ -40,19 +40,12 @@ UIRStatsLaunchConfigDialog::UIRStatsLaunchConfigDialog(const utils::RStatsModule
     this->setWindowTitle(QString::fromStdString(props.getName())+" Launch Settings");
     m_isModified = false;
 
+    UIRStatsUtils::initButton(m_ui->m_btnSave, "img_ok.png");
+    UIRStatsUtils::initButton(m_ui->m_btnCancel, "img_exit.png");
+    UIRStatsUtils::initButton(m_ui->m_btnLaunch, "img_run.png");
+    UIRStatsUtils::initButton(m_ui->m_btnBrowseLocation, "img_folder.png");
 
-    UIRStatsUtils::customUISetup(m_ui->m_btnLaunch,
-                                 m_ui->m_btnCancel,
-                                 nullptr,
-                                 m_ui->m_btnSetIcon,
-                                 m_ui->m_btnBrowseLocation);
-
-    UIRStatsUtils::setButtonStyle(m_ui->m_btnSave,
-                                  this->font(),
-                                  UIRStatsUtils::getIcon("img_ok.png"),
-                                  32,false);
     onInit();
-
     //Setup signal/slot connections
     connect(m_ui->m_btnSave,SIGNAL(clicked(bool)),this,SLOT(onSave()));
     connect(m_ui->m_btnCancel,SIGNAL(clicked(bool)),this,SLOT(onCancel()));

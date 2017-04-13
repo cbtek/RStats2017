@@ -33,6 +33,12 @@ namespace common {
 namespace utility {
 namespace DateUtils {
 
+/**
+ * @brief toShortDateString
+ * @param date
+ * @param format
+ * @return
+ */
 static inline std::string toShortDateString(const DateEntity &date,
                                             const std::string &format="mm-dd-yyyy")
 {
@@ -55,6 +61,11 @@ static inline std::string toShortDateString(const DateEntity &date,
     return dateStr;
 }
 
+/**
+ * @brief toLongDateString
+ * @param date
+ * @return
+ */
 static inline std::string toLongDateString(const DateEntity &date)
 {
     std::string months[12] =
@@ -71,6 +82,10 @@ static inline std::string toLongDateString(const DateEntity &date)
     return "";
 }
 
+/**
+ * @brief getCurrentDate
+ * @return
+ */
 static inline DateEntity getCurrentDate()
 {
     time_t t = time(0);
@@ -78,11 +93,19 @@ static inline DateEntity getCurrentDate()
     return DateEntity(now->tm_mon + 1,now->tm_mday,now->tm_year + 1900);
 }
 
+/**
+ * @brief toCurrentLongDateString
+ * @return
+ */
 static inline std::string toCurrentLongDateString()
 {
     return toLongDateString(getCurrentDate());
 }
 
+/**
+ * @brief toCurrentShortDateString
+ * @return
+ */
 static inline std::string toCurrentShortDateString()
 {
     return toShortDateString(getCurrentDate());
