@@ -100,21 +100,8 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
     //Clear all launch buttons
     m_allLaunchButtons.clear();
 
-    //Delete launch button maps
-    for (const auto& it : m_launchButtonMap.toStdMap())
-    {
-        delete m_launchButtonMap[it.first];
-    }
-
-    for (const auto& it : m_editButtonMap.toStdMap())
-    {
-        delete m_editButtonMap[it.first];
-    }
-
-    for (const auto& it : m_removeButtonMap.toStdMap())
-    {
-        delete m_removeButtonMap[it.first];
-    }
+    //Clear all button maps
+    clearButtonMaps();
 
     //Clear modules
     m_ui->m_lstCategories->clear();
@@ -381,6 +368,37 @@ QKeySequence UIRStatsMain::getKeyRemoveSequence(int count, QString & keyString) 
     return QKeySequence(keyString);
 }
 
+void UIRStatsMain::clearButtonMaps()
+{
+    //Delete launch button maps
+    for (const auto& it : m_launchButtonMap.toStdMap())
+    {
+        if (m_launchButtonMap[it.first] != nullptr)
+        {
+            delete m_launchButtonMap[it.first];
+            m_launchButtonMap[it.first] = nullptr;
+        }
+    }
+
+    for (const auto& it : m_editButtonMap.toStdMap())
+    {
+        if (m_editButtonMap[it.first] != nullptr)
+        {
+            delete m_editButtonMap[it.first];
+            m_editButtonMap[it.first] = nullptr;
+        }
+    }
+
+    for (const auto& it : m_removeButtonMap.toStdMap())
+    {
+        if (m_removeButtonMap[it.first] != nullptr)
+        {
+            delete m_removeButtonMap[it.first];
+            m_removeButtonMap[it.first] = nullptr;
+        }
+    }
+}
+
 void UIRStatsMain::showEvent(QShowEvent *)
 {
     for(QToolButton * button : m_allLaunchButtons)
@@ -536,33 +554,33 @@ void UIRStatsMain::removeModule(const QString &propsPath)
 }
 
 void UIRStatsMain::launchModule(const QString &propsPath)
-{
-    std::string launcherPath = FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_launcher");
-
-    #ifdef __WIN32
-        launcherPath += ".exe";
-    #endif
-
-    std::cerr << launcherPath << std::endl;
-    if (m_currentTable)
+{    
+    RStatsModuleProperties props;
+    props.loadConfig(propsPath.toStdString());
+    std::string command,args;
+    props.generateApplicationCommand(command,args);
+    StringUtils::trimmedInPlace(command);
+    if (FileUtils::fileExists(props.getPath()))
     {
-        m_currentTable->setFocus();
-        m_tableHasFocus = true;
+        if (!props.isConsoleShown())
+        {
+            QProcess::startDetached(QString::fromStdString(command + " " + args));
+        }
+        else
+        {
+            SystemUtils::executeInTerminal(command,args);
+        }
     }
 
-    if (!FileUtils::fileExists(launcherPath))
+    else
     {
-        QMessageBox::critical(this,"Module Launch Error", "Can not launch this module.  Ensure that the module launcher (rstats_launcher) is installed.");
-        return;
+        command = FileUtils::fileExists(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),command));
+        if (FileUtils::fileExists(command))
+        {
+            QProcess::startDetached(QString::fromStdString(command + " " + args));
+        }
+        else THROW_GENERIC_EXCEPTION("Could not find module at \""+props.getPath()+"\"");
     }
-
-    QString command = QString::fromStdString(launcherPath)+" --module-path \""+propsPath+"\"";        
-    QProcess::startDetached(command);
-}
-
-void UIRStatsMain::paintEvent(QPaintEvent *event)
-{
-
 }
 
 void UIRStatsMain::keyPressEvent(QKeyEvent *event)

@@ -39,7 +39,7 @@ namespace SystemUtils {
  * @brief getUserHomeDirectory Gets user home directory
  * @return Returns string representing user home directory
  */
-static inline std::string getUserHomeDirectory()
+inline std::string getUserHomeDirectory()
 {
 #ifdef _WIN32
     char dir[c_MAX_PATH];
@@ -58,7 +58,7 @@ static inline std::string getUserHomeDirectory()
  * @brief getUserAppDirectory Gets current user application directory
  * @return Return string representing the current users application directory
  */
-static inline std::string getUserAppDirectory()
+inline std::string getUserAppDirectory()
 {
 #ifdef _WIN32
     char dir[c_MAX_PATH];
@@ -79,7 +79,7 @@ static inline std::string getUserAppDirectory()
  * @brief getUserTempDirectory Gets temporary directory for current user
  * @return Returns string representing the current users temporary directory
  */
-static inline std::string getUserTempDirectory()
+inline std::string getUserTempDirectory()
 {
 #ifdef _WIN32
     char dir[c_MAX_PATH];
@@ -99,7 +99,7 @@ static inline std::string getUserTempDirectory()
  * @brief getUserName Gets the login name of the current user
  * @return Returns string representing current users login name
  */
-static inline std::string getUserName()
+inline std::string getUserName()
 {
 #ifdef _WIN32
     char username[UNLEN+1];
@@ -119,7 +119,7 @@ static inline std::string getUserName()
  * @param args
  * @return
  */
-static inline int execute(const std::string& command,
+inline int execute(const std::string& command,
                           const std::string& args)
 {
     return system((command+" "+args).c_str());  //one day this will do more
@@ -130,7 +130,7 @@ static inline int execute(const std::string& command,
  * @param command Full path to the command to run
  * @return
  */
-static inline int execute(const std::string &command)
+inline int execute(const std::string &command)
 {
     return execute(command,"");
 }
@@ -139,7 +139,7 @@ static inline int execute(const std::string &command)
  * @brief getCurrentDirectory Gets the current directory
  * @return Returns string representing the current directory
  */
-static inline std::string getCurrentDirectory()
+inline std::string getCurrentDirectory()
 {
     char dir[c_MAX_PATH];
     #ifdef _WIN32
@@ -158,7 +158,7 @@ static inline std::string getCurrentDirectory()
  * @brief getCurrentExecutableDirectory Gets the executable directory
  * @return Returns string representing directory where executable launched from
  */
-static inline std::string getCurrentExecutableDirectory()
+inline std::string getCurrentExecutableDirectory()
 {
     std::string appPath;
     char buffer[PATH_MAX];
@@ -179,5 +179,50 @@ static inline std::string getCurrentExecutableDirectory()
     #endif
     return appPath;
 }
+
+
+inline int executeInTerminal(const std::string& command, const std::string& args)
+{
+    std::string cmd;
+    #ifdef __WIN32
+        cmd = "start cmd /K \"" + command+"\" \""+args+"\"";
+    #else
+        std::vector<std::string> entries = FileUtils::getFileEntries("/usr/bin","",false);
+        std::vector<std::string> terminalsFound;
+        StringUtils::findAllThatEqual(entries,"gnome-terminal",terminalsFound,true);
+        cmd = "/usr/bin/gnome-terminal -x \""+command+"\" \""+args+"\"";
+        if (terminalsFound.size() == 0)
+        {
+            StringUtils::findAllThatEqual(entries,"lxterminal",terminalsFound,true);
+            cmd = "/usr/bin/lxterminal -x \""+command+"\" \""+args+"\"";
+        }
+
+        if (terminalsFound.size() == 0)
+        {
+            StringUtils::findAllThatEqual(entries,"xfce4-terminal",terminalsFound,true);
+            cmd = "/usr/bin/xfce4-terminal --execute \""+command+"\" \""+args+"\"";
+        }
+
+        if (terminalsFound.size() == 0)
+        {
+            StringUtils::findAllThatEqual(entries,"konsole",terminalsFound,true);
+            cmd = "/usr/bin/konsole -e \""+command+"\" \""+args+"\"";
+        }
+
+        if (terminalsFound.size() == 0)
+        {
+            StringUtils::findAllThatEqual(entries,"rxvt",terminalsFound,true);
+            cmd = "/usr/bin/rxvt -e \""+command+"\" \""+args+"\"";
+        }
+
+        if (terminalsFound.size() == 0)
+        {
+            cmd = "/usr/bin/xterm -e \""+command+"\" \""+args+"\"";
+        }
+    #endif
+        std::cerr <<"SystemUtils::executeInTerminal - " << cmd<<std::endl;
+    return system(cmd.c_str());
+}
+
 }}}}//end namespace
 

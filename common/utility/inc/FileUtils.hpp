@@ -989,7 +989,7 @@ static std::vector<std::string> getFileEntries(const std::string& dirPath,
     {
         filters = StringUtils::split(filter,",");
     }
-    getFileEntries(dirPath,true,filters,entries);
+    getFileEntries(dirPath,fullPath,filters,entries);
     return entries;
 }
 }}}}

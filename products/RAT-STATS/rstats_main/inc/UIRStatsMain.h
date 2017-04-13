@@ -85,11 +85,11 @@ private:
      QKeySequence getKeyEditSequence(int count, QString & keyString) const;
      QKeySequence getKeyRemoveSequence(int count, QString & keyString) const;
 
+     void clearButtonMaps();
 protected:     
      //Qt Events
     void showEvent(QShowEvent *);
-    void resizeEvent(QResizeEvent *event);
-    void paintEvent(QPaintEvent* event);
+    void resizeEvent(QResizeEvent *event);    
     void keyPressEvent(QKeyEvent * event);
 
     //Functions to modify property module state

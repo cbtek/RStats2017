@@ -1295,6 +1295,41 @@ inline void findAllThatStartWith(const std::vector<std::string> &items,
 }
 
 /**
+ * @brief findAllThatEqual
+ * @param items
+ * @param valueToMatch
+ * @param itemsOut
+ * @param isCaseSensitive
+ */
+inline void findAllThatEqual(const std::vector<std::string> &items,
+                        const std::string &valueToMatch,
+                        std::vector<std::string> &itemsOut,
+                        bool isCaseSensitive=true)
+{
+    if (isCaseSensitive)
+    {
+        for (size_t a1 = 0; a1 < items.size(); ++a1)
+        {
+            if (items[a1] == valueToMatch)
+            {
+                itemsOut.push_back(items[a1]);
+            }
+        }
+    }
+    else
+    {
+        std::string value = StringUtils::toUpper(valueToMatch);
+        for (size_t a1 = 0; a1 < items.size(); ++a1)
+        {
+            if (StringUtils::toUpper(items[a1]) == value)
+            {
+                itemsOut.push_back(items[a1]);
+            }
+        }
+    }
+}
+
+/**
  * @brief findAllThatEndWith
  * @param items
  * @param startsWithValue

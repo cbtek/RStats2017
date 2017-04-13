@@ -10,6 +10,7 @@
 
 #include "utility/inc/StringUtils.hpp"
 #include "utility/inc/FileUtils.hpp"
+#include "utility/inc/SystemUtils.hpp"
 
 using namespace cbtek::common::utility;
 using namespace oig::ratstats::launcher;
@@ -27,24 +28,7 @@ int main(int argc, char ** argv)
     {
         if (FileUtils::fileExists(modulePath))
         {
-            props.loadConfig(modulePath);            
-            bool launchUI = false;
-            if (!launchUI)
-            {
-                std::string command;
-                props.generateApplicationCommand(command);
-                StringUtils::trimmedInPlace(command);
-                if (FileUtils::fileExists(command))
-                {
-                    //QProcess::startDetached(QString::fromStdString(command));
-                    system(command.c_str());
-                }
-                else
-                {
-                    throw FileNotFoundException(EXCEPTION_TAG+"Could not find module at \""+props.getPath()+"\"");
-                }
-                return a.exec();
-            }
+            props.loadConfig(modulePath);                                    
             UIRStatsLaunchProgressDialog ui(props);
             return ui.exec();
         }

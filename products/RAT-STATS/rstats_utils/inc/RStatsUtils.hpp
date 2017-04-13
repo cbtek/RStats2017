@@ -102,7 +102,6 @@ enum class RStatsConditionalOperatorType
 namespace RStatsUtils
 {
 
-
 /**
  * @brief isAHalfFraction
  * @param value
@@ -494,10 +493,10 @@ inline RStatsInteger vbRound(T value)
 
         if ((cbtek::common::utility::FileUtils::isDirectory(path1) &&
             cbtek::common::utility::FileUtils::isDirectoryWritable(path1)) ||
-             cbtek::common::utility::FileUtils::fileExists(path1))
+            cbtek::common::utility::FileUtils::fileExists(path1))
         {
             path = path1;
-        }
+        }        
 
         #ifdef __WIN32
             path2 = cbtek::common::utility::StringUtils::replace(cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserAppDirectory(), ".rat-stats/"+pathToValidate),"/","\\");
@@ -527,7 +526,7 @@ inline RStatsInteger vbRound(T value)
         if (!path.empty())
         {
             return path;
-        }
+        }                
         throw cbtek::common::utility::FileAccessException(EXCEPTION_TAG_LINE+"Could not locate existing or valid directory! Valid locations: \n1) "+path1+"\n2) "+path2+"\n3)"+path3);
     }
 

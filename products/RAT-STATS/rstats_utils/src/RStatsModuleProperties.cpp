@@ -45,6 +45,7 @@ void RStatsModuleProperties::saveConfig(const std::string &filePath)
         xml.writeTextElement("category",m_appCategory);
         xml.writeTextElement("path",m_appPath);
         xml.writeTextElement("script_path",m_appScriptPath);
+        xml.writeTextElement("script_path_args",m_appScriptPathArgs);
         xml.writeTextElement("type",m_appType);
         xml.writeTextElement("working_dir",m_appType);
         xml.writeTextElement("icon",m_appIcon);
@@ -69,7 +70,10 @@ void RStatsModuleProperties::loadConfig(const std::string &filePath)
         XMLDataElement * categoryModule = module->getChild("category");
         XMLDataElement * iconModule = module->getChild("icon");
         XMLDataElement * showConsoleModule = module->getChild("show_console");
+        XMLDataElement * scriptPathModule = module->getChild("script_path");
+        XMLDataElement * scriptPathArgsModule = module->getChild("script_path_args");
         XMLDataElement * argsModule = module->getChild("args");
+
         m_appName = nameModule?nameModule->getElementData():"";
         m_appPath = pathModule?pathModule->getElementData():"";
         m_appType = typeModule?typeModule->getElementData():"";
@@ -79,6 +83,8 @@ void RStatsModuleProperties::loadConfig(const std::string &filePath)
         m_showAppConsole = showConsoleModule && StringUtils::toUpperTrimmed(showConsoleModule->getElementData()) == "TRUE"?true:false;
         m_appArgs = argsModule?XMLUtils::getDecodedString(argsModule->getElementData()):"";
         m_configPath = filePath;
+        m_appScriptPath = scriptPathModule ? scriptPathModule->getElementData():"";
+        m_appScriptPathArgs = scriptPathArgsModule ? scriptPathArgsModule->getElementData():"";
     }
     else
     {
@@ -116,11 +122,26 @@ void RStatsModuleProperties::setCategory(const std::string & value)
     m_appCategory=value;
 }
 
-void RStatsModuleProperties::generateApplicationCommand(std::string& commandOut)
+void RStatsModuleProperties::generateApplicationCommand(std::string& commandOut, std::string& argsOut)
+{
+    std::cerr << "script: " << m_appScriptPath << std::endl;
+    if (m_appScriptPath.size() > 0)
+    {
+        commandOut = m_appScriptPath +" "+m_appPath;
+        argsOut = m_appArgs;
+    }
+    else
+    {
+        commandOut = m_appPath;
+        argsOut = m_appArgs;
+    }
+}
+
+void RStatsModuleProperties::generateApplicationCommand(std::string& commandAndArgsOut)
 {
     std::ostringstream command;
     command << m_appScriptPath<<" "<<m_appPath<<" "<<m_appArgs;
-    commandOut = command.str();
+    commandAndArgsOut = command.str();
 }
 
 const std::string &RStatsModuleProperties::getType() const
@@ -151,6 +172,16 @@ const std::string &RStatsModuleProperties::getCategory() const
 const std::string &RStatsModuleProperties::getDefinitionPath() const
 {
     return m_configPath;
+}
+
+const std::string &RStatsModuleProperties::getScriptPathArgs() const
+{
+    return m_appScriptPathArgs;
+}
+
+void RStatsModuleProperties::setScriptPathArgs(const std::string &value)
+{
+    m_appScriptPathArgs = value;
 }
 
 const std::string &RStatsModuleProperties::getArgs() const

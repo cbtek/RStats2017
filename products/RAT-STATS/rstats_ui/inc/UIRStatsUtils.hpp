@@ -142,7 +142,7 @@ namespace UIRStatsUtils
         xmlReader.load(path);
 
         cbtek::common::utility::XMLDataElement * theme = xmlReader.getElement("theme");
-        app->setStyleSheet("QWidget{font-size:12px;} QLineEdit{padding:6px;} QComboBox{padding:6px;} QComboBox::item{padding:6px;} QPushButton{padding:4px;}");
+        app->setStyleSheet("QWidget{font-size:12px;} QLineEdit{padding:6px;} QComboBox{padding:6px;} QPushButton{padding:4px;}");
 
         #ifdef __WIN32
             app->setStyle(QStyleFactory::create("windowsvista"));

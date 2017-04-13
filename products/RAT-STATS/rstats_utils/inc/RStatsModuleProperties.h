@@ -70,8 +70,14 @@ public:
      * @brief getCommand
      * @return
      */
-    void generateApplicationCommand(std::string& commandOut);
+    void generateApplicationCommand(std::string& commandAndArgsOut);
 
+    /**
+     * @brief generateApplicationCommand
+     * @param commandOut
+     * @param argsOut
+     */
+    void generateApplicationCommand(std::string& commandOut, std::string& argsOut);
     /**
      * @brief setScriptPrefix
      * @param type
@@ -116,6 +122,19 @@ public:
      * @return
      */
     const std::string & getDefinitionPath() const;
+
+
+    /**
+    * @brief Getter for m_args
+    * @return Return copy of m_args
+    */
+    const std::string & getScriptPathArgs() const;
+
+    /**
+     * @brief setArgs
+     * @param value
+     */
+    void setScriptPathArgs(const std::string &value);
 
     /**
     * @brief Getter for m_args
@@ -192,6 +211,7 @@ private:
     std::string m_appCategory;
     std::string m_appIcon;
     std::string m_appScriptPath;
+    std::string m_appScriptPathArgs;
     std::string m_configPath;
     std::string m_appArgs;
     bool m_showAppConsole;    
