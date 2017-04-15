@@ -77,15 +77,15 @@ void RStatsUVA::saveToWorkbook(RStatsWorkbook& workbook)
         sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignRight);
         sheet.setDefaultFont(cbtek::common::utility::Font("arial",11,true));
 
+        sheet("A1")= "Sample Type:";
         sheet("A2") = "Audit Name:";
         sheet("A3") = "Universe Size:";
         sheet("A4") = "Sample Size:";
         sheet("A5") = "Nonzero Count:";
         sheet("A6") = "Creation Date:";
         sheet("A7") = "Creation Time:";
-        sheet("A8") = "Created By:";
-        sheet("C1") = outputData.title;
-        sheet("C1").font.setBold(true);
+        sheet("A8") = "Created By:";        
+
         sheet("C2") = "Mean:";
         sheet("C3") = "Skewness:";
         sheet("C4") = "Total Sum:";
@@ -110,7 +110,9 @@ void RStatsUVA::saveToWorkbook(RStatsWorkbook& workbook)
         sheet("B11").fgColor.set(1,1,1);
         sheet("C11").fgColor.set(1,1,1);
         sheet("D11").fgColor.set(1,1,1);
+        sheet.setDefaultFont(cbtek::common::utility::Font("arial",10,false));
         sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignLeft);
+        sheet("B1") = outputData.title;
         sheet("B2") = m_auditName;
         sheet("B3") = m_universeSize;
         sheet("B4") = m_sampleSize;

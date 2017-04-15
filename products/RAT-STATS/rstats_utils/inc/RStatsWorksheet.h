@@ -71,7 +71,24 @@ struct RStatsCell
     }
 };
 
+struct RStatsMergeCellRange
+{
+    size_t startRow,startColumn;
+    size_t rowOffset,columnOffset;
+    bool contains(size_t row, size_t column) const
+    {
+        return (row >= startRow && row < (startRow + rowOffset) &&
+            column >= startColumn && column < (startColumn + columnOffset));
+    }
+    bool operator<(const RStatsMergeCellRange& value) const
+    {
+        return rowOffset < value.rowOffset && columnOffset < value.columnOffset;
+    }
+};
+
 typedef std::map<std::pair<size_t, size_t>, RStatsCell> RStatsCellMap;
+
+typedef std::map<RStatsMergeCellRange, RStatsCell> RStatsMergedCellMap;
 
 class RStatsWorksheet 
 {
@@ -239,6 +256,22 @@ public:
 
 
     /**
+     * @brief setRowBackgroundColor
+     * @param row
+     * @param color
+     */
+    void setRowBackgroundColor(size_t row, const cbtek::common::utility::Color& color);
+
+
+    /**
+     * @brief setColumnBackgroundColor
+     * @param row
+     * @param color
+     */
+    void setColumnBackgroundColor(size_t column, const cbtek::common::utility::Color& color);
+
+
+    /**
      * @brief clear
      */
     void clear();
@@ -247,17 +280,60 @@ public:
 	~RStatsWorksheet();	
 
 
+    /**
+     * @brief setRowBorderColor
+     * @param row
+     * @param color
+     */
+    void setRowBorderColor(size_t row, const cbtek::common::utility::Color& color);
+
+    /**
+     * @brief setColumnBorderColor
+     * @param row
+     * @param color
+     */
+    void setColumnBorderColor(size_t column, const cbtek::common::utility::Color& color);
 
 private:
+
         std::set<std::pair<size_t,size_t> > m_thousandsSeperatorToggleSet;
         RStatsCell m_emptyCell;
         std::string m_worksheetTitle;
         RStatsCellMap m_dataTable;
+        RStatsMergedCellMap m_mergedCellTable;
         size_t m_numRows;
         size_t m_numColumns;
         void parseCellAddress(const std::string& address, size_t& r, size_t& c);
         std::string toString(const std::string& prefix,const std::string& seperator, const std::string& postfix) const;        
         std::string toEvenlySpacedString(const std::string& prefix,const std::string& seperator, const std::string& postfix) const;
+
+        /**
+         * @brief isCellInMergedCellRange
+         * @param r
+         * @param c
+         * @return
+         */
+        bool isCellInMergedCellRange(size_t r, size_t c) const;
+
+        /**
+         * @brief getCellInMergedCellRange
+         * @param r
+         * @param c
+         * @return
+         */
+        RStatsCell& getCellInMergedCellRange(size_t r, size_t c);
+
+        /**
+         * @brief getMergedCellRangeThatContains
+         * @param r
+         * @param c
+         * @param range
+         * @return
+         */
+        bool getMergedCellRangeThatContains(size_t r, size_t c, RStatsMergeCellRange& range);
+
+
+
 
 };
 typedef std::shared_ptr<RStatsWorksheet> RStatsWorksheetPtr;

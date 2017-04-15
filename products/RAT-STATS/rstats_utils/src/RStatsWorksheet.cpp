@@ -22,7 +22,7 @@ Color RStatsCell::ms_DefaultFGColor = Color(0,0,0);
 Font RStatsCell::ms_DefaultFont = cbtek::common::utility::Font("arial");
 size_t RStatsCell::ms_DefaultFloatingPointDecimals = 6;
 
-CREATE_EXCEPTION_NO_MSG(WorksheetCellOutOfRange)
+
 
 RStatsWorksheet::RStatsWorksheet(const std::string &name)
 {
@@ -33,8 +33,30 @@ RStatsWorksheet::RStatsWorksheet(const std::string &name)
 
 RStatsCell& RStatsWorksheet::operator()(const std::string &address)
 {
-    size_t r,c;
-    parseCellAddress(address,r,c);
+    size_t r = 0,c = 0;
+    std::vector<std::string> parts = StringUtils::split(address,":");
+    if (parts.size() == 1)
+    {
+        parseCellAddress(address,r,c);
+    }
+    else
+    {
+        size_t startR = 0,startC = 0,endR = 0,endC = 0;
+        parseCellAddress(parts[0],startR,startC);
+        parseCellAddress(parts[1],endR,endC);
+        RStatsMergeCellRange range;
+        range.startRow = startR;
+        range.startColumn = startC;
+        range.rowOffset = endR - startR;
+        range.columnOffset = endC - startC;
+        if (!m_mergedCellTable.count(range))
+        {
+            m_mergedCellTable[range] = m_dataTable[std::make_pair(startR,startC)];
+            for (size_t r = startR; r <= endR; ++r )
+                for (size_t c = startC; c <= endC; ++c )
+                    m_dataTable.erase(std::make_pair(r,c));
+        }
+    }
     return this->operator ()(r,c);
 }
 
@@ -202,7 +224,12 @@ RStatsCell& RStatsWorksheet::operator()(size_t row, size_t column)
     {
         m_numColumns = column + 1;
     }
-    return m_dataTable[std::make_pair(row,column)];
+
+    if (this->isCellInMergedCellRange(row,column))
+    {
+        return getCellInMergedCellRange(row,column);
+    }
+    else return m_dataTable[std::make_pair(row,column)];
 }
 
 const RStatsCell &RStatsWorksheet::operator()(size_t row, size_t column) const
@@ -211,7 +238,18 @@ const RStatsCell &RStatsWorksheet::operator()(size_t row, size_t column) const
 }
 
 const RStatsCell &RStatsWorksheet::getCell(size_t row, size_t column) const
-{
+{    
+    if (isCellInMergedCellRange(row,column))
+    {
+        for (const auto& it : m_mergedCellTable)
+        {
+            if (it.first.contains(row,column))
+            {
+                return it.second;
+            }
+        }
+    }
+
     const auto& it = m_dataTable.find(std::make_pair(row,column));
     if (it != m_dataTable.end())
     {
@@ -221,15 +259,30 @@ const RStatsCell &RStatsWorksheet::getCell(size_t row, size_t column) const
     {
         return m_emptyCell;
     }
-    throw WorksheetCellOutOfRange(EXCEPTION_TAG_LINE+"The row/column is out of range for this cell.\n"+
-                                  std::to_string(row)+" should be less than "+std::to_string(getNumRows())+
-                                  +"\n"+std::to_string(column)+" should be less than "+std::to_string(getNumColumns()));
-    //throw exception
+    THROW_GENERIC_EXCEPTION("The row/column is out of range for this cell.\n"+
+                            std::to_string(row)+" should be less than "+std::to_string(getNumRows())+
+                            +"\n"+std::to_string(column)+" should be less than "+std::to_string(getNumColumns()));
 }
 
 RStatsWorksheet::~RStatsWorksheet()
 {
 
+}
+
+void RStatsWorksheet::setRowBorderColor(size_t row, const Color &color)
+{
+    for (size_t a1 = 0; a1 < getNumColumns();++a1)
+    {
+        this->operator()(row,a1).bgColor = color;
+    }
+}
+
+void RStatsWorksheet::setColumnBorderColor(size_t column, const Color &color)
+{
+    for (size_t a1 = 0; a1 < getNumRows();++a1)
+    {
+        this->operator()(a1,column).bgColor = color;
+    }
 }
 
 
@@ -248,7 +301,13 @@ void RStatsWorksheet::parseCellAddress(const std::string &address, size_t &r, si
             rowLabel.push_back(i);
         }
     }
-    r = StringUtils::toInt(rowLabel) - 1;
+    long index = StringUtils::toInt(rowLabel) - 1;
+    if (index < 0)
+    {
+        index = 0;
+    }
+    r = static_cast<size_t>(index);
+
     c = RStatsUtils::getColumnIndexFromLabel(colLabel);
 }
 
@@ -310,6 +369,44 @@ std::string RStatsWorksheet::toEvenlySpacedString(const std::string &prefix,
     return out.str();
 }
 
+bool RStatsWorksheet::isCellInMergedCellRange(size_t r, size_t c) const
+{
+    for (const auto& it : m_mergedCellTable)
+    {
+        if (it.first.contains(r,c))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+RStatsCell& RStatsWorksheet::getCellInMergedCellRange(size_t r, size_t c)
+{
+    for (auto& it : m_mergedCellTable)
+    {
+        if (it.first.contains(r,c))
+        {
+            return it.second;
+        }
+    }
+    return m_emptyCell;
+}
+
+
+bool RStatsWorksheet::getMergedCellRangeThatContains(size_t r, size_t c, RStatsMergeCellRange &range)
+{
+    for (auto it : m_mergedCellTable)
+    {
+        if (it.first.contains(r,c))
+        {
+            range = it.first;
+            return true;
+        }
+    }
+    return false;
+}
+
 void RStatsWorksheet::setWorksheetTitle(const std::string & value)
 {
     m_worksheetTitle=value;
@@ -318,6 +415,22 @@ void RStatsWorksheet::setWorksheetTitle(const std::string & value)
 const std::string &RStatsWorksheet::getWorksheetTitle() const
 {
     return m_worksheetTitle;
+}
+
+void RStatsWorksheet::setRowBackgroundColor(size_t row, const cbtek::common::utility::Color &color)
+{
+    for (size_t a1 = 0; a1 < getNumColumns();++a1)
+    {
+        this->operator()(row,a1).bgColor = color;
+    }
+}
+
+void RStatsWorksheet::setColumnBackgroundColor(size_t column, const Color &color)
+{
+    for (size_t a1 = 0; a1 < getNumRows();++a1)
+    {
+        this->operator()(a1,column).bgColor = color;
+    }
 }
 
 }}}//end namespace

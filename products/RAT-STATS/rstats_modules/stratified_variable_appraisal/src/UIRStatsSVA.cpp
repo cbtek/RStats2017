@@ -712,8 +712,8 @@ void UIRStatsSVA::setSessionData(const RStatsSVASessionData &data)
     }
 
     m_ui->m_cmbAuditedDataTable->setCurrentText(QString::fromStdString(data.getAuditColumn()));
-    m_ui->m_cmbExaminedDataTable->setCurrentText(QString::fromStdString(data.getAuditColumn()));
-    m_ui->m_cmbDifferenceDataTable->setCurrentText(QString::fromStdString(data.getAuditColumn()));
+    m_ui->m_cmbExaminedDataTable->setCurrentText(QString::fromStdString(data.getExamineColumn()));
+    m_ui->m_cmbDifferenceDataTable->setCurrentText(QString::fromStdString(data.getDifferenceColumn()));
     m_ui->m_cmbDataRowStartDataTable->setCurrentText(QString::number(data.getDataTableRowStart()));
     m_ui->m_cmbDataRowStartSizeTable->setCurrentText(QString::number(data.getSizeTableRowStart()));
     m_ui->m_cmbSampleCountSizeTable->setCurrentText(QString::fromStdString(data.getSampleColumn()));

@@ -19,8 +19,24 @@ using namespace oig::ratstats::ui;
 using namespace oig::ratstats::utils;
 using namespace cbtek::common::utility;
 
+double roundUpHalfEven(double value)
+{
+    std::string floatValue = std::to_string(value);
+    std::vector<std::string> parts = StringUtils::split(floatValue, ".");
+    if (parts.size() == 1)
+    {
+
+    }
+    else if (parts.size() == 2)
+    {
+        std::int64_t integral = StringUtils::toInt(parts.front());
+
+    }
+}
+
 int main(int argc, char ** argv)
 {    
+
     QApplication a(argc,argv);
     UIRStatsUtils::loadThemeSettings(&a);
     UIRStatsSVA form;
