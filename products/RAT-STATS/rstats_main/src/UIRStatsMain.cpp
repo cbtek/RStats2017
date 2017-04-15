@@ -59,26 +59,23 @@ UIRStatsMain::UIRStatsMain(QWidget *parent) :
     //Set images for all icons
     m_iconFolder = UIRStatsUtils::getIcon("img_folder.png");
     m_iconModule = UIRStatsUtils::getIcon("img_module.png");
-    m_iconEdit = UIRStatsUtils::getIcon("img_edit.png");
-    m_iconHelp = UIRStatsUtils::getIcon("img_help.png");
-    m_iconAdd = UIRStatsUtils::getIcon("img_add.png");
-    m_iconExit = UIRStatsUtils::getIcon("img_exit.png");
-    m_iconSettings = UIRStatsUtils::getIcon("img_settings.png");
-    m_iconAbout = UIRStatsUtils::getIcon("img_about.png");
+    m_iconEdit = UIRStatsUtils::getIcon("img_edit.png");    
+    m_iconAdd = UIRStatsUtils::getIcon("img_add.png");            
     m_iconRemove = UIRStatsUtils::getIcon("img_remove.png");
 
     //Set icons to actions/buttons
-    m_ui->m_actionExit->setIcon(m_iconExit);
-    m_ui->m_actionAbout_RAT_STATS_2017->setIcon(m_iconAbout);
-    m_ui->m_actionHelp_Topics->setIcon(m_iconHelp);
-    m_ui->m_actionAdd_New_Module->setIcon(m_iconAdd);
-    m_ui->m_actionSettings_Manager->setIcon(m_iconSettings);
+    UIRStatsUtils::initAction(m_ui->m_actionSettings_Manager,"img_settings.png","Alt+S");
+    UIRStatsUtils::initAction(m_ui->m_actionExit,"img_exit.png","Alt+Q");
+    UIRStatsUtils::initAction(m_ui->m_actionAbout_RAT_STATS_2017,"img_about.png","Alt+A");
+    UIRStatsUtils::initAction(m_ui->m_actionHelp_Topics,"img_help.png","Alt+H");
+    UIRStatsUtils::initAction(m_ui->m_actionAdd_New_Module,"img_add.png","Alt+N");
 
     //Set default values
     m_buttonHeight = 40;
     m_currentTable = nullptr;
     m_tableHasFocus = false;
-    m_ui->m_lstCategories->setStyleSheet("QListWidget:item{height:"+QString::number(m_buttonHeight+8)+"px;padding:1px;}");
+    m_ui->m_lstCategories->setStyleSheet("QListWidget:item{height:"+QString::number(m_buttonHeight)+"px;padding:1px;}");
+    m_ui->m_lstCategories->setIconSize(QSize(m_buttonHeight - 8,m_buttonHeight - 8));
     onInitialize(0);
 
     //Create SIGNAL/SLOT connections for all actions/buttons and other widgets
@@ -227,14 +224,14 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
             moduleLaunchButton->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
             m_allLaunchButtons.push_back(moduleLaunchButton);
             launchButtons->addButton(moduleLaunchButton,row);
-            layout->setContentsMargins(4,4,4,4);
+            layout->setContentsMargins(4,0,4,0);
             layout->addWidget(moduleLaunchButton);
             layout->addWidget(moduleEditButton);
             layout->addWidget(moduleRemoveButton);
             frame->resize(frame->width(),m_buttonHeight);
             frame->setLayout(layout);
             table->setCellWidget(row,0,frame);
-            table->setRowHeight(row,m_buttonHeight+8);
+            table->setRowHeight(row,m_buttonHeight);
 
             //Setup shortcut key for module and edit/remove/launch buttons
             QString removeKeyString,editKeyString,launchKeyString;
@@ -289,7 +286,8 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
         table->horizontalHeader()->setSectionResizeMode(0,QHeaderView::Stretch);
         m_tableMap[tableIndex] = table;
         mainLayout->addWidget(table);
-        m_ui->m_lstCategories->addItem(new QListWidgetItem(m_iconFolder,name));
+        QListWidgetItem * item = new QListWidgetItem(m_iconFolder,name);
+        m_ui->m_lstCategories->addItem(item);
         ++tableIndex;
         connect(launchButtons,SIGNAL(buttonClicked(QAbstractButton*)),this,SLOT(onLaunchModule(QAbstractButton*)));
         connect(editButtons,SIGNAL(buttonClicked(QAbstractButton*)),this,SLOT(onEditModule(QAbstractButton*)));
