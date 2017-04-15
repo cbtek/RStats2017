@@ -33,8 +33,10 @@ struct RStatsSVAInputData
 
 struct RStatsSVAOutputData
 {
+    std::string typeName;
     oig::ratstats::utils::RStatsDataFormatType type;
     bool isDisplaySummary;
+    bool isValid;
     cbtek::common::utility::DateEntity createDate;
     cbtek::common::utility::TimeEntity createTime;
     std::string auditName;
@@ -66,10 +68,16 @@ struct RStatsSVAOutputData
     RStatsSVAOutputData()
     {
         this->isDisplaySummary = false;
+        this->isValid = false;
     }
 };
 
-typedef std::vector<RStatsSVAOutputData> RStatsSVAOutputDataList;
+struct RStatsSVAOutputDataTriplet
+{
+    RStatsSVAOutputData audit,examine,difference;
+};
+
+typedef std::vector<RStatsSVAOutputDataTriplet> RStatsSVAOutputDataList;
 typedef std::vector<RStatsSVAInputData> RStatsSVAInputDataList;
 typedef oig::ratstats::utils::RStatsObjectList<int> RStatsSVAFlagList;
 
@@ -221,7 +229,7 @@ private:
      * @brief calculateOverallPrecision
      * @param data
      */
-    void calculateOverallPrecision(const RStatsSVAInputData& data);
+    void calculateOverallPrecision();
 
     /**
      * @brief processSamplingError
@@ -258,7 +266,7 @@ private:
      * @brief processSummaryTotals
      * @param data
      */
-    void processSummaryTotals(RStatsSVAOutputDataList &outputData);
+    void processSummaryTotals(RStatsSVAOutputData &summary, size_t index);
 
 
 
@@ -271,10 +279,12 @@ private:
                         oig::ratstats::utils::RStatsDataFormatType type,
                         size_t dataFormatIndex);
 
+
+    void saveOutputDataToWorksheet(const RStatsSVAOutputData& data, oig::ratstats::utils::RStatsWorksheet& sheet);
+
     std::string m_auditName;
     oig::ratstats::utils::RStatsInteger m_auditZeroCount;
-    oig::ratstats::utils::RStatsInteger m_conditionCount;
-    oig::ratstats::utils::RStatsInteger m_conditionUsage;
+    oig::ratstats::utils::RStatsInteger m_conditionCount;    
     oig::ratstats::utils::RStatsInteger m_currentIteration;
     oig::ratstats::utils::RStatsInteger m_differenceZeroCount;
     oig::ratstats::utils::RStatsInteger m_examineZeroCount;
@@ -285,6 +295,8 @@ private:
     oig::ratstats::utils::RStatsInteger m_totalSampleSize;
     oig::ratstats::utils::RStatsInteger m_currentNonZero;
 
+    oig::ratstats::utils::RStatsIntegerList m_summaryUniverse;
+    oig::ratstats::utils::RStatsIntegerList m_summaryNonZeroCount;
     oig::ratstats::utils::RStatsInteger m_summaryTotalSum;
     oig::ratstats::utils::RStatsInteger m_summaryPopulationSize;
     oig::ratstats::utils::RStatsInteger m_summarySampleSize;
@@ -328,28 +340,26 @@ private:
     oig::ratstats::utils::RStatsFloat m_outputTValue90;
     oig::ratstats::utils::RStatsFloat m_outputTValue95;
 
-    oig::ratstats::utils::RStatsFloat m_summaryPointEstimate;
-    oig::ratstats::utils::RStatsFloat m_summaryStandardErrorMean;
-    oig::ratstats::utils::RStatsFloat m_summaryStandardErrorTotal;
-    oig::ratstats::utils::RStatsFloat m_summaryLowerLimit80;
-    oig::ratstats::utils::RStatsFloat m_summaryLowerLimit90;
-    oig::ratstats::utils::RStatsFloat m_summaryLowerLimit95;
-    oig::ratstats::utils::RStatsFloat m_summaryUpperLimit80;
-    oig::ratstats::utils::RStatsFloat m_summaryUpperLimit90;
-    oig::ratstats::utils::RStatsFloat m_summaryUpperLimit95;
-    oig::ratstats::utils::RStatsFloat m_summaryPrecisionAmount80;
-    oig::ratstats::utils::RStatsFloat m_summaryPrecisionAmount90;
-    oig::ratstats::utils::RStatsFloat m_summaryPrecisionAmount95;
-    oig::ratstats::utils::RStatsFloat m_summaryPrecisionPercent80;
-    oig::ratstats::utils::RStatsFloat m_summaryPrecisionPercent90;
-    oig::ratstats::utils::RStatsFloat m_summaryPrecisionPercent95;
-    oig::ratstats::utils::RStatsFloat m_summaryZValue80;
-    oig::ratstats::utils::RStatsFloat m_summaryZValue90;
-    oig::ratstats::utils::RStatsFloat m_summaryZValue95;
-    oig::ratstats::utils::RStatsFloat m_summaryTValue80;
-    oig::ratstats::utils::RStatsFloat m_summaryTValue90;
-    oig::ratstats::utils::RStatsFloat m_summaryTValue95;
-    oig::ratstats::utils::RStatsFloat m_summaryStandardDeviation;
+    oig::ratstats::utils::RStatsFloatList m_summaryPointEstimate;
+    oig::ratstats::utils::RStatsFloatList m_summaryStandardErrorMean;
+    oig::ratstats::utils::RStatsFloatList m_summaryLowerLimit80;
+    oig::ratstats::utils::RStatsFloatList m_summaryLowerLimit90;
+    oig::ratstats::utils::RStatsFloatList m_summaryLowerLimit95;
+    oig::ratstats::utils::RStatsFloatList m_summaryUpperLimit80;
+    oig::ratstats::utils::RStatsFloatList m_summaryUpperLimit90;
+    oig::ratstats::utils::RStatsFloatList m_summaryUpperLimit95;
+    oig::ratstats::utils::RStatsFloatList m_summaryPrecisionAmount80;
+    oig::ratstats::utils::RStatsFloatList m_summaryPrecisionAmount90;
+    oig::ratstats::utils::RStatsFloatList m_summaryPrecisionAmount95;
+    oig::ratstats::utils::RStatsFloatList m_summaryZValue80;
+    oig::ratstats::utils::RStatsFloatList m_summaryZValue90;
+    oig::ratstats::utils::RStatsFloatList m_summaryZValue95;
+    oig::ratstats::utils::RStatsFloatList m_summaryTValue80;
+    oig::ratstats::utils::RStatsFloatList m_summaryTValue90;
+    oig::ratstats::utils::RStatsFloatList m_summaryTValue95;
+    oig::ratstats::utils::RStatsFloatList m_summaryTotalMean;
+    oig::ratstats::utils::RStatsFloatList m_summaryStandardDeviation;
+
     oig::ratstats::utils::RStatsFloatList m_auditValues;
     oig::ratstats::utils::RStatsFloatList m_differenceValues;
     oig::ratstats::utils::RStatsFloatList m_examValues;
@@ -405,6 +415,6 @@ private:
     oig::ratstats::utils::RStatsFloatList m_outputVStdErr;
     RStatsSVAFlagList m_dataFormatTypeAvailableFlag;
     RStatsSVAOutputDataList m_outputDataList;
-    size_t m_currentIndex;
+    size_t m_currentIndex;    
 };
 }}}}//end namespace

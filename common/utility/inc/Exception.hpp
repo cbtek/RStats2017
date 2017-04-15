@@ -28,9 +28,17 @@ SOFTWARE.
 #include <exception>
 #include <sstream>
 #include <string>
+#include <string.h>
 
-#define EXCEPTION_TAG "Exception thrown in "+std::string(__FILE__)+"("+std::string(__func__)+") on line ("+std::to_string(__LINE__)+"): "
-#define EXCEPTION_TAG_LINE "Exception thrown in "+std::string(__FILE__)+"("+std::string(__func__)+") on line ("+std::to_string(__LINE__)+"): \n"
+
+#ifdef __WIN32
+    #define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
+#else
+    #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#endif
+
+#define EXCEPTION_TAG "Exception thrown in "+std::string(__FILENAME__)+"::"+std::string(__func__)+", Line="+std::to_string(__LINE__)+": "
+#define EXCEPTION_TAG_LINE "Exception thrown in "+std::string(__FILENAME__)+"::"+std::string(__func__)+", Line="+std::to_string(__LINE__)+": \n\n"
 namespace cbtek{
 namespace common{
 namespace utility{

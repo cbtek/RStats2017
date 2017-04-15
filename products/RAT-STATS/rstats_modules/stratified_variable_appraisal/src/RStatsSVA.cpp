@@ -25,13 +25,15 @@ namespace ratstats {
 namespace modules {
 namespace sva {
 
-CREATE_EXCEPTION_NO_MSG(RStatsSVAException)
 
 namespace constants
 {
     const static RStatsFloat ZVAL80 = 1.281551565545;
     const static RStatsFloat ZVAL90 = 1.644853626951;
     const static RStatsFloat ZVAL95 = 1.95996398454;
+    const static size_t EXAMINE = 0;
+    const static size_t AUDIT = 1;
+    const static size_t DIFFERENCE = 2;
 }
 
 RStatsSVAOutputDataList RStatsSVA::execute(const std::string& auditName,
@@ -50,36 +52,36 @@ RStatsSVAOutputDataList RStatsSVA::execute(const std::string& auditName,
                                                                sizeSheetSampleSizeColumn,
                                                                sizeSheetUniverseSizeColumn,
                                                                sizeSheetRowStart);
-    RStatsDataFormatType dataFormatType;
+    RStatsDataFormatType dataFormatType = RStatsDataFormatType::Audit;
     RStatsInteger index = 0;    
-    m_summaryTotalSum = 0.;
+    m_summaryTotalSum = 0;
     m_summaryPopulationSize = 0;
-    m_summarySampleSize = 0;
+    m_summarySampleSize  = 0;
     m_summaryNonZero = 0;
-    m_summaryPointEstimate = 0.;
-    m_summaryStandardErrorMean = 0.;
-    m_summaryStandardErrorTotal = 0.;
-    m_summaryLowerLimit80 = 0.;
-    m_summaryLowerLimit90 = 0.;
-    m_summaryLowerLimit95 = 0.;
-    m_summaryUpperLimit80 = 0.;
-    m_summaryUpperLimit90 = 0.;
-    m_summaryUpperLimit95 = 0.;
-    m_summaryPrecisionAmount80 = 0.;
-    m_summaryPrecisionAmount90 = 0.;
-    m_summaryPrecisionAmount95 = 0.;
-    m_summaryPrecisionPercent80 = 0.;
-    m_summaryPrecisionPercent90 = 0.;
-    m_summaryPrecisionPercent95 = 0.;
-    m_summaryZValue80 = 0.;
-    m_summaryZValue90 = 0.;
-    m_summaryZValue95 = 0.;
-    m_summaryTValue80 = 0.;
-    m_summaryTValue90 = 0.;
-    m_summaryTValue95 = 0.;
-    m_summaryStandardDeviation = 0.;
+    m_summaryPointEstimate.initialize(3);
+    m_summaryNonZeroCount.initialize(3);
+    m_summaryLowerLimit80.initialize(3);
+    m_summaryLowerLimit90.initialize(3);
+    m_summaryLowerLimit95.initialize(3);
+    m_summaryUpperLimit80.initialize(3);
+    m_summaryUpperLimit90.initialize(3);
+    m_summaryUpperLimit95.initialize(3);
+    m_summaryPrecisionAmount80.initialize(3);
+    m_summaryPrecisionAmount90.initialize(3);
+    m_summaryPrecisionAmount95.initialize(3);
+    m_summaryZValue80.initialize(3);
+    m_summaryZValue90.initialize(3);
+    m_summaryZValue95.initialize(3);
+    m_summaryTValue80.initialize(3);
+    m_summaryTValue90.initialize(3);
+    m_summaryTValue95.initialize(3);
+    m_summaryTotalMean.initialize(3);
+    m_summaryStandardDeviation.initialize(3);
     m_auditName = auditName;
     m_currentIndex = 0;
+
+    m_summaryStandardErrorMean.initialize(3);
+
     for (const RStatsSVAInputData& inputData : strataDataList)
     {
         onReset();
@@ -87,6 +89,7 @@ RStatsSVAOutputDataList RStatsSVA::execute(const std::string& auditName,
         m_currentNonZero = static_cast<RStatsInteger>(RStatsUtils::getNumItemsThatMatchCondition<RStatsFloat>(RStatsConditionalOperatorType::NotEqual,
                                                                                 inputData.samples,
                                                                                 0.));
+
         m_examValues.clear();
         m_auditValues.clear();
         m_differenceValues.clear();
@@ -103,149 +106,254 @@ RStatsSVAOutputDataList RStatsSVA::execute(const std::string& auditName,
         m_summarySampleSize += inputData.sampleSize;
         m_summaryNonZero += RStatsUtils::getSum(m_outputNonZero);
         m_summaryTotalSum += RStatsUtils::getSum(m_outputSum);
-        m_summaryPopulationSize += inputData.universeSize;
-
+        m_summaryPopulationSize += inputData.universeSize;        
         buildOutputData(m_outputDataList,
                         inputData,
                         dataFormatType);
         ++index;
-        m_currentIndex = index;
+        m_currentIndex = index;        
     }    
-    processSummaryTotals(m_outputDataList);
+
+    calculateOverallPrecision();
+    RStatsSVAOutputDataTriplet summary;
+
+    if (m_dataFormatTypeAvailableFlag(constants::EXAMINE))
+    {
+        summary.examine.typeName = "Examined Values";
+        processSummaryTotals(summary.examine,constants::EXAMINE);
+    }
+    if (m_dataFormatTypeAvailableFlag(constants::AUDIT))
+    {
+        summary.audit.typeName = "Audited Values";
+        processSummaryTotals(summary.audit,constants::AUDIT);
+    }
+    if (m_dataFormatTypeAvailableFlag(constants::DIFFERENCE))
+    {
+        summary.difference.typeName = "Difference Values";
+        processSummaryTotals(summary.difference,constants::DIFFERENCE);
+    }
+
+
+    m_outputDataList.insert(m_outputDataList.begin() + 0, summary);
     return m_outputDataList;
 }
 
+void RStatsSVA::processSummaryTotals(RStatsSVAOutputData& summary, size_t index)
+{
+    summary.isValid = true;
+    summary.pointEstimate = m_summaryPointEstimate(index);
+    summary.nonZeroCount = m_summaryNonZeroCount(index);
+    summary.sampleSize = m_summarySampleSize;
+    summary.populationSize = m_summaryPopulationSize;
+    summary.lower80 = m_summaryLowerLimit80(index);
+    summary.lower90 = m_summaryLowerLimit90(index);
+    summary.lower95 = m_summaryLowerLimit95(index);
+
+    summary.upper80 = m_summaryUpperLimit80(index);
+    summary.upper90 = m_summaryUpperLimit90(index);
+    summary.upper95 = m_summaryUpperLimit95(index);
+
+    summary.tValue80 = constants::ZVAL80;
+    summary.tValue90 = constants::ZVAL90;
+    summary.tValue95 = constants::ZVAL95;
+
+    summary.precisionAmount80 = m_summaryPrecisionAmount80(index);
+    summary.precisionAmount90 = m_summaryPrecisionAmount90(index);
+    summary.precisionAmount95 = m_summaryPrecisionAmount95(index);
+
+    summary.precisionPercent80 =  RStatsUtils::isEqual(m_summaryPointEstimate(index),0.) ? 0. : 100. * (m_summaryPrecisionAmount80(index) / m_summaryPointEstimate(index));
+    summary.precisionPercent90 =  RStatsUtils::isEqual(m_summaryPointEstimate(index),0.) ? 0. : 100. * (m_summaryPrecisionAmount90(index) / m_summaryPointEstimate(index));
+    summary.precisionPercent95 =  RStatsUtils::isEqual(m_summaryPointEstimate(index),0.) ? 0. : 100. * (m_summaryPrecisionAmount95(index) / m_summaryPointEstimate(index));
+
+    summary.standardErrorMean = m_summaryStandardErrorMean(index) / static_cast<RStatsFloat>(summary.populationSize);
+    summary.standardErrorTotal = m_summaryStandardErrorMean(index);
+    summary.standardDeviation = m_summaryStandardDeviation(index);
+    summary.isDisplaySummary = true;
+    summary.mean = m_summaryTotalMean(index);
+}
 
 void RStatsSVA::saveToWorkbook(RStatsWorkbook &workbookOut)
 {    
     RStatsSVAOutputDataList &outputList = m_outputDataList;
+    RStatsWorkbook summaryWorkbook;
     RStatsInteger counter = 1;
-    for(const RStatsSVAOutputData& data : outputList)
+    for(const RStatsSVAOutputDataTriplet& data : outputList)
     {
-        RStatsWorksheet sheet;        
+        RStatsWorkbook stratumWorkbook;
+        bool isSummary = false;
+        if (data.examine.isValid)
+        {
+            RStatsWorksheet sheet;
+            isSummary = data.examine.isDisplaySummary;
+            saveOutputDataToWorksheet(data.examine,sheet);
+            sheet.setRowBackgroundColor(sheet.getNumRows(),Color(50,50,50));
+            stratumWorkbook.addWorksheet(sheet);
+        }
+
+        if (data.audit.isValid)
+        {
+            RStatsWorksheet sheet;
+            isSummary = data.audit.isDisplaySummary;
+            saveOutputDataToWorksheet(data.audit,sheet);
+            sheet.setRowBackgroundColor(sheet.getNumRows(),Color(50,50,50));
+            stratumWorkbook.addWorksheet(sheet);
+        }
+
+        if (data.difference.isValid)
+        {
+            RStatsWorksheet sheet;
+            isSummary = data.difference.isDisplaySummary;
+            saveOutputDataToWorksheet(data.difference,sheet);
+            sheet.setRowBackgroundColor(sheet.getNumRows(),Color(50,50,50));
+            stratumWorkbook.addWorksheet(sheet);
+        }
+
+        RStatsWorksheet stratumSheet = stratumWorkbook.mergeSheets(RStatsWorkbookMergeDirection::MergeBottom);
+
         std::string title;
-        if (data.isDisplaySummary)
+        if (isSummary)
         {
             title = "Summary";
         }
         else
         {
             title = "Stratum "+std::to_string(counter);
+            ++counter;
         }
+        stratumSheet.setWorksheetTitle(title);
+        workbookOut.addWorksheet(stratumSheet);
+
+    }
+}
+
+void RStatsSVA::saveOutputDataToWorksheet(const RStatsSVAOutputData &data,
+                                          RStatsWorksheet &sheet)
+{
+
+    sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignRight);
+    sheet.setDefaultFont(cbtek::common::utility::Font("arial",11,true));
+    sheet("A1")= "Sample Type:";
+    sheet("A2")= "Audit Name:";
+    sheet("A3")= "Universe Size:";
+    sheet("A4")= "Sample Size:";
+    sheet("A5")= "Nonzero Count:";
+    sheet("A6")= "Creation Date:";
+    sheet("A7")= "Creation Time:";
+    sheet("A8")= "Created By:";
+
+    sheet("C1")="Mean:";
+    sheet("C2")="Skewness:";
+    sheet("C3")="Kurtosis:";
+    sheet("C4")="Std. Deviation:";
+    sheet("C5")="Std. Err. Mean:";
+    sheet("C6")="Std. Err. Total:";
+    sheet("C7")="Point Estimate:";
+
+    sheet("A11") = "Lower:";
+    sheet("A12") = "Upper:";
+    sheet("A13")="Precision Amount:";
+    sheet("A14")="Precision Percent:";
+
+    sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
+    sheet("C9") = "Confidence Levels";
+    sheet("B10") = "80%";
+    sheet("C10") = "90%";
+    sheet("D10") = "95%";
+    sheet("B10").bgColor.set(255,127,127);
+    sheet("C10").bgColor.set(255,255,127);
+    sheet("D10").bgColor.set(127,255,127);
+    sheet("B10").fgColor.set(1,1,1);
+    sheet("C10").fgColor.set(1,1,1);
+    sheet("D10").fgColor.set(1,1,1);
+    sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignLeft);
+    sheet("B1") = data.typeName;
+    sheet("B2") = m_auditName;
+    sheet("B3") = data.populationSize;
+    sheet("B4") = data.sampleSize;
+    sheet("B5") = data.nonZeroCount;
+    sheet("B6") = DateUtils::toLongDateString(DateUtils::getCurrentDate());
+    sheet("B7") = TimeUtils::to12HourTimeString(TimeUtils::getCurrentTime());
+    sheet("B8") = SystemUtils::getUserName();
+
+    sheet("D1") = !std::isnan(data.mean) ? StringUtils::toString(data.mean,2) : "0.00";
+    sheet("D2") = !std::isnan(data.skewness) ? StringUtils::toString(data.skewness,2): "0.00";
+    sheet("D3") = !std::isnan(data.kurtosis) ? StringUtils::toString(data.kurtosis,2): "0.00";
+    sheet("D4") = !std::isnan(data.standardDeviation) ? StringUtils::toString(data.standardDeviation,2): "0.00";
+    sheet("D5") = !std::isnan(data.standardErrorMean) ? StringUtils::toString(data.standardErrorMean,2): "0.00";
+    sheet("D6") = !std::isnan(data.standardErrorTotal) ? StringUtils::toString(data.standardErrorTotal,0) : "0";
+    sheet("D7") = !std::isnan(data.pointEstimate) ? StringUtils::toString(data.pointEstimate,0) : "0";
+
+    for (size_t a1 = 1;a1 <=5;++a1)
+    {
+        if (sheet("D"+std::to_string(a1)).text == "-0.00")
+        {
+            sheet("D"+std::to_string(a1)) = "0.00";
+        }
+    }
+
+    sheet.resetDefaults();
+    sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
+    sheet.setDefaultFont(Font("arial",11));
+    sheet.setDefaultFloatingPointDecimals(2);
+    sheet.setDefaultFloatingPointDecimals(0);
+
+    sheet("B11") = data.lower80;
+    sheet("C11") = data.lower90;
+    sheet("D11") = data.lower95;
+
+    sheet("B12") = data.upper80;
+    sheet("C12") = data.upper90;
+    sheet("D12") = data.upper95;
+
+    sheet("B13") = data.precisionAmount80;
+    sheet("C13") = data.precisionAmount90;
+    sheet("D13") = data.precisionAmount95;
+
+    if (data.isDisplaySummary)
+    {
+
+        std::string percent80 = StringUtils::toString(data.precisionPercent80,2)+"%";
+        std::string percent90 = StringUtils::toString(data.precisionPercent90,2)+"%";
+        std::string percent95 = StringUtils::toString(data.precisionPercent95,2)+"%";
+
+        sheet("B14") = percent80;
+        sheet("C14") = percent90;
+        sheet("D14") = percent95;
+        sheet("C1")="";
+        sheet("C2")="";
+        sheet("C3")="";
+        sheet("C4")="";
+        sheet("D1")="";
+        sheet("D2")="";
+        sheet("D3")="";
+        sheet("D4")="";
         sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignRight);
-        sheet.setWorksheetTitle(title);
         sheet.setDefaultFont(cbtek::common::utility::Font("arial",11,true));
-
-        sheet("A1")= "Audit Name:";
-        sheet("A2")= "Universe Size:";
-        sheet("A3")= "Sample Size:";
-        sheet("A4")= "Nonzero Count:";
-        sheet("A5")= "Creation Date:";
-        sheet("A6")= "Creation Time:";
-        sheet("A7")= "Created By:";
-
-        sheet("C1")="Mean:";        
-        sheet("C2")="Skewnewss:";
-        sheet("C3")="Kurtosis:";
-        sheet("C4")="Std. Deviation:";
-        sheet("C5")="Std. Err. Mean:";
-        sheet("C6")="Std. Err. Total:";
-        sheet("C7")="Point Estimate:";
-
-        sheet("A11") = "Lower:";
-        sheet("A12") = "Upper:";
-        sheet("A13")="Precision Amount:";
-        sheet("A14")="Precision Percent:";
-
+        sheet("A15") = "z-Value:";
+        sheet.setDefaultFloatingPointDecimals(12);
         sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
-        sheet("C9") = "Confidence Levels";
-        sheet("B10") = "80%";
-        sheet("C10") = "90%";
-        sheet("D10") = "95%";
-        sheet("B10").bgColor.set(255,127,127);
-        sheet("C10").bgColor.set(255,255,127);
-        sheet("D10").bgColor.set(127,255,127);
-        sheet("B10").fgColor.set(1,1,1);
-        sheet("C10").fgColor.set(1,1,1);
-        sheet("D10").fgColor.set(1,1,1);
-        sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignLeft);
-        sheet("B1") = m_auditName;
-        sheet("B2") = data.populationSize;
-        sheet("B3") = data.sampleSize;
-        sheet("B4") = data.nonZeroCount;
-        sheet("B5") = DateUtils::toLongDateString(DateUtils::getCurrentDate());
-        sheet("B6") = TimeUtils::to12HourTimeString(TimeUtils::getCurrentTime());
-        sheet("B7") = SystemUtils::getUserName();
-
-        sheet("D1") = StringUtils::toString(data.mean,2);
-        sheet("D2") = StringUtils::toString(data.skewness,2);
-        sheet("D3") = StringUtils::toString(data.kurtosis,2);
-        sheet("D4") = StringUtils::toString(data.standardDeviation,2);
-        sheet("D5") = StringUtils::toString(data.standardErrorMean,2);
-        sheet("D6") = StringUtils::toString(data.standardErrorTotal,0);
-        sheet("D7") = StringUtils::toString(data.pointEstimate,0);
-        sheet.resetDefaults();
-        sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
-        sheet.setDefaultFont(Font("arial",11));
-        sheet.setDefaultFloatingPointDecimals(2);
-        sheet.setDefaultFloatingPointDecimals(0);
-
+        sheet("B15") = StringUtils::toString(data.tValue80,12);
+        sheet("C15") = StringUtils::toString(data.tValue90,12);
+        sheet("D15") = StringUtils::toString(data.tValue95,12);
+    }
+    else
+    {
         std::string percent80 = StringUtils::toString(data.precisionPercent80*100.,2)+"%";
         std::string percent90 = StringUtils::toString(data.precisionPercent90*100.,2)+"%";
         std::string percent95 = StringUtils::toString(data.precisionPercent95*100.,2)+"%";
-
-        sheet("B11") = data.lower80;
-        sheet("C11") = data.lower90;
-        sheet("D11") = data.lower95;
-
-        sheet("B12") = data.upper80;
-        sheet("C12") = data.upper90;
-        sheet("D12") = data.upper95;
-
-        sheet("B13") = data.precisionAmount80;
-        sheet("C13") = data.precisionAmount90;
-        sheet("D13") = data.precisionAmount95;
 
         sheet("B14") = percent80;
         sheet("C14") = percent90;
         sheet("D14") = percent95;
 
-        if (data.isDisplaySummary)
-        {
-
-            sheet("C1")="";
-            sheet("C2")="";
-            sheet("C3")="";
-            sheet("C4")="";
-            sheet("D1")="";
-            sheet("D2")="";
-            sheet("D3")="";
-            sheet("D4")="";
-            sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignRight);
-            sheet.setDefaultFont(cbtek::common::utility::Font("arial",11,true));
-            sheet("A15") = "z-Value:";
-            sheet.setDefaultFloatingPointDecimals(12);
-            sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
-            sheet("B15") = data.tValue80;
-            sheet("C15") = data.tValue90;
-            sheet("D15") = data.tValue95;
-        }
-        else
-        {
-            sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignRight);
-            sheet.setDefaultFont(cbtek::common::utility::Font("arial",11,true));
-            sheet("A15") = "t-Value:";
-            sheet.setDefaultFloatingPointDecimals(12);
-            sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
-            sheet("B15") = data.tValue80;
-            sheet("C15") = data.tValue90;
-            sheet("D15") = data.tValue95;
-        }
-        workbookOut.addWorksheet(sheet);
-        if (!data.isDisplaySummary)
-        {
-            ++counter;
-        }
+        sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignRight);
+        sheet.setDefaultFont(cbtek::common::utility::Font("arial",11,true));
+        sheet("A15") = "t-Value:";
+        sheet.setDefaultFloatingPointDecimals(12);
+        sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
+        sheet("B15") = data.tValue80;
+        sheet("C15") = data.tValue90;
+        sheet("D15") = data.tValue95;
     }
 }
 
@@ -253,33 +361,31 @@ void RStatsSVA::buildOutputData(RStatsSVAOutputDataList& outputDataList,
                                 const RStatsSVAInputData& inputData,
                                 RStatsDataFormatType type)
 {
-    if (type == RStatsDataFormatType::Examine ||
-        type == RStatsDataFormatType::ExamineAndAudit||
-        type == RStatsDataFormatType::ExamineAndDifference)
+    RStatsSVAOutputDataTriplet triplet;
+
+    if (type == RStatsDataFormatType::Examine)
     {
-        RStatsSVAOutputData examine;
-        copyOutputData(examine,inputData,type,0);
-        outputDataList.push_back(examine);
+        copyOutputData(triplet.examine,inputData,type,constants::EXAMINE);
     }
 
-    if (type == RStatsDataFormatType::Audit ||
-        type == RStatsDataFormatType::AuditAndDifference ||
-        type == RStatsDataFormatType::ExamineAndAudit)
-    {
-        RStatsSVAOutputData audit;
-        copyOutputData(audit,inputData,type,1);
-        outputDataList.push_back(audit);
+    else if (type == RStatsDataFormatType::Audit)
+    {        
+        copyOutputData(triplet.audit,inputData,type,constants::AUDIT);
     }
 
-    if (type == RStatsDataFormatType::Difference ||
-        type == RStatsDataFormatType::AuditAndDifference ||
-        type == RStatsDataFormatType::ExamineAndDifference)
+    else if (type == RStatsDataFormatType::Difference)
     {
-        RStatsSVAOutputData difference;
-        copyOutputData(difference,inputData,type,2);
-        outputDataList.push_back(difference);
+        copyOutputData(triplet.difference,inputData,type,constants::DIFFERENCE);
     }
 
+    else
+    {
+        copyOutputData(triplet.examine,inputData,type,constants::EXAMINE);
+        copyOutputData(triplet.audit,inputData,type,constants::AUDIT);
+        copyOutputData(triplet.difference,inputData,type,constants::DIFFERENCE);
+    }
+
+    outputDataList.push_back(triplet);
 }
 
 
@@ -288,13 +394,29 @@ void RStatsSVA::copyOutputData(RStatsSVAOutputData& outputData,
                                RStatsDataFormatType type,
                                size_t dataFormatIndex)
 {
+
+    if (dataFormatIndex == constants::AUDIT)
+    {
+        outputData.typeName = "Summary for Audit Values";
+    }
+    else if (dataFormatIndex == constants::EXAMINE)
+    {
+        outputData.typeName = "Summary for Examine Values";
+    }
+    else
+    {
+        outputData.typeName = "Summary for Difference Values";
+    }
+
+    outputData.isValid = true;
+    outputData.isDisplaySummary = false;
     outputData.auditName = m_auditName;
     outputData.type = type;
     outputData.sampleSize = inputData.sampleSize;
     outputData.populationSize = inputData.universeSize;
     outputData.nonZeroCount = static_cast<RStatsInteger>(m_outputNonZero(dataFormatIndex));
     outputData.mean = m_outputMean(dataFormatIndex);
-    outputData.standardDeviation = m_outputStdDev(dataFormatIndex);
+    outputData.standardDeviation = m_outputStdDev(dataFormatIndex);    
     outputData.skewness = m_outputSkewAmount(dataFormatIndex);
     outputData.standardErrorMean = m_outputStdErr(dataFormatIndex);
     outputData.standardErrorTotal = m_outputStdErr(dataFormatIndex) * inputData.universeSize;
@@ -324,6 +446,8 @@ void RStatsSVA::copyOutputData(RStatsSVAOutputData& outputData,
     outputData.tValue95 = m_outputTValue95;
 
 }
+
+
 
 RStatsSVA::RStatsSVA()
 {
@@ -391,10 +515,7 @@ RStatsSVAInputDataList RStatsSVA::buildInputDataList(const RStatsWorksheet &data
 }
 
 void RStatsSVA::onReset()
-{
-    m_temporary80 = 0.;
-    m_temporary90 = 0.;
-    m_temporary95 = 0.;
+{    
     m_outputTValue80 = 0.;
     m_outputTValue90 = 0.;
     m_outputTValue95 = 0.;
@@ -493,8 +614,7 @@ void RStatsSVA::onReset()
     m_numTerms = 0;
     m_maxIterations = 0;
     m_numStrata = 0;
-    m_conditionCount = 0;
-    m_conditionUsage = 0;
+    m_conditionCount = 0;    
 }
 
 void RStatsSVA::onUpdateSums(const RStatsFloatList &auditValues,
@@ -511,6 +631,8 @@ void RStatsSVA::onUpdateSums(const RStatsFloatList &auditValues,
                                                                      examValues,
                                                                      0.);
 
+    m_summaryNonZeroCount(0) += m_outputNonZero(0);
+
     m_outputSum(1) += RStatsUtils::getSum(auditValues);
     m_outputSumSqrt(1) += RStatsUtils::getSumRaisedTo<RStatsFloat>(auditValues,2);
     m_outputSumCbrt(1) += RStatsUtils::getSumRaisedTo<RStatsFloat>(auditValues,3);
@@ -518,6 +640,7 @@ void RStatsSVA::onUpdateSums(const RStatsFloatList &auditValues,
     m_outputNonZero(1) += RStatsUtils::getNumItemsThatMatchCondition(RStatsConditionalOperatorType::NotEqual,
                                                                      auditValues,
                                                                      0.);
+    m_summaryNonZeroCount(1) += m_outputNonZero(1);
 
     m_outputSum(2) += RStatsUtils::getSum(differenceValues);
     m_outputSumSqrt(2) += RStatsUtils::getSumRaisedTo<RStatsFloat>(differenceValues,2);
@@ -526,7 +649,7 @@ void RStatsSVA::onUpdateSums(const RStatsFloatList &auditValues,
     m_outputNonZero(2) += RStatsUtils::getNumItemsThatMatchCondition(RStatsConditionalOperatorType::NotEqual,
                                                                      differenceValues,
                                                                      0.);
-
+    m_summaryNonZeroCount(2) += m_outputNonZero(2);
 }
 
 
@@ -547,6 +670,7 @@ void RStatsSVA::initializeDataTypeFormat(RStatsDataFormatType dataTypeFormat,
         m_outputSumCbrt(0) += RStatsUtils::getSumRaisedTo<RStatsFloat>(inputData.samples,3);
         m_outputSumQdrt(0) += RStatsUtils::getSumRaisedTo<RStatsFloat>(inputData.samples,4);
         m_outputNonZero(0) += m_examineZeroCount;
+        m_summaryNonZeroCount(0) += m_examineZeroCount;
     }
     else if (dataTypeFormat == RStatsDataFormatType::Audit)
     {
@@ -561,6 +685,7 @@ void RStatsSVA::initializeDataTypeFormat(RStatsDataFormatType dataTypeFormat,
         m_outputSumCbrt(1) += RStatsUtils::getSumRaisedTo<RStatsFloat>(inputData.samples,3);
         m_outputSumQdrt(1) += RStatsUtils::getSumRaisedTo<RStatsFloat>(inputData.samples,4);
         m_outputNonZero(1) += m_auditZeroCount;
+        m_summaryNonZeroCount(1) += m_auditZeroCount;
 
     }
     else if (dataTypeFormat == RStatsDataFormatType::Difference)
@@ -576,8 +701,8 @@ void RStatsSVA::initializeDataTypeFormat(RStatsDataFormatType dataTypeFormat,
         m_outputSumCbrt(2) += RStatsUtils::getSumRaisedTo<RStatsFloat>(inputData.samples,3);
         m_outputSumQdrt(2) += RStatsUtils::getSumRaisedTo<RStatsFloat>(inputData.samples,4);
         m_outputNonZero(2) += m_differenceZeroCount;
-
-    }
+        m_summaryNonZeroCount(2) += m_differenceZeroCount;
+    }    
     else if (dataTypeFormat == RStatsDataFormatType::ExamineAndAudit)
     {
         if (inputData.samples.getNumDimensions() > 1)
@@ -644,14 +769,14 @@ void RStatsSVA::initializeDataTypeFormat(RStatsDataFormatType dataTypeFormat,
 //'---------CALCULATE MEAN--------
 void RStatsSVA::calculateMean(const RStatsSVAInputData& inputData)
 {
-    for (RStatsInteger a1 = 0; a1 < 3; ++a1)
+    for (size_t a1 = 0; a1 < 3; ++a1)
     {
         if (inputData.sampleSize > 0 &&
             m_currentNonZero > 0 &&
             m_dataFormatTypeAvailableFlag(a1))
         {
-            m_outputMean(a1) = m_outputSum(a1) / (RStatsFloat)inputData.sampleSize;
-            m_outputVMean(a1) = m_outputMean(a1);
+            m_outputMean(a1) = m_outputSum(a1) / static_cast<RStatsFloat>(inputData.sampleSize);
+            m_summaryTotalMean(a1) += m_outputMean(a1);
         }
     }
 }
@@ -679,7 +804,7 @@ void RStatsSVA::calculateStandardDeviation(const RStatsSVAInputData &inputData)
                 m_outputStdDev(a1) = 0.;
             }
             m_outputStdDevTemp(a1) += (m_outputStdDevTemp(a1) + std::pow(m_outputStdDev(a1),2) * std::pow(universeSize,2));
-            m_summaryStandardDeviation += m_outputStdDevTemp(a1);
+            m_summaryStandardDeviation(a1) += m_outputStdDevTemp(a1);
         }
         m_outputVStdDev(a1) = m_outputStdDev(a1);
     }
@@ -703,7 +828,7 @@ void RStatsSVA::calculateStandardError(const RStatsSVAInputData& inputData)
             tempValue /= static_cast<RStatsFloat>(inputData.sampleSize);
             m_outputTermSE(a1) = tempValue;
             m_outputStdErrTemp(a1) += m_outputTermSE(a1);
-            m_summaryStandardErrorMean += m_outputStdErrTemp(a1);
+            m_summaryStandardErrorMean(a1) += m_outputTermSE(a1);
         }
     }
 }
@@ -729,9 +854,9 @@ void RStatsSVA::calculatePointEstimates(const RStatsSVAInputData& inputData)
 {
     for (size_t a1 = 0; a1 < 3; ++a1)
     {
-        m_outputPNTest(a1) = m_outputMean(a1) * (RStatsFloat)inputData.universeSize;
+        m_outputPNTest(a1) = m_outputMean(a1) * static_cast<RStatsFloat>(inputData.universeSize);
         m_outputPNTestTemp(a1) = m_outputPNTestTemp(a1) + m_outputPNTest(a1);
-        m_summaryPointEstimate += m_outputPNTest(a1);
+        m_summaryPointEstimate(a1) += m_outputPNTest(a1);
         m_outputVProjectNumber(a1) = m_outputPNTest(a1);
     }
 }
@@ -872,7 +997,7 @@ void RStatsSVA::processSamplingError(const RStatsSVAInputData& inputData)
     m_maxIterations = 1000;
     m_eps = 0.00000000000001;
     m_formulaVarA = 0.5;
-    m_formulaVarB = m_outputDOF / 2;
+    m_formulaVarB = static_cast<RStatsFloat>(m_outputDOF) / 2.;
     m_formulaVarPI = 4 * std::atan(1);
     m_conditionCount = 0;
     processConditionLoop(inputData);
@@ -883,20 +1008,20 @@ void RStatsSVA::processConditionLoop(const RStatsSVAInputData& inputData)
     m_conditionCount++;
     m_lowValue = 0;
     m_highValue = 4;
-
+    RStatsFloat condition = 0.;
     if (m_conditionCount == 1)
     {
-        m_conditionUsage = 80;
+        condition = 80.;
     }
     else if (m_conditionCount == 2)
     {
-        m_conditionUsage = 90;
+        condition = 90.;
     }
     else if (m_conditionCount == 3)
     {
-        m_conditionUsage = 95;
+        condition = 95.;
     }
-    m_cumaltiveProbability = (RStatsFloat)m_conditionUsage / 200 + .5;
+    m_cumaltiveProbability = condition / 200 + 0.5;
 
     m_formulaVarT = m_lowValue;
     processFindCumProb(inputData);
@@ -914,9 +1039,11 @@ void RStatsSVA::processStartLoop(const RStatsSVAInputData& inputData)
 {
     m_currentIteration++;
     m_formulaVarTLast = m_formulaVarT;
-    m_formulaVarT = (m_lowValue + m_highValue) / 2;
+
+    m_formulaVarT = ((m_lowValue + m_highValue) / 2.);
+    std::cerr << "((" << m_lowValue << " + " << m_highValue << ") / 2 = " << m_formulaVarT << std::endl;
     processFindCumProb(inputData);
-    m_newProbability = m_currentIteration;
+    m_newProbability = m_currentProbability;;
     if (m_currentProbability < m_cumaltiveProbability)
     {
         m_lowValue = m_formulaVarT;
@@ -926,7 +1053,7 @@ void RStatsSVA::processStartLoop(const RStatsSVAInputData& inputData)
         m_highValue = m_formulaVarT;
     }
 
-    m_difference = fabsl(m_formulaVarT - m_formulaVarTLast) - m_eps;
+    m_difference = fabs(m_formulaVarT - m_formulaVarTLast) - m_eps;
     if (m_difference < 0 || RStatsUtils::isEqual(m_formulaVarT,0.))
     {
         if (m_conditionCount == 1)
@@ -950,7 +1077,7 @@ void RStatsSVA::processStartLoop(const RStatsSVAInputData& inputData)
         }
         else
         {
-            throw RStatsSVAException(EXCEPTION_TAG_LINE+"Program was unable to determine a t-value");
+            THROW_GENERIC_EXCEPTION("Program was unable to determine a t-value");
         }
     }
     if (m_conditionCount < 3)
@@ -1030,36 +1157,7 @@ void RStatsSVA::processFindProbVal(RStatsFloat tempValue)
     m_currentProbability = .5 * (m_frontValue * tempValue + 1);
 }
 
-void RStatsSVA::processSummaryTotals(RStatsSVAOutputDataList& outputData)
-{
-    int x = 0;
-    RStatsSVAOutputData summary;
-    summary.pointEstimate = m_summaryPointEstimate;
-    summary.nonZeroCount = m_summaryNonZero;
-    summary.sampleSize = m_summarySampleSize;
-    summary.populationSize = m_summaryPopulationSize;
-    summary.lower80 = m_summaryLowerLimit80;
-    summary.lower90 = m_summaryLowerLimit90;
-    summary.lower95 = m_summaryLowerLimit95;
 
-    summary.upper80 = m_summaryUpperLimit80;
-    summary.upper90 = m_summaryUpperLimit90;
-    summary.upper95 = m_summaryUpperLimit95;
-
-    summary.precisionAmount80 = m_summaryPrecisionAmount80;
-    summary.precisionAmount90 = m_summaryPrecisionAmount90;
-    summary.precisionAmount95 = m_summaryPrecisionAmount95;
-
-    summary.precisionPercent80 = m_summaryPrecisionPercent80;
-    summary.precisionPercent90 = m_summaryPrecisionPercent90;
-    summary.precisionPercent95 = m_summaryPrecisionPercent95;
-
-    summary.standardErrorMean = m_summaryStandardErrorMean;
-    summary.standardErrorTotal = m_summaryStandardErrorTotal;
-    summary.standardDeviation = m_summaryStandardDeviation;
-    summary.isDisplaySummary = true;
-    outputData.insert(outputData.begin()+0, summary);
-}
 
 void RStatsSVA::calculateIntervals(const RStatsSVAInputData & inputData)
 {
@@ -1085,41 +1183,30 @@ void RStatsSVA::calculateIntervals(const RStatsSVAInputData & inputData)
     calculateUpperAndLowerLimits(inputData);
     calculateSkewness(inputData);
     calculateKurtosis(inputData);
-    calculateOverallPrecision(inputData);
+    //calculateOverallPrecision(inputData);
 }
 
-void RStatsSVA::calculateOverallPrecision(const RStatsSVAInputData &inputData)
+void RStatsSVA::calculateOverallPrecision()
 {
     for (size_t a1 = 0; a1 < 3; ++a1)
     {
         if (m_outputNonZero(a1) > 0 &&
             m_dataFormatTypeAvailableFlag(a1))
         {
-            m_outputStdErrTemp(a1) = std::sqrt(m_outputStdErrTemp(a1));
-            m_outputPrecisionTemp80(a1) = constants::ZVAL80 * m_outputStdErrTemp(a1);           
-            m_outputLowerLimitTemp80(a1) = m_outputPNTestTemp(a1) - m_outputPrecisionTemp80(a1);
-            m_outputUpperLimitTemp80(a1) = m_outputPNTestTemp(a1) + m_outputPrecisionTemp80(a1);
 
-            m_outputPrecisionTemp90(a1) = constants::ZVAL90 * m_outputStdErrTemp(a1);
-            m_outputLowerLimitTemp90(a1) = m_outputPNTestTemp(a1) - m_outputPrecisionTemp90(a1);
-            m_outputUpperLimitTemp90(a1) = m_outputPNTestTemp(a1) + m_outputPrecisionTemp90(a1);
+            m_summaryStandardErrorMean(a1) = std::sqrt(m_summaryStandardErrorMean(a1));
+            m_summaryPrecisionAmount80(a1) = constants::ZVAL80 * m_summaryStandardErrorMean(a1);
+            m_summaryLowerLimit80(a1) = m_summaryPointEstimate(a1) - m_summaryPrecisionAmount80(a1);
+            m_summaryUpperLimit80(a1) = m_summaryPointEstimate(a1) + m_summaryPrecisionAmount80(a1);
 
-            m_outputPrecisionTemp95(a1) = constants::ZVAL95 * m_outputStdErrTemp(a1);
-            m_outputLowerLimitTemp95(a1) = m_outputPNTestTemp(a1) - m_outputPrecisionTemp95(a1);
-            m_outputUpperLimitTemp95(a1) = m_outputPNTestTemp(a1) + m_outputPrecisionTemp95(a1);
+            m_summaryPrecisionAmount90(a1) = constants::ZVAL90 * m_summaryStandardErrorMean(a1);
+            m_summaryLowerLimit90(a1) = m_summaryPointEstimate(a1) - m_summaryPrecisionAmount90(a1);
+            m_summaryUpperLimit90(a1) = m_summaryPointEstimate(a1) + m_summaryPrecisionAmount90(a1);
 
-            m_outputVStdErr(a1) = m_outputStdErrTemp(a1);
-            m_outputVProjectNumber(a1) = m_outputPNTest(a1);
+            m_summaryPrecisionAmount95(a1) = constants::ZVAL95 * m_summaryStandardErrorMean(a1);
+            m_summaryLowerLimit95(a1) = m_summaryPointEstimate(a1) - m_summaryPrecisionAmount95(a1);
+            m_summaryUpperLimit95(a1) = m_summaryPointEstimate(a1) + m_summaryPrecisionAmount95(a1);
 
-            m_outputVLowerLimit80(a1) = m_outputLowerLimitTemp80(a1);
-            m_outputVLowerLimit90(a1) = m_outputLowerLimitTemp90(a1);
-            m_outputVLowerLimit95(a1) = m_outputLowerLimitTemp95(a1);
-            m_outputVUpperLimit80(a1) = m_outputUpperLimitTemp80(a1);
-            m_outputVUpperLimit90(a1) = m_outputUpperLimitTemp90(a1);
-            m_outputVUpperLimit95(a1) = m_outputUpperLimitTemp95(a1);
-            m_outputVPrecision80(a1) = m_outputPrecisionTemp80(a1);
-            m_outputVPrecision90(a1) = m_outputPrecisionTemp90(a1);
-            m_outputVPrecision95(a1) = m_outputPrecisionTemp95(a1);
         }
     }
 }

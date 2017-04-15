@@ -30,6 +30,13 @@ public:
 	RStatsWorkbook();
 
     /**
+     * @brief insertWorksheet
+     * @param sheet
+     * @param index
+     */
+    void insertWorksheet(const RStatsWorksheet &sheet, size_t index);
+
+    /**
      * @brief save
      * @param filePath
      */

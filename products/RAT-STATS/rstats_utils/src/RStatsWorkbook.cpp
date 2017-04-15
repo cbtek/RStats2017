@@ -147,6 +147,19 @@ RStatsWorkbook::~RStatsWorkbook()
 
 }
 
+void oig::ratstats::utils::RStatsWorkbook::insertWorksheet(const RStatsWorksheet &sheet, size_t index)
+{
+    if (index >= m_worksheets.size())
+    {
+        m_worksheets.resize(index + 1);
+        m_worksheets[index] = sheet;
+    }
+    else
+    {
+        m_worksheets.insert(m_worksheets.begin() + static_cast<long>(index),sheet);
+    }
+}
+
 
 
 
