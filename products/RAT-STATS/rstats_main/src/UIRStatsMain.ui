@@ -16,6 +16,22 @@
   <widget class="QWidget" name="m_main">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
+     <widget class="QLabel" name="m_lblModuleList">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Module List</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QFrame" name="m_lytModules">
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <property name="leftMargin">
@@ -60,6 +76,16 @@
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QVBoxLayout" name="verticalLayout_4">
      <item>
+      <widget class="QLabel" name="m_lblCategoryList">
+       <property name="text">
+        <string>Module Categories</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QFrame" name="verticalFrame">
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <property name="leftMargin">
@@ -88,11 +114,7 @@
            </font>
           </property>
           <property name="styleSheet">
-           <string notr="true">QListWidget:item
-{
-	height:32px;
-	padding:1px;
-}</string>
+           <string notr="true">QListWidget:focus {border: 3px solid #FFFFCC;}</string>
           </property>
          </widget>
         </item>

@@ -670,7 +670,7 @@ void RStatsUVA::processStartLoop()
         }
         else
         {
-            //unable to determine TValue
+            THROW_GENERIC_EXCEPTION("Program was unable to determine a t-value");
         }
     }
     if (m_conditionalCounter < 3)

@@ -59,6 +59,9 @@ namespace utils {
 /**/
 /***********************************************************/
 
+/**
+ * @brief The RStatsCalculationType enum
+ */
 enum class RStatsCalculationType
 {
     Subtract,
@@ -81,6 +84,9 @@ enum class RStatsDataFormatType
     AuditAndDifference
 };
 
+/**
+ * @brief The RStatsDataFormatTypeIndex struct
+ */
 struct RStatsDataFormatTypeIndex
 {
     RStatsDataFormatType type;
@@ -88,7 +94,9 @@ struct RStatsDataFormatTypeIndex
     size_t secondaryDatasetColumnIndex;
 };
 
-
+/**
+ * @brief The RStatsConditionalOperatorType enum
+ */
 enum class RStatsConditionalOperatorType
 {
     Equal,
@@ -99,6 +107,9 @@ enum class RStatsConditionalOperatorType
     GreaterThanOrEqualTo
 };
 
+/**
+ *
+ */
 namespace RStatsUtils
 {
 
@@ -527,7 +538,7 @@ inline RStatsInteger vbRound(T value)
         {
             return path;
         }                
-        throw cbtek::common::utility::FileAccessException(EXCEPTION_TAG_LINE+"Could not locate existing or valid directory! Valid locations: \n1) "+path1+"\n2) "+path2+"\n3)"+path3);
+        throw cbtek::common::utility::FileAccessException(EXCEPTION_TAG_LINE+"Could not locate existing or valid directory! \nValid locations: \n1) "+path1+"\n2) "+path2+"\n3) "+path3);
     }
 
     /**
