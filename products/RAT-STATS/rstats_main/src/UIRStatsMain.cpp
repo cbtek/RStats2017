@@ -52,6 +52,10 @@ UIRStatsMain::UIRStatsMain(QWidget *parent) :
 {    
     m_ui->setupUi(this);                 
 
+    //Set default labels for category list and module list
+    m_ui->m_lblCategoryList->setStyleSheet("QLabel{padding:2px;color:black;background:#AAFFAA; border-radius:5px;}");
+    m_ui->m_lblModuleList->setStyleSheet("QLabel{padding:2px;color:black;background:#AAAAAA; border-radius:5px;}");
+
     //Remove title bar widget from category dock
     m_ui->m_dockCategories->setTitleBarWidget(new QWidget());
 
@@ -121,7 +125,7 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
     {
         RStatsUtils::createValidPath("config/.rstats_module_properties");
         RStatsUtils::createValidPath("config/.rstats_script_provider_properties");
-        UIRStatsErrorMessage("No Modules Detected", "You have no modules available to launch.  You may create modules by pressing [Alt + N] or by clicking the \"Create new Module\" link in the file menu").exec();
+        UIRStatsErrorMessage("No modules detected", "You have no modules available to launch.\nYou may create modules by pressing [Alt + N] or by clicking the \"Create new Module\" link in the file menu").exec();
         return;
     }
 
@@ -458,16 +462,23 @@ void UIRStatsMain::onTabChanged(int tab)
 
 void UIRStatsMain::onAddNewModule()
 {
-    utils::RStatsModuleProperties props;
-    std::string path = FileUtils::buildFilePath(RStatsUtils::getModulePropertiesPath(),"module_"+DateTimeUtils::getTimeStamp()+".xml");
-    props.setDefinitionPath(path);
-    QListWidgetItem * item = m_ui->m_lstCategories->currentItem();
-    if (item)
+    try
     {
-        props.setCategory(item->text().toStdString());
+        utils::RStatsModuleProperties props;
+        std::string path = FileUtils::buildFilePath(RStatsUtils::getModulePropertiesPath(),"module_"+DateTimeUtils::getTimeStamp()+".xml");
+        props.setDefinitionPath(path);
+        QListWidgetItem * item = m_ui->m_lstCategories->currentItem();
+        if (item)
+        {
+            props.setCategory(item->text().toStdString());
+        }
+        UIRStatsLaunchConfigDialog(props).exec();
+        this->onInitialize(m_ui->m_lstCategories->currentRow());
     }
-    UIRStatsLaunchConfigDialog(props).exec();
-    this->onInitialize(m_ui->m_lstCategories->currentRow());
+    catch(std::exception& e)
+    {
+        UIRStatsErrorMessage("Could not add new module.",std::string(e.what()),false,this).exec();
+    }
 }
 
 void UIRStatsMain::onLaunchModuleShortcut(QShortcut *button)
@@ -583,7 +594,7 @@ void UIRStatsMain::launchModule(const QString &propsPath)
     }
     catch(std::exception& e)
     {
-
+        UIRStatsErrorMessage("Could not launch module",std::string(e.what()),false,this).exec();
     }
 }
 
@@ -600,11 +611,16 @@ void UIRStatsMain::keyPressEvent(QKeyEvent *event)
         {
             m_tableHasFocus = false;
             m_ui->m_lstCategories->setFocus();
+            m_ui->m_lblCategoryList->setStyleSheet("QLabel{padding:2px;color:black;background:#AAFFAA; border-radius:5px;}");
+            m_ui->m_lblModuleList->setStyleSheet("QLabel{padding:2px;color:black;background:#AAAAAA; border-radius:5px;}");
+
         }
         else
         {
             m_tableHasFocus = true;
             m_currentTable->setFocus();
+            m_ui->m_lblCategoryList->setStyleSheet("QLabel{padding:2px;color:black;background:#AAAAAA; border-radius:5px;}");
+            m_ui->m_lblModuleList->setStyleSheet("QLabel{padding:2px;color:black;background:#AAFFAA; border-radius:5px;}");
         }
     }
     else if (m_tableHasFocus && m_currentTable->currentRow() > -1)
