@@ -88,11 +88,7 @@
            </font>
           </property>
           <property name="styleSheet">
-           <string notr="true">QListWidget:item
-{
-	height:32px;
-	padding:1px;
-}</string>
+           <string notr="true">QListWidget:focus {border: 3px solid #FFFFCC;}</string>
           </property>
          </widget>
         </item>

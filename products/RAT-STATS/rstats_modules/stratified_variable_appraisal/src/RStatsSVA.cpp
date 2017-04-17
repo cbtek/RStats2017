@@ -33,7 +33,7 @@ namespace constants
     const static RStatsFloat ZVAL95 = 1.95996398454;
     const static size_t EXAMINE = 0;
     const static size_t AUDIT = 1;
-    const static size_t DIFFERENCE = 2;
+    const static size_t DIFF = 2;
 }
 
 RStatsSVAOutputDataList RStatsSVA::execute(const std::string& auditName,
@@ -127,10 +127,10 @@ RStatsSVAOutputDataList RStatsSVA::execute(const std::string& auditName,
         summary.audit.typeName = "Audited Values";
         processSummaryTotals(summary.audit,constants::AUDIT);
     }
-    if (m_dataFormatTypeAvailableFlag(constants::DIFFERENCE))
+    if (m_dataFormatTypeAvailableFlag(constants::DIFF))
     {
         summary.difference.typeName = "Difference Values";
-        processSummaryTotals(summary.difference,constants::DIFFERENCE);
+        processSummaryTotals(summary.difference,constants::DIFF);
     }
 
 
@@ -375,14 +375,14 @@ void RStatsSVA::buildOutputData(RStatsSVAOutputDataList& outputDataList,
 
     else if (type == RStatsDataFormatType::Difference)
     {
-        copyOutputData(triplet.difference,inputData,type,constants::DIFFERENCE);
+        copyOutputData(triplet.difference,inputData,type,constants::DIFF);
     }
 
     else
     {
         copyOutputData(triplet.examine,inputData,type,constants::EXAMINE);
         copyOutputData(triplet.audit,inputData,type,constants::AUDIT);
-        copyOutputData(triplet.difference,inputData,type,constants::DIFFERENCE);
+        copyOutputData(triplet.difference,inputData,type,constants::DIFF);
     }
 
     outputDataList.push_back(triplet);

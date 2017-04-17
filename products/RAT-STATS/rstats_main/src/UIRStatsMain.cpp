@@ -25,7 +25,6 @@
 #include "utility/inc/FileUtils.hpp"
 #include "utility/inc/SystemUtils.hpp"
 
-
 #include "rstats_utils/inc/RStatsSettingsManager.h"
 #include "rstats_utils/inc/RStatsModuleProperties.h"
 #include "rstats_utils/inc/RStatsUtils.hpp"
@@ -487,8 +486,8 @@ void UIRStatsMain::onRemoveModuleShortcut(QShortcut *button)
 }
 
 void UIRStatsMain::onLaunchModule(QAbstractButton *button)
-{
-   launchModule(button->property("path").toString());
+{    
+    launchModule(button->property("path").toString());
 }
 
 void UIRStatsMain::onEditModule(QAbstractButton *button)
@@ -521,7 +520,7 @@ void UIRStatsMain::editModule(const QString &propsPath)
     }
     catch(std::exception& e)
     {
-        QMessageBox::critical(this,"Module Edit Error",QString(e.what()));
+        UIRStatsErrorMessage("Could not edit module",std::string(e.what()),false,this).exec();
     }
 }
 
@@ -547,37 +546,44 @@ void UIRStatsMain::removeModule(const QString &propsPath)
     }
     catch(std::exception& e)
     {
-        QMessageBox::critical(this,"Module Edit Error",QString(e.what()));
+        UIRStatsErrorMessage("Could not remove module",std::string(e.what()),false,this).exec();
     }
 }
 
 void UIRStatsMain::launchModule(const QString &propsPath)
 {    
-    RStatsModuleProperties props;
-    props.loadConfig(propsPath.toStdString());
-    std::string command,args;
-    props.generateApplicationCommand(command,args);
-    StringUtils::trimmedInPlace(command);
-    if (FileUtils::fileExists(props.getPath()))
+    try
     {
-        if (!props.isConsoleShown())
+        RStatsModuleProperties props;
+        props.loadConfig(propsPath.toStdString());
+        std::string command,args;
+        props.generateApplicationCommand(command,args);
+        StringUtils::trimmedInPlace(command);
+        if (FileUtils::fileExists(props.getPath()))
         {
-            QProcess::startDetached(QString::fromStdString(command + " " + args));
+            if (!props.isConsoleShown())
+            {
+                QProcess::startDetached(QString::fromStdString(command + " " + args));
+            }
+            else
+            {
+                SystemUtils::executeInTerminal(command,args);
+            }
         }
+
         else
         {
-            SystemUtils::executeInTerminal(command,args);
+            command = FileUtils::fileExists(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),command));
+            if (FileUtils::fileExists(command))
+            {
+                QProcess::startDetached(QString::fromStdString(command + " " + args));
+            }
+            else THROW_GENERIC_EXCEPTION("’not find module at \""+props.getPath()+"\"");
         }
     }
-
-    else
+    catch(std::exception& e)
     {
-        command = FileUtils::fileExists(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),command));
-        if (FileUtils::fileExists(command))
-        {
-            QProcess::startDetached(QString::fromStdString(command + " " + args));
-        }
-        else THROW_GENERIC_EXCEPTION("Could not find module at \""+props.getPath()+"\"");
+
     }
 }
 
