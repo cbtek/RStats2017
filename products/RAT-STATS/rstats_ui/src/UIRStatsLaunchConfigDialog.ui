@@ -252,6 +252,7 @@
   <tabstop>m_txtLocation</tabstop>
   <tabstop>m_btnBrowseLocation</tabstop>
   <tabstop>m_txtArgs</tabstop>
+  <tabstop>m_btnSetIcon</tabstop>
   <tabstop>m_chkShowConsole</tabstop>
   <tabstop>m_btnSave</tabstop>
   <tabstop>m_btnLaunch</tabstop>

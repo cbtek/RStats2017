@@ -12,7 +12,9 @@
 
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QDesktopServices>
 
+#include "rstats_ui/inc/UIRStatsAbout.h"
 #include "rstats_ui/inc/UIRStatsUtils.hpp"
 #include "rstats_ui/inc/UIRStatsImportWorksheet.h"
 #include "rstats_ui/inc/UIRStatsErrorMessage.h"
@@ -37,8 +39,12 @@ UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
     m_ui->setupUi(this);
     m_ui->m_dockOptions->setTitleBarWidget(new QWidget());
 
+
+    connect(m_ui->actionExecute,SIGNAL(triggered(bool)),this,SLOT(onExecute()));
+    connect(m_ui->actionExit,SIGNAL(triggered(bool)),this,SLOT(onExit()));
+    connect(m_ui->actionHelp,SIGNAL(triggered(bool)),this,SLOT(onHelp()));
+    connect(m_ui->actionAbout,SIGNAL(triggered(bool)),this,SLOT(onAbout()));
     connect(m_ui->m_btnExecute,SIGNAL(clicked()),this,SLOT(onExecute()));
-    connect(m_ui->actionExecute,SIGNAL(triggered()),this,SLOT(onExecute()));
     connect(m_ui->m_btnExit,SIGNAL(clicked()),this,SLOT(onExit()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked()),this,SLOT(onHelp()));
     connect(m_ui->m_spnSampleSize,SIGNAL(valueChanged(int)),this,SLOT(onUpdateSampleCount()));
@@ -63,9 +69,8 @@ UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
     UIRStatsUtils::initAction(m_ui->actionAbout,"img_about.png","Alt+A");
     UIRStatsUtils::initAction(m_ui->actionExecute,"img_run.png","Alt+R");
     UIRStatsUtils::initAction(m_ui->actionExit,"img_exit.png","Alt+Q");
-    UIRStatsUtils::initAction(m_ui->actionHelp_Topics,"img_help.png","Alt+H");
+    UIRStatsUtils::initAction(m_ui->actionHelp,"img_help.png","Alt+H");
     UIRStatsUtils::initAction(m_ui->actionRecentlyUsed,"img_clock.png","Alt+S");
-
 }
 
 UIRStatsUAA::~UIRStatsUAA()
@@ -85,7 +90,16 @@ void UIRStatsUAA::onUpdateUniverseCount()
 
 void UIRStatsUAA::onHelp()
 {
+    QString url = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_help/rstats_uaa.pdf"));
+    if (!QDesktopServices::openUrl(url))
+    {
+        UIRStatsErrorMessage("Could not load help file","Could not open the help file located at \"" + url.toStdString() + "\"",false,this).exec();
+    }
+}
 
+void UIRStatsUAA::onAbout()
+{
+    UIRStatsAbout().exec();
 }
 
 void UIRStatsUAA::onExecute()

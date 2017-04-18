@@ -10,6 +10,7 @@
 
 #include "RStatsUVA.h"
 
+#include "rstats_ui/inc/UIRStatsAbout.h"
 #include "rstats_ui/inc/UIRStatsUtils.hpp"
 #include "rstats_ui/inc/UIRStatsImportWorksheet.h"
 #include "rstats_ui/inc/UIRStatsErrorMessage.h"
@@ -47,6 +48,8 @@ UIRStatsUVA::UIRStatsUVA(QWidget *parent) :
     m_ui->m_txtAuditName->setPlaceholderText(QString::fromStdString(RStatsUtils::getAuditName()));
     m_currentDataFormat = RStatsDataFormatType::Examine;
 
+
+
     UIRStatsUtils::initButton(m_ui->m_btnImportSampleInputData, "img_folder.png");
     UIRStatsUtils::initButton(m_ui->m_btnExecute, "img_run.png");
     UIRStatsUtils::initButton(m_ui->m_btnExit, "img_exit.png");
@@ -54,7 +57,7 @@ UIRStatsUVA::UIRStatsUVA(QWidget *parent) :
     UIRStatsUtils::initAction(m_ui->actionAbout,"img_about.png","Alt+A");
     UIRStatsUtils::initAction(m_ui->actionExecute,"img_run.png","Alt+R");
     UIRStatsUtils::initAction(m_ui->actionExit,"img_exit.png","Alt+Q");
-    UIRStatsUtils::initAction(m_ui->actionHelp_Topics,"img_help.png","Alt+H");
+    UIRStatsUtils::initAction(m_ui->actionHelp,"img_help.png","Alt+H");
     UIRStatsUtils::initAction(m_ui->actionRecently_Used,"img_clock.png","Alt+S");
 
     m_ui->m_dockOptions->setTitleBarWidget(new QWidget());
@@ -62,15 +65,17 @@ UIRStatsUVA::UIRStatsUVA(QWidget *parent) :
     m_ui->m_cmbDataInputSheets->addItem("No Sheets Available");
     m_ui->m_cmbDataInputSheets->setEnabled(false);
 
+    connect(m_ui->actionHelp,SIGNAL(triggered()),this,SLOT(onHelp()));
+    connect(m_ui->actionExit,SIGNAL(triggered()),this,SLOT(onExit()));
+    connect(m_ui->actionExecute,SIGNAL(triggered(bool)),this,SLOT(onExecute()));
+    connect(m_ui->actionAbout,SIGNAL(triggered(bool)),this,SLOT(onAbout()));
+
     connect(m_ui->m_chkTextOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveTextFile()));
     connect(m_ui->m_chkCSVOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveCSVFile()));
     connect(m_ui->m_btnImportSampleInputData,SIGNAL(clicked(bool)),this,SLOT(onImportDataInput()));
-    connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
-    connect(m_ui->actionHelp_Topics,SIGNAL(triggered()),this,SLOT(onHelp()));
-    connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));
-    connect(m_ui->actionExit,SIGNAL(triggered()),this,SLOT(onExit()));
+    connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));    
+    connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));    
     connect(m_ui->m_btnExecute,SIGNAL(clicked(bool)),this,SLOT(onExecute()));
-    connect(m_ui->actionExecute,SIGNAL(triggered(bool)),this,SLOT(onExecute()));
     connect(m_ui->m_cmbDataInputSheets,SIGNAL(currentIndexChanged(int)),this,SLOT(onComboDataInputSheetSelected(int)));
     connect(m_ui->m_rdbAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
     connect(m_ui->m_rdbExamined,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
@@ -260,7 +265,16 @@ UIRStatsUVA::~UIRStatsUVA()
 
 void UIRStatsUVA::onHelp()
 {
+    QString url = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_help/rstats_uva.pdf"));
+    if (!QDesktopServices::openUrl(url))
+    {
+        UIRStatsErrorMessage("Could not load help file","Could not open the help file located at \"" + url.toStdString() + "\"",false,this).exec();
+    }
+}
 
+void UIRStatsUVA::onAbout()
+{
+    UIRStatsAbout().exec();
 }
 
 void UIRStatsUVA::onExecute()

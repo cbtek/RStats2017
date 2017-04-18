@@ -220,7 +220,7 @@ inline int executeInTerminal(const std::string& command, const std::string& args
             cmd = "/usr/bin/xterm -e \""+command+"\" \""+args+"\"";
         }
     #endif
-        std::cerr <<"SystemUtils::executeInTerminal - " << cmd<<std::endl;
+        //std::cerr <<"SystemUtils::executeInTerminal - " << cmd<<std::endl;
     return system(cmd.c_str());
 }
 

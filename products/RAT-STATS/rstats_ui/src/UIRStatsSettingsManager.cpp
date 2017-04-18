@@ -168,7 +168,7 @@ void UIRStatsSettingsManager::onInitKeyBindings()
 
 void UIRStatsSettingsManager::onEditScriptProvider(QAbstractButton *button)
 {
-    std::cerr <<"onEditScriptProvider"<<std::endl;
+    //std::cerr <<"onEditScriptProvider"<<std::endl;
     int index = button->property("index").toInt();
     RStatsScriptProviderProperties props = m_props[index];
     UIRStatsScriptProviderConfigDialog(props).exec();

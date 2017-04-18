@@ -176,6 +176,12 @@ private slots:
       * It updates the seed with a random value every second.
       */
      void onUpdateClock();
+
+     /**
+      * @brief onAbout
+      */
+     void onAbout();
+
 };
 
 }}}}//end namespace

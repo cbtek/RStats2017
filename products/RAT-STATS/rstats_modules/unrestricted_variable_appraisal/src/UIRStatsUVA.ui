@@ -522,7 +522,7 @@
      <string>&amp;Help</string>
     </property>
     <addaction name="actionAbout"/>
-    <addaction name="actionHelp_Topics"/>
+    <addaction name="actionHelp"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menu_Help"/>
@@ -710,7 +710,7 @@
     <string>About</string>
    </property>
   </action>
-  <action name="actionHelp_Topics">
+  <action name="actionHelp">
    <property name="text">
     <string>Help Topics</string>
    </property>
@@ -722,15 +722,28 @@
   </action>
  </widget>
  <tabstops>
+  <tabstop>m_txtAuditName</tabstop>
   <tabstop>m_spnUniverseSize</tabstop>
+  <tabstop>m_rdbExamined</tabstop>
+  <tabstop>m_rdbAudited</tabstop>
+  <tabstop>m_rdbDifference</tabstop>
+  <tabstop>m_rdbExaminedAndAudited</tabstop>
+  <tabstop>m_rdbAuditedAndDifference</tabstop>
+  <tabstop>m_rdbExaminedAndDifference</tabstop>
+  <tabstop>m_chkCSVOutput</tabstop>
+  <tabstop>m_chkTextOutput</tabstop>
   <tabstop>m_cmbDataInputSheets</tabstop>
   <tabstop>m_btnImportSampleInputData</tabstop>
-  <tabstop>m_rdbExamined</tabstop>
   <tabstop>m_cmbDataRowStartDataTable</tabstop>
   <tabstop>m_cmbExaminedDataTable</tabstop>
   <tabstop>m_cmbAuditedDataTable</tabstop>
   <tabstop>m_cmbDifferenceDataTable</tabstop>
+  <tabstop>m_tblData</tabstop>
+  <tabstop>m_lstValidationConsole</tabstop>
   <tabstop>m_tblOutput</tabstop>
+  <tabstop>m_btnHelp</tabstop>
+  <tabstop>m_btnExecute</tabstop>
+  <tabstop>m_btnExit</tabstop>
  </tabstops>
  <resources/>
  <connections/>

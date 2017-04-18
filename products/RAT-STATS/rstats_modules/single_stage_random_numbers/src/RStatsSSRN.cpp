@@ -68,6 +68,8 @@ void RStatsSSRN::saveToWorksheet(RStatsWorksheet &worksheetOut)
     worksheetOut("A7") = "Random Order Count:";
     worksheetOut("A8") = "Lower-Bound:";
     worksheetOut("A9") = "Upper-Bound:";
+    worksheetOut("A10") = "Total Sum:";
+    worksheetOut("A11") = "Total Count:";
 
     worksheetOut.setDefaultFont(Font("arial",10,true));
     worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignLeft);
@@ -80,7 +82,8 @@ void RStatsSSRN::saveToWorksheet(RStatsWorksheet &worksheetOut)
     worksheetOut("B7") = StringUtils::toString(m_outputData.sparesCount);
     worksheetOut("B8") = StringUtils::toString(m_outputData.lower);
     worksheetOut("B9") = StringUtils::toString(m_outputData.upper);
-
+    worksheetOut("B10") = StringUtils::toString(m_outputData.sum);
+    worksheetOut("B11") = StringUtils::toString(m_outputData.sequentialCount+m_outputData.sparesCount);
     worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignMiddle);
     worksheetOut("C1") = "Number Type";
     worksheetOut("D1") = "Selection Order";

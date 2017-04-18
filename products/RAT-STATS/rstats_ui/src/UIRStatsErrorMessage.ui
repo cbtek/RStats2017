@@ -48,6 +48,12 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>m_txtErrorMessage</tabstop>
+  <tabstop>m_btnSave</tabstop>
+  <tabstop>m_btnCopy</tabstop>
+  <tabstop>m_btnOk</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

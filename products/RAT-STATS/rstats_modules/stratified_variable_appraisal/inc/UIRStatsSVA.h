@@ -288,6 +288,11 @@ protected slots:
       * @brief onUpdateDataFormatSelection
       */
      void onUpdateDataFormatSelection();
+
+     /**
+      * @brief onAbout
+      */
+     void onAbout();
 };
 
 }}}}//end namespace

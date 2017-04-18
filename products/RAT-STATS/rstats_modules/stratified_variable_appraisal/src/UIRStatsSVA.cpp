@@ -10,7 +10,9 @@
 #include "RStatsSVA.h"
 
 #include <QFileDialog>
+#include <QDesktopServices>
 
+#include "rstats_ui/inc/UIRStatsAbout.h"
 #include "rstats_ui/inc/UIRStatsUtils.hpp"
 #include "rstats_ui/inc/UIRStatsImportWorksheet.h"
 #include "rstats_ui/inc/UIRStatsErrorMessage.h"
@@ -81,14 +83,17 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     m_ui->m_cmbSizeInputSheets->setEnabled(false);
 
     //Create connections for UI/View elements
+    connect(m_ui->actionExecute,SIGNAL(triggered(bool)),this,SLOT(onExecute()));
+    connect(m_ui->actionExit,SIGNAL(triggered(bool)),this,SLOT(onExit()));
+    connect(m_ui->actionHelp,SIGNAL(triggered(bool)),this,SLOT(onHelp()));
+    connect(m_ui->actionAbout,SIGNAL(triggered(bool)),this,SLOT(onAbout()));
     connect(m_ui->m_chkTextOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveTextFile()));
     connect(m_ui->m_chkCSVOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveCSVFile()));
     connect(m_ui->m_btnImportSampleInputData,SIGNAL(clicked(bool)),this,SLOT(onImportDataInput()));
     connect(m_ui->m_btnImportSampleSizeData,SIGNAL(clicked(bool)),this,SLOT(onImportSizeInput()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
     connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));
-    connect(m_ui->m_btnExecute,SIGNAL(clicked(bool)),this,SLOT(onExecute()));
-    connect(m_ui->actionExecute,SIGNAL(triggered(bool)),this,SLOT(onExecute()));
+    connect(m_ui->m_btnExecute,SIGNAL(clicked(bool)),this,SLOT(onExecute()));    
     connect(m_ui->m_cmbDataInputSheets,SIGNAL(currentIndexChanged(int)),this,SLOT(onComboDataInputSheetSelected(int)));
     connect(m_ui->m_cmbSizeInputSheets,SIGNAL(currentIndexChanged(int)),this,SLOT(onComboSizeInputSheetSelected(int)));
     connect(&m_clock,SIGNAL(timeout()),this,SLOT(onUpdateClock()));    
@@ -577,10 +582,21 @@ void UIRStatsSVA::onImportSizeInput()
     }
 }
 
+
 void UIRStatsSVA::onHelp()
 {
-
+    QString url = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_help/rstats_sva.pdf"));
+    if (!QDesktopServices::openUrl(url))
+    {
+        UIRStatsErrorMessage("Could not load help file","Could not open the help file located at \"" + url.toStdString() + "\"",false,this).exec();
+    }
 }
+
+void UIRStatsSVA::onAbout()
+{
+    UIRStatsAbout().exec();
+}
+
 
 void UIRStatsSVA::onUpdateDataFormatSelection()
 {
