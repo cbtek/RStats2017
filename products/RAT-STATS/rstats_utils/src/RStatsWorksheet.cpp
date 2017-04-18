@@ -10,6 +10,8 @@
 
 #include "utility/inc/StringUtils.hpp"
 
+#include "utility/inc/XMLUtils.h"
+
 using namespace cbtek::common::utility;
 
 namespace oig {
@@ -139,6 +141,31 @@ std::string RStatsWorksheet::toCommaDelimitedString() const
 std::string RStatsWorksheet::toTabDelimitedString() const
 {
     return toString("","\t","");
+}
+
+std::string RStatsWorksheet::toHTMLTableString() const
+{
+    std::ostringstream out;
+    XMLStreamWriter xml(out);
+    xml.writeStartElement("table");
+    xml.writeLastAttribute("style","border: 1px solid black; padding 5px;");
+    size_t cols = getNumColumns();
+    size_t rows = getNumRows();
+    for(size_t r = 0;r<rows;++r)
+    {
+        xml.writeStartElementNoAttributes("tr");
+        for(size_t c = 0;c<cols;++c)
+        {
+            const RStatsCell& cell = getCell(r,c);
+            xml.writeStartElement("td");
+            xml.writeLastAttribute("style",getCellCSSStyle(cell));
+            xml.writeText(cell.text);
+            xml.writeEndElement("td");
+        }
+        xml.writeEndElement("tr");
+    }
+    xml.writeEndElement("table");
+    return out.str();
 }
 
 std::string RStatsWorksheet::toEvenlySpacedString() const
@@ -405,6 +432,37 @@ bool RStatsWorksheet::getMergedCellRangeThatContains(size_t r, size_t c, RStatsM
         }
     }
     return false;
+}
+
+std::string RStatsWorksheet::getCellCSSStyle(const RStatsCell &cell) const
+{
+    std::string css;
+    if (cell.bgColor != cell.fgColor)
+    {
+        css += "background: " + cell.bgColor.toString(colorStringStyle::RGB_HTML_HEX) + ";";
+        css += "color: " + cell.fgColor.toString(colorStringStyle::RGB_HTML_HEX) + ";";
+    }
+    css += "font-size: " + StringUtils::toString(cell.font.getPointSize()+2)+"px;";
+    css += "font-weight: " + std::string(cell.font.isBold() ? "bold;" : "normal;");
+    css += "font-family: " + cell.font.getFontFamily()+";";
+    css += "font-style: " + std::string(cell.font.isItalic() ? "italic;" : "normal;");
+    std::string halign,valign;
+    valign = "vertical-align: middle;";
+    if (cell.alignment == RStatsTextAlignment::AlignLeft)
+    {
+        halign = "text-align: left;";
+    }
+    else if (cell.alignment == RStatsTextAlignment::AlignRight)
+    {
+        halign = "text-align: right;";
+    }
+    else if (cell.alignment == RStatsTextAlignment::AlignMiddle)
+    {
+        halign = "text-align: center;";
+    }
+    css += halign;
+    css += valign;
+    return css;
 }
 
 void RStatsWorksheet::setWorksheetTitle(const std::string & value)

@@ -166,6 +166,7 @@ namespace UIRStatsUtils
         }
     }   
 
+
     /**
      * @brief bindUIToSheet
      * @param table

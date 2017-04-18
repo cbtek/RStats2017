@@ -83,6 +83,11 @@ void XMLStreamWriter::writeTextElement(const std::string &tag, const std::string
 
 }
 
+void XMLStreamWriter::writeText(const std::string &text)
+{
+    m_out << text;
+}
+
 XMLStreamWriter::~XMLStreamWriter()
 {
 

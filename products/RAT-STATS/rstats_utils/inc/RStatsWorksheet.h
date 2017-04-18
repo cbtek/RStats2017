@@ -220,6 +220,12 @@ public:
     std::string toTabDelimitedString() const;
 
     /**
+     * @brief toHTMLTableString
+     * @return
+     */
+    std::string toHTMLTableString() const;
+
+    /**
      * @brief toCommaDelimitedString
      * @return
      */
@@ -332,9 +338,12 @@ private:
          */
         bool getMergedCellRangeThatContains(size_t r, size_t c, RStatsMergeCellRange& range);
 
-
-
-
+        /**
+         * @brief getCellCSSStyle
+         * @param cell
+         * @return
+         */
+        std::string getCellCSSStyle(const RStatsCell& cell) const;
 };
 typedef std::shared_ptr<RStatsWorksheet> RStatsWorksheetPtr;
 }}}//end namespace

@@ -86,6 +86,13 @@ class XMLStreamWriter
         m_out<<">"<<std::endl;
     }
 
+
+    /**
+     * @brief writeText
+     * @param text
+     */
+    void writeText(const std::string& text);
+
     /**
      * @brief writeLastAttribute
      * @param attributeName

@@ -222,6 +222,7 @@ void UIRStatsSSRN::onExecute()
         RStatsWorksheet worksheet;
         ssrn.saveToWorksheet(worksheet);
         UIRStatsUtils::bindSheetToUI(worksheet,m_ui->m_tblOutput,false,0,0);
+        FileUtils::writeFileContents("table.html", worksheet.toHTMLTableString());
 
         if (!StringUtils::isEmpty(m_currentTextFileOutput.toStdString()))
         {
