@@ -77,6 +77,7 @@ private slots:
      void onHelp();
      void onExecute();
      void onExit();
+     void onAbout();
 
 };
 

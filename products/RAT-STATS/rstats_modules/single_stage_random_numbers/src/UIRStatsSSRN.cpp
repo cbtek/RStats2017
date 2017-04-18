@@ -10,6 +10,7 @@
 
 #include "rstats_utils/inc/RStatsSettingsManager.h"
 
+#include "rstats_ui/inc/UIRStatsAbout.h"
 #include "rstats_ui/inc/UIRStatsUtils.hpp"
 #include "rstats_ui/inc/UIRStatsErrorMessage.h"
 
@@ -23,6 +24,7 @@
 
 #include <QFileDialog>
 #include <QFile>
+#include <QDesktopServices>
 
 using namespace oig::ratstats::ui;
 using namespace oig::ratstats::utils;
@@ -44,9 +46,13 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     m_iconOK = UIRStatsUtils::getIcon("img_ok.png");
     m_iconWarning = UIRStatsUtils::getIcon("img_warning.png");
 
-    connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));
-    connect(m_ui->m_btnExecute,SIGNAL(clicked(bool)),this,SLOT(onExecute()));
     connect(m_ui->actionExecute,SIGNAL(triggered(bool)),this,SLOT(onExecute()));
+    connect(m_ui->actionExit,SIGNAL(triggered(bool)),this,SLOT(onExit()));
+    connect(m_ui->actionHelp,SIGNAL(triggered(bool)),this,SLOT(onHelp()));
+    connect(m_ui->actionAbout,SIGNAL(triggered(bool)),this,SLOT(onAbout()));
+
+    connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));
+    connect(m_ui->m_btnExecute,SIGNAL(clicked(bool)),this,SLOT(onExecute()));    
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
     connect(m_ui->m_spnHighNumber,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
     connect(m_ui->m_spnLowNumber,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
@@ -60,10 +66,7 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     QString defaultAuditName = QString::fromStdString(RStatsUtils::getAuditName());
 
     m_ui->m_txtAuditName->setPlaceholderText(defaultAuditName);
-    m_ui->m_grpOutput->hide();
-    m_ui->m_line->hide();
-    m_ui->m_frmTotals->hide();
-
+    m_ui->m_grpOutput->hide();    
     m_ui->m_spnSeed->setMaximum(std::numeric_limits<double>::max());
     m_ui->m_spnSeed->setMinimum(std::numeric_limits<double>::min());    
     m_ui->m_spnSeed->setValue(static_cast<RStatsFloat>(TimeUtils::getSecondsNow()) /
@@ -82,7 +85,7 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     UIRStatsUtils::initAction(m_ui->actionAbout,"img_about.png","Alt+A");
     UIRStatsUtils::initAction(m_ui->actionExecute,"img_run.png","Alt+R");
     UIRStatsUtils::initAction(m_ui->actionExit,"img_exit.png","Alt+Q");
-    UIRStatsUtils::initAction(m_ui->actionSingle_Stage_Random_Numbers_Help_Guide,"img_help.png","Alt+H");
+    UIRStatsUtils::initAction(m_ui->actionHelp,"img_help.png","Alt+H");
     UIRStatsUtils::initAction(m_ui->actionRecent,"img_clock.png","Alt+S");
     m_ui->menuFile->setTitle("&File");
     m_ui->menuHelp->setTitle("&Help");
@@ -191,8 +194,6 @@ void UIRStatsSSRN::onSaveTextFile()
 
 void UIRStatsSSRN::onUpdateClock()
 {
-    m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::to12HourTimeString(TimeUtils::getCurrentTime())));
-    m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toShortDateString(DateUtils::getCurrentDate())));
     if (!m_ui->m_chkCustomSeed->isChecked() && !m_ui->m_spnSeed->isEnabled())
     {        
         m_ui->m_spnSeed->setValue(static_cast<RStatsFloat>(TimeUtils::getSecondsNow()) /
@@ -238,21 +239,8 @@ void UIRStatsSSRN::onExecute()
 
         m_ui->m_tblOutput->resizeColumnsToContents();
         m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-        m_ui->m_grpOutput->show();
-        m_ui->m_line->show();
-        m_ui->m_frmTotals->show();
+        m_ui->m_grpOutput->show();                
         m_ui->m_lblNoData->hide();
-
-        std::string totalStr = StringUtils::toString(m_ui->m_spnOrder->value()+m_ui->m_spnSpares->value(),true);
-        std::string frameSizeStr = StringUtils::toString((m_ui->m_spnHighNumber->value()-m_ui->m_spnLowNumber->value())+1,true);
-        std::string sumStr = StringUtils::toString(outputData.sum,true);
-
-        m_ui->m_lblTotalRandomNumbersValue->setText(QString::fromStdString(totalStr));
-        m_ui->m_lblTotalFrameSizeValue->setText(QString::fromStdString(frameSizeStr));
-        m_ui->m_lblOutputSummationValue->setText(QString::fromStdString(sumStr));
-
-        m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::to12HourTimeString(outputData.createTime)));
-        m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toShortDateString(outputData.createDate)));
 
         RStatsSSRNSessionData sessionData = getSessionData();
         sessionData.setCreationDate(DateUtils::getCurrentDate().toDateInteger());
@@ -269,9 +257,19 @@ void UIRStatsSSRN::onExecute()
     }
 }
 
+
 void UIRStatsSSRN::onHelp()
 {
+    QString url = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_help/rstats_ssrn.pdf"));
+    if (!QDesktopServices::openUrl(url))
+    {
+        UIRStatsErrorMessage("Could not load help file","Could not open the help file located at \"" + url.toStdString() + "\"",false,this).exec();
+    }
+}
 
+void UIRStatsSSRN::onAbout()
+{
+    UIRStatsAbout().exec();
 }
 
 void UIRStatsSSRN::onExit()

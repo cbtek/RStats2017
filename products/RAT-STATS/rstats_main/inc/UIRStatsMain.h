@@ -65,6 +65,7 @@ private:
      QIcon m_iconObject;
      QIcon m_iconAbout;
      QIcon m_iconAdd;
+     QIcon m_iconOk;
 
      //Font used by UI
      QFont m_font;
@@ -106,7 +107,7 @@ protected slots:
     void onLaunchHelp();
     void onLaunchModule(QAbstractButton* button);
     void onLaunchModuleShortcut(QShortcut* button);
-
+    void onUpdateTableHeader(bool isModuleListSelected);
     void onTabChanged(int tab);
     void onAddNewModule();        
     void onRemoveModuleShortcut(QShortcut* button);
@@ -116,3 +117,4 @@ protected slots:
 };
 
 }}}//end namespace
+

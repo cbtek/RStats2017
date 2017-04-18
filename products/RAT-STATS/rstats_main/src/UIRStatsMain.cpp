@@ -17,6 +17,7 @@
 #include <QKeySequence>
 #include <QTableWidgetItem>
 #include <QPainter>
+#include <QFontDatabase>
 
 #include "UIRStatsMain.h"
 #include "ui_UIRStatsMain.h"
@@ -36,9 +37,7 @@
 #include "rstats_ui/inc/UIRStatsSettingsManager.h"
 #include "rstats_ui/inc/UIRStatsUtils.hpp"
 
-
 using namespace cbtek::common::utility;
-
 using namespace oig::ratstats::ui;
 using namespace oig::ratstats::utils;
 
@@ -53,8 +52,8 @@ UIRStatsMain::UIRStatsMain(QWidget *parent) :
     m_ui->setupUi(this);                 
 
     //Set default labels for category list and module list
-    m_ui->m_lblCategoryList->setStyleSheet("QLabel{padding:2px;color:black;background:#AAFFAA; border-radius:5px;}");
-    m_ui->m_lblModuleList->setStyleSheet("QLabel{padding:2px;color:black;background:#AAAAAA; border-radius:5px;}");
+    onUpdateTableHeader(false);
+    m_ui->m_lstCategories->setFocus();
 
     //Remove title bar widget from category dock
     m_ui->m_dockCategories->setTitleBarWidget(new QWidget());
@@ -65,6 +64,7 @@ UIRStatsMain::UIRStatsMain(QWidget *parent) :
     m_iconEdit = UIRStatsUtils::getIcon("img_edit.png");    
     m_iconAdd = UIRStatsUtils::getIcon("img_add.png");            
     m_iconRemove = UIRStatsUtils::getIcon("img_remove.png");
+    m_iconOk = UIRStatsUtils::getIcon("img_ok.png");
 
     //Set icons to actions/buttons
     UIRStatsUtils::initAction(m_ui->m_actionSettings_Manager,"img_settings.png","Alt+S");
@@ -242,26 +242,26 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
             QKeySequence removeKey = this->getKeyRemoveSequence(row, removeKeyString);
             QKeySequence launchKey = this->getKeyLaunchSequence(row, launchKeyString);
             QTableWidgetItem * verticalItem = new QTableWidgetItem;            
-            verticalItem->setText(launchKeyString);
+            verticalItem->setText(launchKeyString+": ");
             verticalItem->setData(Qt::UserRole,activeRow);
-
+            verticalItem->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 
             if (isDisabled)
-            {
-                verticalItem->setBackground(QBrush(QColor(255,255,255)));
-                verticalItem->setForeground(QBrush(QColor(127,127,127)));
-                verticalItem->setTextColor(QColor(127,127,127));
-                verticalItem->setFont(QFont("arial",10,-1,true));
+            {                
+//                verticalItem->setBackground(QBrush(QColor(255,255,255)));
+//                verticalItem->setForeground(QBrush(QColor(127,127,127)));
+//                verticalItem->setTextColor(QColor(127,127,127));
+//                verticalItem->setFont(QFont("arial",10,-1,true));
             }
             else
-            {
-                verticalItem->setBackground(QBrush(QColor(127,255,127)));
-                verticalItem->setForeground(QBrush(QColor(0,0,0)));
-                verticalItem->setTextColor(QColor(0,0,0));
-                verticalItem->setFont(QFont("arial",12,8,false));
+            {            
+//                verticalItem->setBackground(QBrush(QColor(127,255,127)));
+//                verticalItem->setForeground(QBrush(QColor(0,0,0)));
+//                verticalItem->setTextColor(QColor(0,0,0));
+//                verticalItem->setFont(QFont("arial",12,8,false));
             }
 
-            table->setVerticalHeaderItem(row,verticalItem);                    
+            table->setVerticalHeaderItem(row,verticalItem);
             UIRStatsShortcut * editShortcut = new UIRStatsShortcut(editKey,table);
             UIRStatsShortcut * removeShortcut = new UIRStatsShortcut(removeKey,table);
             UIRStatsShortcut * launchShortcut = new UIRStatsShortcut(launchKey,table);            
@@ -287,6 +287,8 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
 
         //set table properties and add current group name to category list
         table->horizontalHeader()->setSectionResizeMode(0,QHeaderView::Stretch);
+        //table->verticalHeader()->setFixedWidth(128);
+
         m_tableMap[tableIndex] = table;
         mainLayout->addWidget(table);
         QListWidgetItem * item = new QListWidgetItem(m_iconFolder,name);
@@ -486,6 +488,13 @@ void UIRStatsMain::onLaunchModuleShortcut(QShortcut *button)
     launchModule(button->property("path").toString());
 }
 
+void UIRStatsMain::onUpdateTableHeader(bool isModuleListSelected)
+{
+
+    m_ui->m_lblCategoryList->setStyleSheet("QLabel{border:1px solid gray;padding:4px;color:black;background:#"+QString(isModuleListSelected?"AAAAAA":"AAFFAA")+"; border-radius:5px;}");
+    m_ui->m_lblModuleList->setStyleSheet("QLabel{border:1px solid gray;padding:4px;color:black;background:#"+QString(isModuleListSelected?"AAFFAA":"AAAAAA")+"; border-radius:5px;}");
+}
+
 void UIRStatsMain::onEditModuleShortcut(QShortcut *button)
 {
     editModule(button->property("path").toString());
@@ -611,16 +620,13 @@ void UIRStatsMain::keyPressEvent(QKeyEvent *event)
         {
             m_tableHasFocus = false;
             m_ui->m_lstCategories->setFocus();
-            m_ui->m_lblCategoryList->setStyleSheet("QLabel{padding:2px;color:black;background:#AAFFAA; border-radius:5px;}");
-            m_ui->m_lblModuleList->setStyleSheet("QLabel{padding:2px;color:black;background:#AAAAAA; border-radius:5px;}");
-
+            onUpdateTableHeader(m_tableHasFocus);
         }
         else
         {
             m_tableHasFocus = true;
             m_currentTable->setFocus();
-            m_ui->m_lblCategoryList->setStyleSheet("QLabel{padding:2px;color:black;background:#AAAAAA; border-radius:5px;}");
-            m_ui->m_lblModuleList->setStyleSheet("QLabel{padding:2px;color:black;background:#AAFFAA; border-radius:5px;}");
+            onUpdateTableHeader(m_tableHasFocus);
         }
     }
     else if (m_tableHasFocus && m_currentTable->currentRow() > -1)

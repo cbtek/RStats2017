@@ -111,6 +111,7 @@ private:
       void onSaveTextFile();
       void onSaveCSVFile();
       void onHelp();
+      void onAbout();
       void onExecute();
       void onExit();
       bool onValidate();

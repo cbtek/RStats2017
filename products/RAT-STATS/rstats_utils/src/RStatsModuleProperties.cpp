@@ -124,7 +124,7 @@ void RStatsModuleProperties::setCategory(const std::string & value)
 
 void RStatsModuleProperties::generateApplicationCommand(std::string& commandOut, std::string& argsOut)
 {
-    std::cerr << "script: " << m_appScriptPath << std::endl;
+    //std::cerr << "script: " << m_appScriptPath << std::endl;
     if (m_appScriptPath.size() > 0)
     {
         commandOut = m_appScriptPath +" "+m_appPath;

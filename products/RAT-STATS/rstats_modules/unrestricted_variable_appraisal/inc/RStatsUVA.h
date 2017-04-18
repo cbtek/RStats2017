@@ -60,7 +60,7 @@ public:
     RStatsUVA();
 
     /**
-     * @brief execute This function executes the unrestricted variable appraisel algorithm
+     * @brief execute This function executes the unrestricted variable appraisal algorithm
      * @param auditName Name of the audit
      * @param dataSheetInput Datasheet containing all the values
      * @param dfIndex Structure that contains column information for the sheet as well as data output format
@@ -151,7 +151,7 @@ private:
     void createOutputData(const std::string& title,size_t index);
 
     /**
-     * @brief execute This function performs primary algorithm for unrestricted variable appraisel
+     * @brief execute This function performs primary algorithm for unrestricted variable appraisal
      * @param values Array containing all the values read from worksheet
      * @param sampleSize Total size of the sample
      * @param universeSize Total size of the universe

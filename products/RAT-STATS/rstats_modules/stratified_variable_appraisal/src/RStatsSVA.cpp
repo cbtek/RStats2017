@@ -1041,7 +1041,7 @@ void RStatsSVA::processStartLoop(const RStatsSVAInputData& inputData)
     m_formulaVarTLast = m_formulaVarT;
 
     m_formulaVarT = ((m_lowValue + m_highValue) / 2.);
-    std::cerr << "((" << m_lowValue << " + " << m_highValue << ") / 2 = " << m_formulaVarT << std::endl;
+    //std::cerr << "((" << m_lowValue << " + " << m_highValue << ") / 2 = " << m_formulaVarT << std::endl;
     processFindCumProb(inputData);
     m_newProbability = m_currentProbability;;
     if (m_currentProbability < m_cumaltiveProbability)
