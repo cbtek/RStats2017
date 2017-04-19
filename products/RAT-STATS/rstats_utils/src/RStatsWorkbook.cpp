@@ -159,10 +159,6 @@ void oig::ratstats::utils::RStatsWorkbook::insertWorksheet(const RStatsWorksheet
         m_worksheets.insert(m_worksheets.begin() + static_cast<long>(index),sheet);
     }
 }
-
-
-
-
 }}}//end namespace
 
 

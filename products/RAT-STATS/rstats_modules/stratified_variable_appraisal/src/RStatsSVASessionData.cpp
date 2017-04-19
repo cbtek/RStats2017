@@ -9,6 +9,7 @@
 #include "RStatsSVASessionData.h"
 #include "rstats_utils/inc/RStatsWorkbook.h"
 
+using namespace cbtek::common::utility;
 using namespace oig::ratstats::utils;
 
 namespace oig {

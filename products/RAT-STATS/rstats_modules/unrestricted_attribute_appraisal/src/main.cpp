@@ -5,8 +5,6 @@
 
 #include "rstats_ui/inc/UIRStatsUtils.hpp"
 
-#include "utility/inc/VBRoundUtils.hpp"
-
 using namespace oig::ratstats::modules::uaa;
 using namespace oig::ratstats::utils;
 using namespace oig::ratstats::ui;

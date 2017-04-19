@@ -10,8 +10,7 @@
 #include "RStatsSettingsManager.h"
 
 #include "utility/inc/SystemUtils.hpp"
-#include "utility/inc/XMLStreamWriter.h"
-#include "utility/inc/XMLReader.h"
+#include "utility/inc/XMLUtils.h"
 #include "utility/inc/Exception.hpp"
 
 using namespace cbtek::common::utility;

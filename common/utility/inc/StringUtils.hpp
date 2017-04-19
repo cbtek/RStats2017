@@ -24,14 +24,12 @@ SOFTWARE.
 */
 
 
-#ifndef _CBTEK_COMMON_UTILITY_STRING_UTILS_HPP_
-#define _CBTEK_COMMON_UTILITY_STRING_UTILS_HPP_
+#pragma once
 
 #include "utility/inc/Exception.hpp"
 #include "utility/inc/UtilityCommon.hpp"
 #include "utility/inc/Random.h"
-#include "utility/inc/TimeUtils.hpp"
-#include "utility/inc/ObjectList.hpp"
+#include "utility/inc/DateTimeUtils.hpp"
 
 #include <string>
 #include <vector>
@@ -1506,12 +1504,12 @@ inline std::vector<size_t> getWholeWords(const std::string & source, const std::
     return wholeWords;
 }
 
-inline UInt64List serializeToIntegerList(const std::string &str)
+inline std::vector<std::uint64_t> serializeToIntegerList(const std::string &str)
 {
-    UInt64List serialized;
+    std::vector<std::uint64_t> serialized;
     for (size_t a1 = 0;a1< str.size();++a1)
     {
-        serialized << (int)str[a1];
+        serialized.push_back(static_cast<std::uint64_t>(str[a1]));
     }
     return serialized;
 }
@@ -1773,4 +1771,3 @@ inline bool isNumeric(const std::string& potentialNumber)
 }
 
 }}}} //namespace
-#endif //_CBTEK_COMMON_UTILITY_STRING_UTILS_HPP_

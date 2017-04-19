@@ -42,7 +42,6 @@ SOFTWARE.
 #include "utility/inc/FileUtils.hpp"
 #include "utility/inc/SystemUtils.hpp"
 #include "utility/inc/StringUtils.hpp"
-#include "utility/inc/VBRoundUtils.hpp"
 
 #include "contrib/tiny-process/process.hpp"
 
@@ -876,19 +875,6 @@ inline RStatsInteger vbRound(T value)
     inline RStatsFloat divideValues(RStatsInteger value1, RStatsInteger value2)
     {
         return (static_cast<RStatsFloat>(value1) / static_cast<RStatsFloat>(value2));
-    }
-
-
-    /**
-     * @brief vbDivide
-     * @param value1
-     * @param value2
-     * @return
-     */
-    inline RStatsInteger vbDivide(RStatsInteger value1, RStatsInteger value2)
-    {
-        RStatsFloat value = static_cast<RStatsFloat>(value1)/static_cast<RStatsFloat>(value2);
-        return ((value1%value2) != 0) ? static_cast<RStatsInteger>(cbtek::common::utility::VBRoundUtils::vbRound(value)) : static_cast<RStatsInteger>(value);
     }
 
     /**

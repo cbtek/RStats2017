@@ -19,8 +19,7 @@
 
 #include "rstats_utils/inc/RStatsWorkbookStreamFactory.h"
 
-#include "utility/inc/TimeUtils.hpp"
-#include "utility/inc/DateUtils.hpp"
+#include "utility/inc/DateTimeUtils.hpp"
 
 using namespace cbtek::common::utility;
 using namespace oig::ratstats::ui;

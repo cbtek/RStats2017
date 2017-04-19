@@ -23,9 +23,7 @@ SOFTWARE.
 
 */
 
-
-#ifndef _CBTEK_COMMON_UTILITY_COMMON_HPP
-#define _CBTEK_COMMON_UTILITY_COMMON_HPP
+#pragma once
 
 #ifdef BUILD_CBTEK_UTILS_DLL
 #   ifdef _WIN32
@@ -45,5 +43,3 @@ namespace utility{
     const static bool c_DEFAULT_CASE_SENSITIVE = true;
 
 }}} //namespace
-
-#endif // _CBTEK_COMMON_UTILITY_COMMON_HPP

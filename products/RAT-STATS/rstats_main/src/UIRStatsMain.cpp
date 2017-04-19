@@ -22,7 +22,7 @@
 #include "UIRStatsMain.h"
 #include "ui_UIRStatsMain.h"
 
-#include "utility/inc/XMLReader.h"
+#include "utility/inc/XMLUtils.h"
 #include "utility/inc/FileUtils.hpp"
 #include "utility/inc/SystemUtils.hpp"
 

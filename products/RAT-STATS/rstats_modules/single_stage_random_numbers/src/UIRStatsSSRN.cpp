@@ -15,10 +15,7 @@
 #include "rstats_ui/inc/UIRStatsErrorMessage.h"
 
 #include "utility/inc/DateTimeUtils.hpp"
-#include "utility/inc/TimeUtils.hpp"
-#include "utility/inc/XMLReader.h"
 #include "utility/inc/XMLUtils.h"
-#include "utility/inc/XMLStreamWriter.h"
 #include "utility/inc/FileUtils.hpp"
 #include "utility/inc/SystemUtils.hpp"
 

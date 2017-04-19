@@ -9,9 +9,11 @@
 #include "RStatsXLSXWorkbookStream.h"
 
 #include "RStatsWorksheet.h"
+
 #include "utility/inc/DateTimeUtils.hpp"
 #include "utility/inc/SystemUtils.hpp"
-#include "utility/inc/XMLReader.h"
+#include "utility/inc/XMLUtils.h"
+
 #include "rstats_utils/inc/RStatsUtils.hpp"
 
 using namespace oig::ratstats::utils;

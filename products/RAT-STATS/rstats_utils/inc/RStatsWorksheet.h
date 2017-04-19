@@ -9,11 +9,10 @@
 #include <string>
 #include <map>
 
-#include "utility/inc/Color.h"
-#include "utility/inc/Font.h"
-#include "utility/inc/ColorFactory.h"
-#include "RStatsUtils.hpp"
 #include "utility/inc/StringUtils.hpp"
+#include "utility/inc/ColorUtils.h"
+#include "utility/inc/FontUtils.h"
+#include "RStatsUtils.hpp"
 
 namespace oig {
 namespace ratstats {

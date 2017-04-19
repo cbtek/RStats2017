@@ -9,6 +9,7 @@
 #include "RStatsUVASessionData.h"
 
 using namespace oig::ratstats::utils;
+using namespace cbtek::common::utility;
 
 namespace oig {
 namespace ratstats {

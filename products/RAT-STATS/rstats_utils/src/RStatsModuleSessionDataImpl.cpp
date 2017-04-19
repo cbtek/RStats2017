@@ -8,6 +8,8 @@
 //----------------------------------------
 #include "RStatsModuleSessionDataImpl.h"
 
+using namespace cbtek::common::utility;
+
 namespace oig {
 namespace ratstats {
 namespace utils {

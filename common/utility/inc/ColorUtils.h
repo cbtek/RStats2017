@@ -24,11 +24,196 @@ SOFTWARE.
 */
 #pragma once
 
-#include "Color.h"
+#include <cstdint>
+#include <string>
+#include <memory>
+#include <vector>
 
 namespace cbtek {
 namespace common {
 namespace utility {
+
+namespace colorStringStyle
+{
+    enum ColorStringStyle
+    {
+        RGB_255        //eg. 255 127 64
+        ,RGBA_255      //eg. 255 127 64 255
+        ,RGB_FLOAT     //eg. 1.0 0.5 0.25
+        ,RGBA_FLOAT    //eg. 1.0 0.5 0.25 1.0
+        ,RGB_HTML_HEX  //eg. #FFAA33
+        ,RGBA_HTML_HEX //eg. #FFAA33AA
+        ,ARGB_HTML_HEX //eg. #AARRGGBB
+    };
+}
+class Color
+{
+public:
+
+    /**
+     * @brief Color
+     */
+    Color();
+
+    /**
+     * @brief Color
+     * @param color
+     */
+    Color(std::uint32_t color);
+
+    /**
+     * @brief Color
+     * @param rgbaHex
+     */
+    Color(const std::string & rgbaHex);
+
+    /**
+     * @brief Color
+     * @param name
+     * @param red
+     * @param green
+     * @param blue
+     * @param alpha
+     */
+    Color(const std::string & name,const uint8_t & red,
+          const uint8_t & green,
+          const uint8_t & blue,
+          const uint8_t & alpha=255);
+
+    /**
+     * @brief Color
+     * @param red
+     * @param green
+     * @param blue
+     * @param alpha
+     */
+    Color(const uint8_t & red,
+          const uint8_t & green,
+          const uint8_t & blue,
+          const uint8_t & alpha=255);
+
+    /**
+     * @brief set
+     * @param red
+     * @param green
+     * @param blue
+     * @param alpha
+     */
+    void set (const uint8_t & red,
+              const uint8_t & green,
+              const uint8_t & blue,
+              const uint8_t & alpha=255);
+
+    /**
+     * @brief set
+     * @param htmlColor
+     */
+    void set(const std::string& htmlColor);
+
+    /**
+     * @brief setRed
+     * @param red
+     */
+    void setRed(const uint8_t & red);
+
+    /**
+     * @brief setGreen
+     * @param green
+     */
+    void setGreen(const uint8_t & green);
+
+    /**
+     * @brief setBlue
+     * @param blue
+     */
+    void setBlue(const uint8_t & blue);
+
+    /**
+     * @brief setAlpha
+     * @param alpha
+     */
+    void setAlpha(const uint8_t & alpha);
+
+    /**
+     * @brief getRed
+     * @return
+     */
+    uint8_t getRed() const;
+
+    /**
+     * @brief toInteger
+     * @return
+     */
+    std::uint32_t toInteger() const;
+
+    /**
+     * @brief operator ==
+     * @param color
+     * @return
+     */
+    bool operator==(const Color & color) const;
+
+    /**
+     * @brief operator !=
+     * @param color
+     * @return
+     */
+    bool operator!=(const Color & color) const;
+
+    /**
+     * @brief getGreen
+     * @return
+     */
+    uint8_t getGreen() const;
+
+    /**
+     * @brief getBlue
+     * @return
+     */
+    uint8_t getBlue() const;
+
+    /**
+     * @brief getAlpha
+     * @return
+     */
+    uint8_t getAlpha() const;
+
+    /**
+     * @brief toString
+     * @param style
+     * @return
+     */
+    std::string toString(const colorStringStyle::ColorStringStyle &style=colorStringStyle::RGBA_255) const;
+
+    /**
+     * @brief isTransparent
+     * @return
+     */
+    bool isTransparent() const;
+
+    /**
+     * @brief getName
+     * @return
+     */
+    std::string getName() const;
+
+    /**
+     * @brief setName
+     * @param name
+     */
+    void setName(const std::string & name);
+
+private:
+
+    uint8_t m_red;
+    uint8_t m_green;
+    uint8_t m_blue;
+    uint8_t m_alpha;
+    std::string m_name;
+};
+typedef std::shared_ptr<Color> ColorPtr;
+
+
 namespace colors{
 
     enum ColorType
@@ -1222,5 +1407,98 @@ private:
     ColorFactory();
     ColorFactory(const ColorFactory &);
     ColorFactory & operator=(const ColorFactory &);
+};
+
+namespace colorFunctions
+{
+    enum ColorFunction
+    {
+        ADD_5_RANDOM_COLORS,
+        ADD_10_RANDOM_COLORS,
+        ADD_15_RANDOM_COLORS,
+        ADD_20_RANDOM_COLORS,
+        ADD_5_RANDOM_LIGHT_COLORS,
+        ADD_10_RANDOM_LIGHT_COLORS,
+        ADD_15_RANDOM_LIGHT_COLORS,
+        ADD_20_RANDOM_LIGHT_COLORS,
+        ADD_5_RANDOM_DARK_COLORS,
+        ADD_10_RANDOM_DARK_COLORS,
+        ADD_15_RANDOM_DARK_COLORS,
+        ADD_20_RANDOM_DARK_COLORS
+    };
+}
+class ColorLoop
+{
+
+public:
+
+    ColorLoop();
+
+    /**
+     * @brief operator <<
+     * @param color
+     * @return
+     */
+    ColorLoop & operator<<(const Color & color);
+
+    /**
+     * @brief operator <<
+     * @param colorType
+     * @return
+     */
+    ColorLoop & operator<< (const colors::ColorType & colorType);
+
+    /**
+     * @brief operator <<
+     * @param function
+     * @return
+     */
+    ColorLoop & operator<< (const colorFunctions::ColorFunction & function);
+
+    /**
+     * @brief generateUniqueColors
+     * @param count
+     */
+    void generateUniqueColors(const size_t & count);
+
+    /**
+     * @brief getNextColor
+     * @return
+     */
+    Color getNextColor();
+
+    /**
+     * @brief reset
+     */
+    void reset();
+
+    /**
+     * @brief clear
+     */
+    void clear();
+
+    /**
+     * @brief getColorAt
+     * @param ndx
+     * @return
+     */
+    Color getColorAt(size_t ndx) const;
+
+    /**
+     * @brief getCurrentColorNdx
+     * @return
+     */
+    size_t getCurrentColorNdx() const;
+
+    /**
+     * @brief setCurrentColorNdx
+     * @param ndx
+     */
+    void setCurrentColorNdx(size_t ndx);
+
+private:
+    size_t m_currentColor;
+    std::vector<Color> m_colors;
+    bool colorExists(const Color & color);
 };
 }}}//namespace

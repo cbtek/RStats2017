@@ -38,7 +38,7 @@ SOFTWARE.
 #include "Random.h"
 #include "StringUtils.hpp"
 #include "Exception.hpp"
-#include "TimeUtils.hpp"
+#include "DateTimeUtils.hpp"
 
 #ifdef _WIN32
 #   include <windows.h>

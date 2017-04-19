@@ -31,7 +31,8 @@
 
 #include "utility/inc/SystemUtils.hpp"
 #include "utility/inc/FileUtils.hpp"
-#include "utility/inc/XMLReader.h"
+#include "utility/inc/StringUtils.hpp"
+#include "utility/inc/XMLUtils.h"
 
 namespace oig {
 namespace ratstats {
@@ -186,9 +187,9 @@ namespace UIRStatsUtils
                 if (item)
                 {
                     sheetOut(r,c).text = item->text().toStdString();
-                    if (StringUtils::isNumeric(StringUtils::remove(sheetOut(r,c).text,",")))
+                    if (cbtek::common::utility::StringUtils::isNumeric(cbtek::common::utility::StringUtils::remove(sheetOut(r,c).text,",")))
                     {
-                        sheetOut(r,c).text = StringUtils::remove(sheetOut(r,c).text,",");
+                        sheetOut(r,c).text = cbtek::common::utility::StringUtils::remove(sheetOut(r,c).text,",");
                     }
 
                     std::uint8_t fgR = static_cast<std::uint8_t>(item->foreground().color().red());
@@ -200,7 +201,7 @@ namespace UIRStatsUtils
                     std::uint8_t bgB = static_cast<std::uint8_t>(item->background().color().blue());
                     sheetOut(r,c).fgColor.set(fgR,fgB,fgG);
                     sheetOut(r,c).bgColor.set(bgR,bgB,bgG);
-                    sheetOut(r,c).font = Font(item->font().family().toStdString(),
+                    sheetOut(r,c).font = cbtek::common::utility::Font(item->font().family().toStdString(),
                                               static_cast<size_t>(item->font().pointSize()),
                                               item->font().bold(),
                                               item->font().italic(),
@@ -307,7 +308,7 @@ namespace UIRStatsUtils
         {
             std::string ext = cbtek::common::utility::StringUtils::remove(extension.toStdString(),"*");
             checkBox->setToolTip(file);
-            if (!StringUtils::endsWith(file.toStdString(),ext,false))
+            if (!cbtek::common::utility::StringUtils::endsWith(file.toStdString(),ext,false))
             {                
                 file += QString::fromStdString(ext);
             }

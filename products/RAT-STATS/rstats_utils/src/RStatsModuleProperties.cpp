@@ -10,8 +10,6 @@
 
 #include <sstream>
 
-#include "utility/inc/XMLReader.h"
-#include "utility/inc/XMLStreamWriter.h"
 #include "utility/inc/XMLUtils.h"
 #include "utility/inc/FileUtils.hpp"
 

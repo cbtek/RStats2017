@@ -268,11 +268,16 @@
   <tabstop>m_cmbTypes</tabstop>
   <tabstop>m_btnBrowseLocation</tabstop>
   <tabstop>m_txtArgs</tabstop>
+<<<<<<< HEAD
+=======
   <tabstop>m_btnSetIcon</tabstop>
   <tabstop>m_chkShowConsole</tabstop>
+>>>>>>> 3e01dfe942f33b0ca6e8e4be8e4c2ea928b907db
   <tabstop>m_btnSave</tabstop>
   <tabstop>m_btnLaunch</tabstop>
-  <tabstop>m_btnCancel</tabstop>  
+  <tabstop>m_btnCancel</tabstop>
+  <tabstop>m_chkShowConsole</tabstop>
+  <tabstop>m_btnSetIcon</tabstop>
  </tabstops>
  <resources/>
  <connections/>

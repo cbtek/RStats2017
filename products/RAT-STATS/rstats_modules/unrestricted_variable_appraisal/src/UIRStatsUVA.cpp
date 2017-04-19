@@ -17,8 +17,7 @@
 
 #include "rstats_utils/inc/RStatsWorkbookStreamFactory.h"
 
-#include "utility/inc/TimeUtils.hpp"
-#include "utility/inc/DateUtils.hpp"
+#include "utility/inc/DateTimeUtils.hpp"
 
 #include <QFileDialog>
 #include <QListWidgetItem>
@@ -26,6 +25,8 @@
 
 using namespace oig::ratstats::ui;
 using namespace oig::ratstats::utils;
+
+using namespace cbtek::common::utility;
 
 namespace oig {
 namespace ratstats {
@@ -38,38 +39,45 @@ UIRStatsUVA::UIRStatsUVA(QWidget *parent) :
     m_ui(new Ui_UIRStatsUVA)
 {    
     m_ui->setupUi(this);
-    m_currentCSVFileOutputPushButton = nullptr;
-    m_currentTextFileOutputPushButton = nullptr;
 
-    int buttonHeight = 32;
+    //Initialize output labels for status bar
+    m_currentCSVFileOutputLabel = nullptr;
+    m_currentTextFileOutputLabel = nullptr;
+
+    //Set icons that get reused (validation console)
     m_iconError = UIRStatsUtils::getIcon("img_error.png");
     m_iconWarning = UIRStatsUtils::getIcon("img_warning.png");
     m_iconOK = UIRStatsUtils::getIcon("img_ok.png");
     m_ui->m_txtAuditName->setPlaceholderText(QString::fromStdString(RStatsUtils::getAuditName()));
     m_currentDataFormat = RStatsDataFormatType::Examine;
 
-
-
+    //Initialize all buttons
     UIRStatsUtils::initButton(m_ui->m_btnImportSampleInputData, "img_folder.png");
     UIRStatsUtils::initButton(m_ui->m_btnExecute, "img_run.png");
     UIRStatsUtils::initButton(m_ui->m_btnExit, "img_exit.png");
     UIRStatsUtils::initButton(m_ui->m_btnHelp, "img_help.png");
+
+    //Initialize all menu actions
     UIRStatsUtils::initAction(m_ui->actionAbout,"img_about.png","Alt+A");
     UIRStatsUtils::initAction(m_ui->actionExecute,"img_run.png","Alt+R");
     UIRStatsUtils::initAction(m_ui->actionExit,"img_exit.png","Alt+Q");
     UIRStatsUtils::initAction(m_ui->actionHelp,"img_help.png","Alt+H");
     UIRStatsUtils::initAction(m_ui->actionRecently_Used,"img_clock.png","Alt+S");
 
+    //Set init for startup options
     m_ui->m_dockOptions->setTitleBarWidget(new QWidget());
     m_ui->m_frmOutput->hide();
     m_ui->m_cmbDataInputSheets->addItem("No Sheets Available");
     m_ui->m_cmbDataInputSheets->setEnabled(false);
+    m_ui->m_rdbExamined->setChecked(true);
+    m_autoSetFileOutput = false;
+    updateRecentSessions();
 
+    //Initialize all UI events
     connect(m_ui->actionHelp,SIGNAL(triggered()),this,SLOT(onHelp()));
     connect(m_ui->actionExit,SIGNAL(triggered()),this,SLOT(onExit()));
     connect(m_ui->actionExecute,SIGNAL(triggered(bool)),this,SLOT(onExecute()));
     connect(m_ui->actionAbout,SIGNAL(triggered(bool)),this,SLOT(onAbout()));
-
     connect(m_ui->m_chkTextOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveTextFile()));
     connect(m_ui->m_chkCSVOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveCSVFile()));
     connect(m_ui->m_btnImportSampleInputData,SIGNAL(clicked(bool)),this,SLOT(onImportDataInput()));
@@ -85,9 +93,6 @@ UIRStatsUVA::UIRStatsUVA(QWidget *parent) :
     connect(m_ui->m_rdbExaminedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
     connect(&m_clock,SIGNAL(timeout()),this,SLOT(onUpdateClock()));
 
-    m_ui->m_rdbExamined->setChecked(true);
-    m_autoSetFileOutput = false;
-    updateRecentSessions();
     onUpdateClock();
     m_clock.start(1000);
 }
@@ -101,7 +106,10 @@ void UIRStatsUVA::onAddNewRowToDataTable()
 
 void UIRStatsUVA::onImportDataInput()
 {
+    //Show the "File Browser"
     m_dataTableImportFilePath = QFileDialog::getOpenFileName(this,"Import Stratified Variable Appraisal Sample Input File...","","Supported Input Files(*.csv *.xlsx *.dif)");
+
+    //Make sure imported file is valid before attempting to import data table
     if (!m_dataTableImportFilePath.isEmpty() && QFile::exists(m_dataTableImportFilePath))
     {
         importDataTable(m_dataTableImportFilePath.toStdString());
@@ -110,11 +118,16 @@ void UIRStatsUVA::onImportDataInput()
 
 void UIRStatsUVA::importDataTable(const std::string& dataTableFilePath)
 {
+    //Make sure URL is valid for dataTableFilePath
     if (StringUtils::isEmpty(dataTableFilePath) || !FileUtils::fileExists(dataTableFilePath))
     {
         return;
     }
+
+    //Set global (in class scope) path for data table
     m_dataTableImportFilePath = QString::fromStdString(dataTableFilePath);
+
+    //Read in data table with all available sheets
     m_ui->m_cmbDataInputSheets->clear();
     try
     {
@@ -133,6 +146,7 @@ void UIRStatsUVA::importDataTable(const std::string& dataTableFilePath)
         }
         onUpdateRowColumnExtentsForDataTable();
     }
+    //Throw up custom dialog if something bad happens
     catch(const std::exception& exception)
     {
         m_ui->m_cmbDataInputSheets->addItem("No Sheets Available");
@@ -211,8 +225,6 @@ void UIRStatsUVA::onUpdateRowColumnExtentsForDataTable()
     populateWithColumns(cols,m_ui->m_cmbDifferenceDataTable);
     populateWithRows(rows,m_ui->m_cmbDataRowStartDataTable);
 }
-
-
 
 void UIRStatsUVA::onSampleDataInputSheetSelected(const RStatsWorksheet& sheet)
 {
@@ -573,7 +585,7 @@ void UIRStatsUVA::onSaveTextFile()
                                                                "*.txt");
         setTextFileOutput(m_currentTextFileOutput.toStdString());
     }
-    else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputPushButton);
+    else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
 
 }
 
@@ -588,7 +600,7 @@ void UIRStatsUVA::onSaveCSVFile()
                                                               "*.csv");
         setCSVFileOutput(m_currentCSVFileOutput.toStdString());
     }
-    else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputPushButton);
+    else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
 }
 
 void UIRStatsUVA::onRecentSessionSelected(QAction* action)
@@ -623,25 +635,25 @@ void UIRStatsUVA::setTextFileOutput(const std::string& textFile)
     m_currentTextFileOutput = QString::fromStdString(textFile);
     if (!m_currentTextFileOutput.isEmpty())
     {
-        if (m_currentTextFileOutputPushButton == nullptr)
+        if (m_currentTextFileOutputLabel == nullptr)
         {
-            m_currentTextFileOutputPushButton = new QLabel;
-            //connect(m_currentTextFileOutputPushButton,SIGNAL(clicked(bool)),this,SLOT(onLaunchTextOutputProgram()));
-            m_currentTextFileOutputPushButton->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+            m_currentTextFileOutputLabel = new QLabel;
+            //connect(m_currentTextFileOutputLabel,SIGNAL(clicked(bool)),this,SLOT(onLaunchTextOutputProgram()));
+            m_currentTextFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
 
         }
-        m_ui->m_statusBar->removeWidget(m_currentTextFileOutputPushButton);
+        m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
 
-        m_currentTextFileOutputPushButton->setToolTip(m_currentTextFileOutput);
+        m_currentTextFileOutputLabel->setToolTip(m_currentTextFileOutput);
         QString text = "<b>Text File:</b> "+m_currentTextFileOutput;
         QFontMetrics metrics(this->font());
         QString elidedText = metrics.elidedText(text, Qt::ElideMiddle, this->width() / 2);
-        m_currentTextFileOutputPushButton->setText(elidedText);
+        m_currentTextFileOutputLabel->setText(elidedText);
 
-        m_ui->m_statusBar->addPermanentWidget(m_currentTextFileOutputPushButton);
-        m_currentTextFileOutputPushButton->show();
+        m_ui->m_statusBar->addPermanentWidget(m_currentTextFileOutputLabel);
+        m_currentTextFileOutputLabel->show();
     }
-    else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputPushButton);
+    else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
 }
 
 void UIRStatsUVA::setCSVFileOutput(const std::string& csvFile)
@@ -649,33 +661,33 @@ void UIRStatsUVA::setCSVFileOutput(const std::string& csvFile)
     m_currentCSVFileOutput = QString::fromStdString(csvFile);
     if (!m_currentCSVFileOutput.isEmpty())
     {
-        if (m_currentCSVFileOutputPushButton == nullptr)
+        if (m_currentCSVFileOutputLabel == nullptr)
         {
-            m_currentCSVFileOutputPushButton = new QLabel;
-            //connect(m_currentCSVFileOutputPushButton,SIGNAL(clicked(bool)),this,SLOT(onLaunchCSVOutputProgram()));
-            m_currentCSVFileOutputPushButton->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAFFFF;color:#000000;border:1px solid grey;}");
+            m_currentCSVFileOutputLabel = new QLabel;
+            //connect(m_currentCSVFileOutputLabel,SIGNAL(clicked(bool)),this,SLOT(onLaunchCSVOutputProgram()));
+            m_currentCSVFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAFFFF;color:#000000;border:1px solid grey;}");
         }
-        m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputPushButton);
-        m_currentCSVFileOutputPushButton->setToolTip(m_currentCSVFileOutput);
+        m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
+        m_currentCSVFileOutputLabel->setToolTip(m_currentCSVFileOutput);
         QString text = "<b>CSV File:</b> "+m_currentCSVFileOutput;
         QFontMetrics metrics(this->font());
         QString elidedText = metrics.elidedText(text, Qt::ElideMiddle, this->width() / 2);
-        m_currentCSVFileOutputPushButton->setText(elidedText);
+        m_currentCSVFileOutputLabel->setText(elidedText);
 
-        m_ui->m_statusBar->addPermanentWidget(m_currentCSVFileOutputPushButton);
-        m_currentCSVFileOutputPushButton->show();
+        m_ui->m_statusBar->addPermanentWidget(m_currentCSVFileOutputLabel);
+        m_currentCSVFileOutputLabel->show();
     }
-    else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputPushButton);
+    else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
 }
 
 
 void UIRStatsUVA::resizeEvent(QResizeEvent *)
 {
-    if (m_currentCSVFileOutputPushButton)
+    if (m_currentCSVFileOutputLabel)
     {
         setCSVFileOutput(m_currentCSVFileOutput.toStdString());
     }
-    if (m_currentTextFileOutputPushButton)
+    if (m_currentTextFileOutputLabel)
     {
         setTextFileOutput(m_currentTextFileOutput.toStdString());
     }

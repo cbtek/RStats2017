@@ -108,7 +108,7 @@ public:
 	~RStatsModuleSessionDataImpl();	
 protected:
     void save(cbtek::common::utility::XMLStreamWriter& writer);
-    void load(XMLDataElement *element);
+    void load(cbtek::common::utility::XMLDataElement *element);
 
 private:
     cbtek::common::utility::DateEntity m_creationDate;

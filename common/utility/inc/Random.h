@@ -22,8 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef _CBTEK_COMMON_UTILITY_RANDOM_H_
-#define _CBTEK_COMMON_UTILITY_RANDOM_H_
+#pragma once
 
 #include <cmath>
 #include <cstdlib>
@@ -77,6 +76,4 @@ private:
     long m_ix,m_iy,m_iz;
     double m_mx,m_my,m_mz;
 };
-
 }}}//namespace
-#endif // _CBTEK_COMMON_UTILITY_RANDOM_H_

@@ -32,13 +32,13 @@ SOFTWARE.
 
 
 #ifdef __WIN32
-    #define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
+    #define __FILENAME_ONLY__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
 #else
-    #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+    #define __FILENAME_ONLY__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #endif
 
-#define EXCEPTION_TAG "Exception thrown in "+std::string(__FILENAME__)+"::"+std::string(__func__)+", Line="+std::to_string(__LINE__)+": "
-#define EXCEPTION_TAG_LINE "Exception thrown in "+std::string(__FILENAME__)+"::"+std::string(__func__)+", Line="+std::to_string(__LINE__)+": \n\n"
+#define EXCEPTION_TAG "Exception thrown in "+std::string(__FILENAME_ONLY__)+"::"+std::string(__func__)+", Line="+std::to_string(__LINE__)+": "
+#define EXCEPTION_TAG_LINE "Exception thrown in "+std::string(__FILENAME_ONLY__)+"::"+std::string(__func__)+", Line="+std::to_string(__LINE__)+": \n\n"
 namespace cbtek{
 namespace common{
 namespace utility{

@@ -68,8 +68,8 @@ private:
     QString m_currentCSVFileOutput;
     QString m_dataTableImportFilePath;
 
-    QLabel * m_currentTextFileOutputPushButton;
-    QLabel * m_currentCSVFileOutputPushButton;
+    QLabel * m_currentTextFileOutputLabel;
+    QLabel * m_currentCSVFileOutputLabel;
 
     bool m_autoSetFileOutput;
 

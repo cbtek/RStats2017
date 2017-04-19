@@ -19,8 +19,7 @@
 #include "rstats_ui/inc/UIRStatsImportWorksheet.h"
 #include "rstats_ui/inc/UIRStatsErrorMessage.h"
 
-#include "utility/inc/TimeUtils.hpp"
-#include "utility/inc/DateUtils.hpp"
+#include "utility/inc/DateTimeUtils.hpp"
 #include "utility/inc/XMLUtils.h"
 
 using namespace cbtek::common::utility;
