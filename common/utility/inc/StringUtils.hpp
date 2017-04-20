@@ -1753,7 +1753,8 @@ static inline bool isEmpty(const std::string& srcStr)
  * @param potentialNumber
  * @return
  */
-inline bool isNumeric(const std::string& potentialNumber)
+
+inline bool isNumeric(const std::string& potentialNumber, std::string& numberOut)
 {    
     std::string numberStr = StringUtils::trimmed(potentialNumber);
     if (numberStr.size() == 0 ||
@@ -1763,11 +1764,34 @@ inline bool isNumeric(const std::string& potentialNumber)
         return false;
     }
     numberStr = remove(numberStr,",");
+    numberStr = remove(numberStr,"(");
+    numberStr = remove(numberStr,")");
+    numberStr = remove(numberStr,"{");
+    numberStr = remove(numberStr,"}");
+    numberStr = remove(numberStr,"[");
+    numberStr = remove(numberStr,"]");
     numberStr = remove(numberStr,"-");
     numberStr = remove(numberStr,"$");
+    numberOut = numberStr;
     return (isFloat(numberStr) ||
             isSignedInteger(numberStr) ||
             isUnsignedInteger(numberStr));
+}
+
+inline bool isNumeric(const std::string& potentialNumber)
+{
+    std::string numberOut;
+    return isNumeric(potentialNumber,numberOut);
+}
+
+inline std::string getFormattedNumeric(const std::string& potentialNumber)
+{
+    std::string numberOut;
+    if (isNumeric(potentialNumber,numberOut))
+    {
+        return numberOut;
+    }
+    return potentialNumber;
 }
 
 }}}} //namespace
