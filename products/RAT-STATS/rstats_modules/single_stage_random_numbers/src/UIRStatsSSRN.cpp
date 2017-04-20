@@ -117,6 +117,10 @@ void UIRStatsSSRN::onValidate()
     m_logger.addWarning(low == high,
                         "The low number is equal to the high number!");
 
+    m_logger.addWarning((order + spare > 10000),
+                        "Total number of values to be generated exceed 10,000.  RAT-STATS 2017 will still work but this value exceeds data limits of previous versions.");
+
+
     m_logger.addWarning((high - low)  < (order + spare),
                         "The sampling frame is less than the total number of values to be generated!");
 

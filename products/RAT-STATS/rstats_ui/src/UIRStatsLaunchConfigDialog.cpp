@@ -115,16 +115,22 @@ void UIRStatsLaunchConfigDialog::onSave()
     }
 
     //Save property values and close
-    m_props.setName(m_ui->m_txtName->text().toStdString());
-    m_props.setPath(m_ui->m_txtLocation->text().toStdString());        
-    m_props.setScriptPath(m_ui->m_cmbTypes->currentData(Qt::UserRole).toString().toStdString());
-    m_props.setType(m_ui->m_cmbTypes->currentText().toStdString());    
-    m_props.setCategory(m_ui->m_cmbCategories->currentText().toStdString());
-    m_props.setArgs(m_ui->m_txtArgs->text().toStdString());
-    m_props.setConsoleShown(m_ui->m_chkShowConsole->isChecked());
-    m_props.saveConfig();        
+    onSave(m_props);
+    m_props.saveConfig();
     m_isModified = true;
     this->close();
+}
+
+void UIRStatsLaunchConfigDialog::onSave(RStatsModuleProperties &out)
+{
+    //Save property values and close
+    out.setName(m_ui->m_txtName->text().toStdString());
+    out.setPath(m_ui->m_txtLocation->text().toStdString());
+    out.setScriptPath(m_ui->m_cmbTypes->currentData(Qt::UserRole).toString().toStdString());
+    out.setType(m_ui->m_cmbTypes->currentText().toStdString());
+    out.setCategory(m_ui->m_cmbCategories->currentText().toStdString());
+    out.setArgs(m_ui->m_txtArgs->text().toStdString());
+    out.setConsoleShown(m_ui->m_chkShowConsole->isChecked());
 }
 
 void UIRStatsLaunchConfigDialog::onCancel()
@@ -142,9 +148,19 @@ void UIRStatsLaunchConfigDialog::onLaunch()
         return;
     }
 
-    QString command = QString::fromStdString(launcherPath+" --module-path \""+m_props.getDefinitionPath()+"\"");
-    QProcess::startDetached(command);
-    this->close();
+    RStatsModuleProperties props;
+    onSave(props);
+    props.saveConfig(FileUtils::buildFilePath(SystemUtils::getUserTempDirectory(),"launchtest_"+StringUtils::createUUID()));
+    QString command = QString::fromStdString(props.getGeneratedApplicationCommand());
+    if (props.isConsoleShown())
+    {
+        std::cerr << command.toStdString() <<std::endl;
+        SystemUtils::execute(command.toStdString());
+    }
+    else
+    {
+        QProcess::startDetached(command);
+    }
 }
 
 void UIRStatsLaunchConfigDialog::onBrowseModulePath()

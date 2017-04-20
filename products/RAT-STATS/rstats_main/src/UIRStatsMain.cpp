@@ -50,7 +50,7 @@ UIRStatsMain::UIRStatsMain(QWidget *parent) :
     m_ui(new Ui_UIRStatsMain)
 {    
     m_ui->setupUi(this);                 
-
+    std::uint64_t start = TimeUtils::getCurrentMilliseconds();
     //Set default labels for category list and module list
     onUpdateTableHeader(false);
     m_ui->m_lstCategories->setFocus();
@@ -65,6 +65,8 @@ UIRStatsMain::UIRStatsMain(QWidget *parent) :
     m_iconAdd = UIRStatsUtils::getIcon("img_add.png");            
     m_iconRemove = UIRStatsUtils::getIcon("img_remove.png");
     m_iconOk = UIRStatsUtils::getIcon("img_ok.png");
+    m_iconError = UIRStatsUtils::getIcon("img_error.png");
+    m_iconRun = UIRStatsUtils::getIcon("img_run.png");
 
     //Set icons to actions/buttons
     UIRStatsUtils::initAction(m_ui->m_actionSettings_Manager,"img_settings.png","Alt+S");
@@ -87,7 +89,7 @@ UIRStatsMain::UIRStatsMain(QWidget *parent) :
     connect(m_ui->m_actionAbout_RAT_STATS_2017,SIGNAL(triggered(bool)),this,SLOT(onLaunchAbout()));
     connect(m_ui->m_actionAdd_New_Module,SIGNAL(triggered(bool)),this,SLOT(onAddNewModule()));
     connect(m_ui->m_lstCategories,SIGNAL(currentRowChanged(int)),this,SLOT(onTabChanged(int)));
-
+    std::cerr << "Time To Init:" << TimeUtils::getCurrentMilliseconds() - start << std::endl;
 }
 
 UIRStatsMain::~UIRStatsMain()
@@ -145,6 +147,7 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
     size_t tableIndex = 0;    
     for (const auto& it : groupedModules)
     {
+        //Initialize button groups and table to hold module items
         QString name = QString::fromStdString(it.first);        
         QTableWidget * table = new QTableWidget;        
         m_launchButtonMap[tableIndex] = new QButtonGroup;
@@ -153,17 +156,18 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
         QButtonGroup * launchButtons = m_launchButtonMap[tableIndex];
         QButtonGroup * editButtons = m_editButtonMap[tableIndex];
         QButtonGroup * removeButtons = m_removeButtonMap[tableIndex];
-
         int row = 0;
         int activeRow = 0;
+
+        //Set table properties before adding items to it
         table->setRowCount(static_cast<int>(it.second.size()));
-        table->setColumnCount(1);
+        table->setColumnCount(2);
         table->horizontalHeader()->hide();
         table->setSelectionMode(QAbstractItemView::SingleSelection);
         table->setSelectionBehavior(QTableView::SelectRows);
         table->setShowGrid(false);
         table->setAlternatingRowColors(true);
-        table->setProperty("index",static_cast<unsigned int>(tableIndex));
+        table->setProperty("index",static_cast<unsigned int>(tableIndex));        
         for(size_t a2 = 0 ;a2 < it.second.size();++a2)
         {
             RStatsModuleProperties props = it.second[a2];           
@@ -174,6 +178,8 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
             std::string properPath = StringUtils::replace(props.getPath(),"\\","/");
             bool hasPathSeperator = StringUtils::contains(properPath,"/");
             bool isDisabled = !hasPathSeperator || !FileUtils::fileExists(props.getPath());            
+
+            //On windows make sure we append .exe to binary before checking if it exists
             #ifdef __WIN32
                 if (isDisabled)
                 {
@@ -207,8 +213,7 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
             editButtons->addButton(moduleEditButton,row);
 
             //Setup remove button
-            QPushButton * moduleRemoveButton = new QPushButton;
-            //moduleRemoveButton->setDisabled(isDisabled);
+            QPushButton * moduleRemoveButton = new QPushButton;            
             moduleRemoveButton->setProperty("path",path);
             UIRStatsUtils::setButtonStyle(moduleRemoveButton,this->font(),m_iconRemove,m_buttonHeight,true);
             moduleRemoveButton->setProperty("index",m_allLaunchButtons.size());
@@ -227,41 +232,52 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
             moduleLaunchButton->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
             m_allLaunchButtons.push_back(moduleLaunchButton);
             launchButtons->addButton(moduleLaunchButton,row);
-            layout->setContentsMargins(4,0,4,0);
+
+            //Setup the layout used to hold buttons on an single module
+            layout->setContentsMargins(0,0,0,0);
+            layout->setSpacing(0);
             layout->addWidget(moduleLaunchButton);
             layout->addWidget(moduleEditButton);
             layout->addWidget(moduleRemoveButton);
-            frame->resize(frame->width(),m_buttonHeight);
-            frame->setLayout(layout);
-            table->setCellWidget(row,0,frame);
-            table->setRowHeight(row,m_buttonHeight);
+
 
             //Setup shortcut key for module and edit/remove/launch buttons
             QString removeKeyString,editKeyString,launchKeyString;
             QKeySequence editKey = this->getKeyEditSequence(row, editKeyString);
             QKeySequence removeKey = this->getKeyRemoveSequence(row, removeKeyString);
             QKeySequence launchKey = this->getKeyLaunchSequence(row, launchKeyString);
-            QTableWidgetItem * verticalItem = new QTableWidgetItem;            
-            verticalItem->setText(launchKeyString+": ");
-            verticalItem->setData(Qt::UserRole,activeRow);
-            verticalItem->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 
+            QTableWidgetItem * shortcutItem = new QTableWidgetItem;
+            shortcutItem->setText(launchKeyString+": ");
+            shortcutItem->setData(Qt::UserRole,activeRow);
+            QFont itemFont = this->font();
+            itemFont.setPointSize(10);
             if (isDisabled)
-            {                
-//                verticalItem->setBackground(QBrush(QColor(255,255,255)));
-//                verticalItem->setForeground(QBrush(QColor(127,127,127)));
-//                verticalItem->setTextColor(QColor(127,127,127));
-//                verticalItem->setFont(QFont("arial",10,-1,true));
+            {
+                itemFont.setItalic(true);
+                shortcutItem->setForeground(QBrush(QColor(127,127,127)));
+                shortcutItem->setIcon(m_iconError);
+                shortcutItem->setToolTip("Module is disabled. Press <F1> to check module properties.");
             }
             else
-            {            
-//                verticalItem->setBackground(QBrush(QColor(127,255,127)));
-//                verticalItem->setForeground(QBrush(QColor(0,0,0)));
-//                verticalItem->setTextColor(QColor(0,0,0));
-//                verticalItem->setFont(QFont("arial",12,8,false));
+            {
+                itemFont.setBold(true);
+                shortcutItem->setIcon(m_iconOk);
             }
+            shortcutItem->setFont(itemFont);
 
-            table->setVerticalHeaderItem(row,verticalItem);
+            table->setItem(row,0,shortcutItem);
+
+            //Resize the layout container and add layout to it
+            frame->resize(frame->width(),m_buttonHeight);
+            frame->setLayout(layout);
+
+            //Add layout container to table row
+            table->setCellWidget(row,1,frame);
+            table->setRowHeight(row,m_buttonHeight);
+
+
+            //Create shortcut for each button
             UIRStatsShortcut * editShortcut = new UIRStatsShortcut(editKey,table);
             UIRStatsShortcut * removeShortcut = new UIRStatsShortcut(removeKey,table);
             UIRStatsShortcut * launchShortcut = new UIRStatsShortcut(launchKey,table);            
@@ -278,6 +294,8 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
             connect(launchShortcut,SIGNAL(activated(QShortcut*)),this,SLOT(onLaunchModuleShortcut(QShortcut*)));            
             ++row;
         }
+        table->setStyleSheet("QTableWidget{selection-background-color: #AAFFAA; selection-color: #000000;}");
+        table->verticalHeader()->hide();
 
         //Set first row as default row
         if (table->rowCount() > 0)
@@ -286,9 +304,8 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
         }
 
         //set table properties and add current group name to category list
-        table->horizontalHeader()->setSectionResizeMode(0,QHeaderView::Stretch);
-        //table->verticalHeader()->setFixedWidth(128);
-
+        table->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
+        table->horizontalHeader()->setSectionResizeMode(1,QHeaderView::Stretch);
         m_tableMap[tableIndex] = table;
         mainLayout->addWidget(table);
         QListWidgetItem * item = new QListWidgetItem(m_iconFolder,name);

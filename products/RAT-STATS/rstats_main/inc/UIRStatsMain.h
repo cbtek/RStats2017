@@ -66,6 +66,8 @@ private:
      QIcon m_iconAbout;
      QIcon m_iconAdd;
      QIcon m_iconOk;
+     QIcon m_iconRun;
+     QIcon m_iconError;
 
      //Font used by UI
      QFont m_font;

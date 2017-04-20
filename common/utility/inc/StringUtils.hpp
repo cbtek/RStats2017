@@ -1430,7 +1430,7 @@ inline void clean(std::vector<std::string> & items)
     }
 }
 
-inline std::string createUUID(bool includeDashes)
+inline std::string createUUID(bool includeDashes = false)
 {
 
     //123e4567-e89b-12d3-a456-426655440000
