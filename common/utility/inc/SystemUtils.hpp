@@ -680,7 +680,7 @@ inline std::string getCurrentExecutableDirectory()
     #ifdef _WIN32
         GetModuleFileNameA(NULL,buffer,256);
         appPath = std::string(buffer);
-        appPath = FileUtils::getDirPath(appPath);
+        appPath = SystemUtils_EmbeddedUtils::getDirPath(appPath);
 
     #else  
         ssize_t len = ::readlink("/proc/self/exe", buffer, sizeof(buffer)-1);

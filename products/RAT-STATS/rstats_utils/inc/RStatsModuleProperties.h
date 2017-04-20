@@ -67,10 +67,10 @@ public:
     void setArgs(const std::vector<std::pair<std::string,std::string> > & value);
 
     /**
-     * @brief getCommand
+     * @brief getGeneratedApplicationCommand
      * @return
      */
-    void generateApplicationCommand(std::string& commandAndArgsOut);
+    std::string getGeneratedApplicationCommand() const;
 
     /**
      * @brief generateApplicationCommand

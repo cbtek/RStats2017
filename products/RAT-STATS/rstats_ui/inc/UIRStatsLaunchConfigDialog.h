@@ -53,6 +53,7 @@ private:
 private slots:
      void onInit();
      void onSave();
+     void onSave(utils::RStatsModuleProperties& out);
      void onCancel();
      void onLaunch();
      void onBrowseModulePath();

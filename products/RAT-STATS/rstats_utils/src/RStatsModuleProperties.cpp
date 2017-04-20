@@ -121,25 +121,35 @@ void RStatsModuleProperties::setCategory(const std::string & value)
 }
 
 void RStatsModuleProperties::generateApplicationCommand(std::string& commandOut, std::string& argsOut)
-{
-    //std::cerr << "script: " << m_appScriptPath << std::endl;
+{    
     if (m_appScriptPath.size() > 0)
     {
-        commandOut = m_appScriptPath +" "+m_appPath;
+        commandOut = "\""+m_appScriptPath +"\" \""+m_appPath+"\"";
         argsOut = m_appArgs;
     }
     else
     {
-        commandOut = m_appPath;
+        commandOut = "\""+m_appPath+"\"";
         argsOut = m_appArgs;
     }
 }
 
-void RStatsModuleProperties::generateApplicationCommand(std::string& commandAndArgsOut)
+std::string RStatsModuleProperties::getGeneratedApplicationCommand() const
 {
-    std::ostringstream command;
-    command << m_appScriptPath<<" "<<m_appPath<<" "<<m_appArgs;
-    commandAndArgsOut = command.str();
+    std::ostringstream command;   
+    if (m_appScriptPath.size() > 0)
+    {
+        command << "\""<<m_appScriptPath<<"\" \""<<m_appPath<<" "<<m_appArgs<<"\"";
+    }
+    else
+    {
+        command << "\""+m_appPath+"\"";
+        if (m_appArgs.size() > 0)
+        {
+            command << " \""<<m_appArgs<<"\"";
+        }
+    }
+    return command.str();
 }
 
 const std::string &RStatsModuleProperties::getType() const

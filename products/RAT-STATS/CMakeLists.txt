@@ -6,10 +6,8 @@ project(RAT-STATS)
 add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_utils")
 add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_ui")
 add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_main")
-add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_launcher")
-add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_batch")
 
-#Built in Modules
+#Internal Modules
 add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_modules/single_stage_random_numbers")
 add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_modules/unrestricted_attribute_appraisal")
 add_subdirectory("${PROJECT_SOURCE_DIR}/rstats_modules/unrestricted_variable_appraisal")

@@ -5,7 +5,7 @@ if (WIN32)
     else()
         set(CMAKE_CXX_FLAGS_RELEASE "-Wl,--no-as-needed -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=0")
         set(CMAKE_CXX_FLAGS_DEFAULT "-g -Wl,--no-as-needed -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=0")
-        set(CMAKE_CXX_FLAGS_DEBUG "-g -Wl,--no-as-needed -std=c++11  -D_GLIBCXX_USE_CXX11_ABI=0")
+        set(CMAKE_CXX_FLAGS_DEBUG "-g -Wl,--no-as-needed -std=c++11")
     endif()
 
 else()    

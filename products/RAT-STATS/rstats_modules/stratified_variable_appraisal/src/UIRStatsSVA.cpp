@@ -208,6 +208,7 @@ bool UIRStatsSVA::onValidate()
      m_conditionLogger.addWarning(m_ui->m_txtAuditName->text().isEmpty(),
                                   "You have NOT set the name for this audit.  Using auto-generated name: '"+m_ui->m_txtAuditName->placeholderText().toStdString()+"'");
 
+
      if (!m_conditionLogger.hasMessages())
      {         
          if (!m_fullScreenToggle)
