@@ -112,6 +112,42 @@ enum class RStatsConditionalOperatorType
 namespace RStatsUtils
 {
 
+
+inline std::pair<std::string,std::string> getDataFormatTypeStr(RStatsDataFormatType type)
+{
+    std::string primaryTypeStr;
+    std::string secondaryTypeStr;
+    if (type == RStatsDataFormatType::AuditAndDifference)
+    {
+        primaryTypeStr = "Audit";
+        secondaryTypeStr = "Difference";
+    }
+    else if (type == RStatsDataFormatType::ExamineAndAudit)
+    {
+        primaryTypeStr = "Examine";
+        secondaryTypeStr = "Difference";
+    }
+    else if (type == RStatsDataFormatType::ExamineAndAudit)
+    {
+        primaryTypeStr = "Examine";
+        secondaryTypeStr = "Audit";
+    }
+
+    else if (type == RStatsDataFormatType::Audit)
+    {
+        primaryTypeStr = "Audit";
+    }
+    else if (type == RStatsDataFormatType::Difference)
+    {
+        primaryTypeStr = "Difference";
+    }
+    else if (type == RStatsDataFormatType::Examine)
+    {
+        primaryTypeStr = "Examine";
+    }
+    return std::make_pair(primaryTypeStr,secondaryTypeStr);
+}
+
 /**
  * @brief isAHalfFraction
  * @param value
@@ -254,7 +290,7 @@ inline RStatsInteger vbRound(T value)
      */    
     inline bool isEqual(RStatsFloat value1, RStatsFloat value2)
     {
-        return (value1 - value2) < DBL_EPSILON;
+        return std::fabs(value1 - value2) < DBL_EPSILON;
     }
 
     /**

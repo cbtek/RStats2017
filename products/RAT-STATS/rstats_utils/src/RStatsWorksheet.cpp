@@ -147,6 +147,11 @@ std::string RStatsWorksheet::toHTMLTableString() const
 {
     std::ostringstream out;
     XMLStreamWriter xml(out);
+    xml.writeStartElementNoAttributes("html");
+    xml.writeStartElementNoAttributes("head");
+    xml.writeTextElement("title",m_worksheetTitle+" Output");
+    xml.writeEndElement("head");
+    xml.writeStartElementNoAttributes("body");
     xml.writeStartElement("table");
     xml.writeLastAttribute("style","border: 1px solid black; padding 5px;");
     size_t cols = getNumColumns();
@@ -159,12 +164,21 @@ std::string RStatsWorksheet::toHTMLTableString() const
             const RStatsCell& cell = getCell(r,c);
             xml.writeStartElement("td");
             xml.writeLastAttribute("style",getCellCSSStyle(cell));
-            xml.writeText(cell.text);
+            if (StringUtils::isNumeric(cell.text))
+            {
+                xml.writeText(StringUtils::formatWithThousandsLabel(cell.text));
+            }
+            else
+            {
+                xml.writeText(cell.text);
+            }
             xml.writeEndElement("td");
         }
         xml.writeEndElement("tr");
     }
     xml.writeEndElement("table");
+    xml.writeEndElement("body");
+    xml.writeEndElement("html");
     return out.str();
 }
 

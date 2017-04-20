@@ -13,6 +13,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDesktopServices>
+#include <QFile>
 
 #include "rstats_ui/inc/UIRStatsAbout.h"
 #include "rstats_ui/inc/UIRStatsUtils.hpp"
@@ -90,7 +91,7 @@ void UIRStatsUAA::onUpdateUniverseCount()
 void UIRStatsUAA::onHelp()
 {
     QString url = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_help/rstats_uaa.pdf"));
-    if (!QDesktopServices::openUrl(url))
+    if (!QFile::exists(url) || !QDesktopServices::openUrl(url))
     {
         UIRStatsErrorMessage("Could not load help file","Could not open the help file located at \"" + url.toStdString() + "\"",false,this).exec();
     }
@@ -142,11 +143,6 @@ void UIRStatsUAA::onExecute()
             FileUtils::writeFileContents(m_currentTextFileOutput.toStdString(),
                                          output.toEvenlySpacedString());
         }
-
-
-        m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toCurrentShortDateString()));
-        m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::toCurrent12HourTimeString()));
-        m_ui->m_lblAudit->setText(QString::fromStdString(name));
         m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
         m_ui->m_tblOutput->horizontalHeader()->hide();
         m_ui->m_frmOutput->show();
@@ -162,6 +158,14 @@ void UIRStatsUAA::onExecute()
         m_recentSessionsMap[sessionData.getAuditName()] = RStatsModuleSessionDataPtr(new RStatsUAASessionData(sessionData));
         RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getAuditName()]);
         updateRecentSessions();
+
+        //Show results in browser if selected
+        if (m_ui->m_chkViewInBrowser->isChecked())
+        {
+            std::string htmlPath = FileUtils::buildFilePath(SystemUtils::getUserTempDirectory(), FileUtils::getRandomFileName(10,0)+".html");
+            FileUtils::writeFileContents(htmlPath,output.toHTMLTableString());
+            QDesktopServices::openUrl(QString::fromStdString(htmlPath));
+        }
     }
     catch (std::exception& e)
     {
@@ -190,6 +194,7 @@ RStatsUAASessionData UIRStatsUAA::getSessionData() const
     data.setUniverseSize(m_ui->m_spnUniverseSize->value());
     data.setCSVOutputFile(m_currentCSVFileOutput.toStdString());
     data.setTextOutputFile(m_currentTextFileOutput.toStdString());
+    data.setViewInBrowserFlag(m_ui->m_chkViewInBrowser->isChecked());
     return data;
 }
 
@@ -199,7 +204,7 @@ void UIRStatsUAA::setSessionData(const RStatsUAASessionData &data)
     m_ui->m_spnSampleSize->setValue(static_cast<int>(data.getSampleSize()));
     m_ui->m_spnCOI->setValue(static_cast<int>(data.getCoiSize()));
     m_ui->m_spnUniverseSize->setValue(static_cast<int>(data.getUniverseSize()));
-
+    m_ui->m_chkViewInBrowser->setChecked(data.isViewableInBrowser());
     m_autoSetFileOutput = true;
     if (!data.getCSVOutputFile().empty())
     {        

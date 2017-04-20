@@ -104,6 +104,18 @@ public:
     */
     const std::string & getAuditName() const;
 
+    /**
+     * @brief setViewInBrowserFlag
+     * @param flag
+     */
+    void setViewInBrowserFlag(bool flag);
+
+    /**
+     * @brief isViewableInBrowser
+     * @return
+     */
+    bool isViewableInBrowser() const;
+
 	//! Destructor
 	~RStatsModuleSessionDataImpl();	
 protected:
@@ -113,6 +125,7 @@ protected:
 private:
     cbtek::common::utility::DateEntity m_creationDate;
     cbtek::common::utility::TimeEntity m_creationTime;
+    bool m_viewInBrowser;
     std::string m_csvOutputFile;
     std::string m_textOutputFile;
     std::string m_auditName;

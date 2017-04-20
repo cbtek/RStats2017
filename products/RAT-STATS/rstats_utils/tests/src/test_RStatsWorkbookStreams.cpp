@@ -134,6 +134,43 @@ TEST_CASE("Testing RStatsCSVWorkbookStream","[oig::ratstats::utils::streams::RSt
     REQUIRE(sheetIn("B1").text == "\"4,5 and 6\"");
     REQUIRE(sheetIn("C1").text == "\"Hello\", \"World\"");
     bookOut.clear();
+
+    sheetOut("A1") = "Sample Number";
+    sheetOut("A2") = "1";
+    sheetOut("A3") = "2";
+    sheetOut("A4") = "3";
+    sheetOut("B1") = "Examined Values";
+    sheetOut("B2") = StringUtils::toString(963.09,2);
+    sheetOut("B3") = StringUtils::toString(667.45,2);
+    sheetOut("B4") = " 7,193.89 ";
+    sheetOut("C1") = "Difference Values";
+    sheetOut("C2") = " (10,000.0)";
+    sheetOut("C3") = StringUtils::toString(0.23,2);
+    sheetOut("C4") = " 333,400.10 ";
+
+    bookOut.addWorksheet(sheetOut);
+    stream->write(bookOut);
+    bookIn = stream->read();
+    REQUIRE(bookIn.getNumWorksheets() == 1);
+    sheetIn = bookIn(0);
+    REQUIRE(sheetIn.getNumColumns() == 3);
+    REQUIRE(sheetIn.getNumRows() == 4);
+
+    REQUIRE(sheetIn("A1").text == "Sample Number");
+    REQUIRE(sheetIn("A2").text == "1");
+    REQUIRE(sheetIn("A3").text == "2");
+    REQUIRE(sheetIn("A4").text == "3");
+    REQUIRE(sheetIn("B1").text == "Examined Values");
+    REQUIRE(sheetIn("B2").text == "963.09");
+    REQUIRE(sheetIn("B3").text == "667.45");
+    REQUIRE(sheetIn("B4").text == "7193.89");
+    REQUIRE(sheetIn("C1").text == "Difference Values");
+    REQUIRE(sheetIn("C2").text == "10000.0");
+    REQUIRE(sheetIn("C3").text == "0.23");
+    REQUIRE(sheetIn("C4").text == "333400.10");
+
+    bookOut.clear();
+
     FileUtils::deleteFile(tempFile);
     FileUtils::deleteFolder(tempFolder);
 }

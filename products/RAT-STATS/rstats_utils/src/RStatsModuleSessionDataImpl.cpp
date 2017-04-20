@@ -17,7 +17,7 @@ namespace utils {
 
 RStatsModuleSessionDataImpl::RStatsModuleSessionDataImpl()
 {
-
+    m_viewInBrowser = false;
 }
 
 RStatsModuleSessionDataImpl::~RStatsModuleSessionDataImpl()
@@ -32,6 +32,7 @@ void RStatsModuleSessionDataImpl::save(XMLStreamWriter& xml)
     xml.writeTextElement("name",this->getAuditName());
     xml.writeTextElement("date",StringUtils::toString(this->getCreationDate().toDateInteger()));
     xml.writeTextElement("time",StringUtils::toString(this->getCreationTime().toTimeInteger()));
+    xml.writeTextElement("viewInBrowser",StringUtils::toString(m_viewInBrowser));
 
 }
 
@@ -42,6 +43,7 @@ void RStatsModuleSessionDataImpl::load(XMLDataElement* element)
     setAuditName(element->getChildElementData("name"));
     setCreationDate(DateEntity(element->getChildElementDataAsType<std::uint64_t>("date")));
     setCreationTime(TimeEntity(element->getChildElementDataAsType<std::uint64_t>("time")));
+    setViewInBrowserFlag(element->getChildElementDataAsType<bool>("viewInBrowser"));
 }
 
 void RStatsModuleSessionDataImpl::setCreationDate(const cbtek::common::utility::DateEntity & value)
@@ -94,6 +96,16 @@ const std::string &RStatsModuleSessionDataImpl::getTextOutputFile() const
 const std::string &RStatsModuleSessionDataImpl::getAuditName() const
 {
     return m_auditName;
+}
+
+void RStatsModuleSessionDataImpl::setViewInBrowserFlag(bool flag)
+{
+    m_viewInBrowser = flag;
+}
+
+bool RStatsModuleSessionDataImpl::isViewableInBrowser() const
+{
+    return m_viewInBrowser;
 }
 }}}//end namespace
 

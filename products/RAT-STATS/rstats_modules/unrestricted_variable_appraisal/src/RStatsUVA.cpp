@@ -33,10 +33,16 @@ void RStatsUVA::execute(const std::string &auditName,
     m_auditName = auditName;
     std::vector<RStatsFloat> primaryDataset,secondaryDataset;
 
+
+
     bool hasSecondaryDataset = ((dataSheetDatasetColumnTypeIndex.type == RStatsDataFormatType::AuditAndDifference ||
                                 dataSheetDatasetColumnTypeIndex.type == RStatsDataFormatType::ExamineAndDifference ||
                                 dataSheetDatasetColumnTypeIndex.type == RStatsDataFormatType::ExamineAndAudit) &&
                                 dataSheetInput.getNumColumns() > 1);
+
+    std::pair<std::string,std::string> typePair = RStatsUtils::getDataFormatTypeStr(dataSheetDatasetColumnTypeIndex.type);
+    std::string primaryTypeStr = typePair.first;
+    std::string secondaryTypeStr = typePair.second;
 
     for (size_t r = dataSheetRowOffset; r < dataSheetInput.getNumRows(); ++r)
     {
@@ -46,6 +52,10 @@ void RStatsUVA::execute(const std::string &auditName,
         StringUtils::removeInPlace(value1, "(");
         StringUtils::removeInPlace(value1, ")");
         StringUtils::removeInPlace(value1, ",");
+        if (!StringUtils::isNumeric(value1))
+        {
+            THROW_GENERIC_EXCEPTION("The "+primaryTypeStr+" value \""+value1+"\" in row \""+std::to_string(r+1)+"\" is not a valid number!");
+        }
         if (hasSecondaryDataset)
         {
             value2 = dataSheetInput(r,dataSheetDatasetColumnTypeIndex.secondaryDatasetColumnIndex).text;
@@ -53,7 +63,11 @@ void RStatsUVA::execute(const std::string &auditName,
             StringUtils::removeInPlace(value2, "(");
             StringUtils::removeInPlace(value2, ")");
             StringUtils::removeInPlace(value2, ",");
-            primaryDataset.push_back(StringUtils::toFloat64(value2));
+            if (!StringUtils::isNumeric(value2))
+            {
+                THROW_GENERIC_EXCEPTION("The "+secondaryTypeStr+" value \""+value2+"\" in row \""+std::to_string(r+1)+"\" is not a valid number!");
+            }
+            secondaryDataset.push_back(StringUtils::toFloat64(value2));
         }
         primaryDataset.push_back(StringUtils::toFloat64(value1));
     }
@@ -162,6 +176,7 @@ void RStatsUVA::saveToWorkbook(RStatsWorkbook& workbook)
         sheet("B16") = outputData.tValue80;
         sheet("C16") = outputData.tValue90;
         sheet("D16") = outputData.tValue95;
+        sheet.setRowBackgroundColor(16,Color("#111111"));
         workbook.addWorksheet(sheet);
     }
 }
@@ -263,7 +278,7 @@ void RStatsUVA::execute(const utils::RStatsFloatList &values,
             m_totalPowerOfTwoAmount(1) += std::pow(value,2);
             m_totalPowerOfThreeAmount(1) += std::pow(value,3);
             m_totalPowerOfFourAmount(1) += std::pow(value,4);
-            if (!RStatsUtils::isEqual(value,0.))
+            if (value > 0 || value < 0 || !RStatsUtils::isEqual(value,0.))
             {
                 m_totalNonZeroCount(1)++;
             }
@@ -300,29 +315,19 @@ void RStatsUVA::execute(const utils::RStatsFloatList &values,
     {
         createOutputData("Summary for Examine Values",0);
     }
-
-    else if (type == RStatsDataFormatType::AuditAndDifference)
-    {
-        createOutputData("Summary for Audit Values",1);
-        createOutputData("Summary for Difference Values",2);
-    }
-    else if (type == RStatsDataFormatType::ExamineAndDifference)
-    {
-        createOutputData("Summary for Examine Values",0);
-        createOutputData("Summary for Difference Values",2);
-    }
-    else if (type == RStatsDataFormatType::ExamineAndAudit)
+    else
     {
         createOutputData("Summary for Examine Values",0);
         createOutputData("Summary for Audit Values",1);
-    }
+        createOutputData("Summary for Difference Values",2);
+    }    
 }
 
 void RStatsUVA::createOutputData(const std::string &title, size_t index)
 {
     RStatsUVAOutputData outputData;
     outputData.title = title;
-    outputData.pointEstimate = static_cast<RStatsInteger>(m_totalPointEstimates(index));
+    outputData.pointEstimate = static_cast<RStatsInteger>(std::round(m_totalPointEstimates(index)));
     outputData.standardDeviation = m_standardDeviation(index);
     outputData.standardErrorMean = m_standardError(index);
     outputData.standardErrorTotal = static_cast<RStatsInteger>(m_standardError(index)*static_cast<RStatsFloat>(m_universeSize));
@@ -415,10 +420,10 @@ void RStatsUVA::calculateStandardDeviation()
         if (RStatsUtils::isEqual(m_totalAmount(a1),0.) == false &&
             m_sampleSize > 1)
         {
-            RStatsFloat temp =  RStatsUtils::vbRound2((std::pow(m_totalAmount(a1),2)) / (RStatsFloat)m_sampleSize);
+            RStatsFloat temp =  ((std::pow(m_totalAmount(a1),2)) / static_cast<RStatsFloat>(m_sampleSize));
             if (temp < m_totalPowerOfTwoAmount(a1))
             {
-                m_standardDeviation(a1) =  RStatsUtils::vbRound2(std::sqrt((m_totalPowerOfTwoAmount(a1) - temp) / m_currentDOF));
+                m_standardDeviation(a1) =  (std::sqrt((m_totalPowerOfTwoAmount(a1) - temp) / m_currentDOF));
             }
             else
             {
@@ -482,7 +487,9 @@ void RStatsUVA::calculateStandardError()
             m_sampleSize > 1)
         {
             m_standardError(a1) =  ((m_standardDeviation(a1) / std::sqrt(m_sampleSize)) * m_sefin);
-            RStatsFloat tempValue = (m_standardDeviation(a1) * std::sqrt((static_cast<RStatsFloat>(this->m_universeSize) / static_cast<RStatsFloat>(this->m_sampleSize))));
+            RStatsFloat universe = static_cast<RStatsFloat>(m_universeSize);
+            RStatsFloat sample = static_cast<RStatsFloat>(m_sampleSize);
+            RStatsFloat tempValue = (m_standardDeviation(a1) * std::sqrt((universe / sample) * (universe - sample)));
             tempValue = std::pow(tempValue,2);
             m_totalStandardError(a1) += tempValue;
             //std::cerr << "StdErr1:" <<m_standardError(a1)<<std::endl;

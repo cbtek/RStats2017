@@ -67,7 +67,11 @@ public:
     */
     virtual const std::string & getAuditName() const = 0;
 
-    virtual void dummy(){}
+    /**
+     * @brief isViewableInBrowser
+     * @return
+     */
+    virtual bool isViewableInBrowser() const = 0;
 
     //! Virtual Destructor
     virtual ~RStatsModuleSessionData(){}

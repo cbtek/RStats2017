@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>762</width>
+    <width>941</width>
     <height>768</height>
    </rect>
   </property>
@@ -452,6 +452,13 @@
              </property>
             </widget>
            </item>
+           <item>
+            <widget class="QCheckBox" name="m_chkViewInBrowser">
+             <property name="text">
+              <string>View in Web Browser</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>
@@ -466,7 +473,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>762</width>
+     <width>941</width>
      <height>20</height>
     </rect>
    </property>

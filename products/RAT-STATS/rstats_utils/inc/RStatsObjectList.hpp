@@ -316,6 +316,7 @@ RStatsObjectList<T> RStatsObjectList<T>::getValues(size_t dimension) const
     {
         RStatsObjectList<T> values;
         size_t count = this->size(dimension);
+        values.initialize(count);
         for (size_t a1 = 0; a1 < count; ++a1)
         {
             values(a1) = this->operator ()(a1,dimension);

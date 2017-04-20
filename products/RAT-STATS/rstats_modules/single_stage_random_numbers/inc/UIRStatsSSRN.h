@@ -180,7 +180,7 @@ private slots:
      /**
       * @brief onAbout
       */
-     void onAbout();
+     void onAbout();     
 
 };
 

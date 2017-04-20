@@ -47,7 +47,6 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     connect(m_ui->actionExit,SIGNAL(triggered(bool)),this,SLOT(onExit()));
     connect(m_ui->actionHelp,SIGNAL(triggered(bool)),this,SLOT(onHelp()));
     connect(m_ui->actionAbout,SIGNAL(triggered(bool)),this,SLOT(onAbout()));
-
     connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));
     connect(m_ui->m_btnExecute,SIGNAL(clicked(bool)),this,SLOT(onExecute()));    
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
@@ -78,12 +77,12 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
 
     UIRStatsUtils::initButton(m_ui->m_btnExecute, "img_run.png");
     UIRStatsUtils::initButton(m_ui->m_btnExit, "img_exit.png");
-    UIRStatsUtils::initButton(m_ui->m_btnHelp, "img_help.png");
+    UIRStatsUtils::initButton(m_ui->m_btnHelp, "img_help.png");    
     UIRStatsUtils::initAction(m_ui->actionAbout,"img_about.png","Alt+A");
     UIRStatsUtils::initAction(m_ui->actionExecute,"img_run.png","Alt+R");
     UIRStatsUtils::initAction(m_ui->actionExit,"img_exit.png","Alt+Q");
     UIRStatsUtils::initAction(m_ui->actionHelp,"img_help.png","Alt+H");
-    UIRStatsUtils::initAction(m_ui->actionRecent,"img_clock.png","Alt+S");
+    UIRStatsUtils::initAction(m_ui->actionRecent,"img_clock.png","Alt+S");    
     m_ui->menuFile->setTitle("&File");
     m_ui->menuHelp->setTitle("&Help");
     updateRecentSessions();
@@ -207,13 +206,16 @@ void UIRStatsSSRN::onExecute()
     try
     {
         onUpdateClock();
-        m_ui->m_tblOutput->clear();
-        RStatsSSRN ssrn;
+        m_ui->m_tblOutput->clear();                
+        //Make sure the audit name is correct
         std::string name = m_ui->m_txtAuditName->text().toStdString();
         if (StringUtils::isEmpty(name))
         {
             name = m_ui->m_txtAuditName->placeholderText().toStdString();
         }
+
+        //Execute primary function for single stage random numbers
+        RStatsSSRN ssrn;
         RStatsSSRNOutputData outputData = ssrn.execute(name,
                                                        m_ui->m_spnSeed->value(),
                                                        m_ui->m_spnOrder->value(),
@@ -226,6 +228,7 @@ void UIRStatsSSRN::onExecute()
         UIRStatsUtils::bindSheetToUI(worksheet,m_ui->m_tblOutput,false,0,0);
         FileUtils::writeFileContents("table.html", worksheet.toHTMLTableString());
 
+        //Write output files if they are selected
         if (!StringUtils::isEmpty(m_currentTextFileOutput.toStdString()))
         {
             FileUtils::writeFileContents(m_currentTextFileOutput.toStdString(),
@@ -243,12 +246,21 @@ void UIRStatsSSRN::onExecute()
         m_ui->m_grpOutput->show();                
         m_ui->m_lblNoData->hide();
 
+        //Save the user session data for this run
         RStatsSSRNSessionData sessionData = getSessionData();
         sessionData.setCreationDate(DateUtils::getCurrentDate().toDateInteger());
         sessionData.setCreationTime(TimeUtils::getCurrentTime().toTimeInteger());
         m_recentSessionsMap[sessionData.getAuditName()]=RStatsModuleSessionDataPtr(new RStatsSSRNSessionData(sessionData));
         RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getAuditName()]);
         updateRecentSessions();
+
+        //Show results in browser if selected
+        if (m_ui->m_chkViewInBrowser->isChecked())
+        {
+            std::string htmlPath = FileUtils::buildFilePath(SystemUtils::getUserTempDirectory(), FileUtils::getRandomFileName(10,0)+".html");
+            FileUtils::writeFileContents(htmlPath,worksheet.toHTMLTableString());
+            QDesktopServices::openUrl(QString::fromStdString(htmlPath));
+        }
     }
     catch (std::exception& e)
     {
@@ -262,7 +274,7 @@ void UIRStatsSSRN::onExecute()
 void UIRStatsSSRN::onHelp()
 {
     QString url = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_help/rstats_ssrn.pdf"));
-    if (!QDesktopServices::openUrl(url))
+    if (!QFile::exists(url) || !QDesktopServices::openUrl(url))
     {
         UIRStatsErrorMessage("Could not load help file","Could not open the help file located at \"" + url.toStdString() + "\"",false,this).exec();
     }
@@ -295,11 +307,13 @@ RStatsSSRNSessionData UIRStatsSSRN::getSessionData() const
     data.setSpares(m_ui->m_spnSpares->value());
     data.setLow(m_ui->m_spnLowNumber->value());
     data.setHigh(m_ui->m_spnHighNumber->value());
+    data.setViewInBrowserFlag(m_ui->m_chkViewInBrowser->isChecked());
     return data;
 }
 
 void UIRStatsSSRN::setSessionData(const RStatsSSRNSessionData &data)
 {
+    m_ui->m_chkViewInBrowser->setChecked(data.isViewableInBrowser());
     m_ui->m_chkCustomSeed->setEnabled(true);
     m_ui->m_txtAuditName->setText(QString::fromStdString(data.getAuditName()));
     m_ui->m_spnSeed->setValue(data.getSeed());

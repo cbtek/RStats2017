@@ -487,6 +487,10 @@ RStatsSVAInputDataList RStatsSVA::buildInputDataList(const RStatsWorksheet &data
                                   stratum.typeIndex.type == RStatsDataFormatType::ExamineAndAudit ||
                                   stratum.typeIndex.type == RStatsDataFormatType::ExamineAndDifference);
 
+        std::pair<std::string,std::string> typePair = RStatsUtils::getDataFormatTypeStr(stratum.typeIndex.type);
+        std::string primaryTypeStr = typePair.first;
+        std::string secondaryTypeStr = typePair.second;
+
         stratum.samples.initialize(static_cast<size_t>(stratum.sampleSize),(isMultiDataFormat)?2:1);
         size_t index = 0;
         //For each stratum lets grab the data samples
@@ -494,16 +498,29 @@ RStatsSVAInputDataList RStatsSVA::buildInputDataList(const RStatsWorksheet &data
         {
             std::string value1 = dataSheet(static_cast<size_t>(a1+stratum.offset),
                                            stratum.typeIndex.primaryDatasetColumnIndex).text;
-            StringUtils::removeInPlace(value1,",");
-            StringUtils::removeInPlace(value1,"$");
+            StringUtils::removeInPlace(value1, "$");
+            StringUtils::removeInPlace(value1, "(");
+            StringUtils::removeInPlace(value1, ")");
+            StringUtils::removeInPlace(value1, ",");
+            if (!StringUtils::isNumeric(value1))
+            {
+                THROW_GENERIC_EXCEPTION("The "+primaryTypeStr+" value \""+value1+"\" in row \""+std::to_string(a1+stratum.offset+1)+"\" is not a valid number!");
+            }
+
             stratum.samples(index,0) = StringUtils::toFloat64(value1);
             std::string value2;
             if (isMultiDataFormat)
             {
                 value2 = dataSheet(static_cast<size_t>(a1+stratum.offset),
                                    stratum.typeIndex.secondaryDatasetColumnIndex).text;
-                StringUtils::removeInPlace(value2,",");
-                StringUtils::removeInPlace(value2,"$");
+                StringUtils::removeInPlace(value2, "$");
+                StringUtils::removeInPlace(value2, "(");
+                StringUtils::removeInPlace(value2, ")");
+                StringUtils::removeInPlace(value2, ",");
+                if (!StringUtils::isNumeric(value2))
+                {
+                    THROW_GENERIC_EXCEPTION("The "+secondaryTypeStr+" value \""+value2+"\" in row \""+std::to_string(a1+stratum.offset+1)+"\" is not a valid number!");
+                }
                 stratum.samples(index,1) = StringUtils::toFloat64(value2);
             }
             ++index;

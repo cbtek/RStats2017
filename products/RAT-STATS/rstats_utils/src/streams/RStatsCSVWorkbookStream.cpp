@@ -114,10 +114,15 @@ void RStatsCSVWorkbookStream::readRow(const std::string &line,
 {
     size_t index = 0;
     size_t currentColumn = 0;
-    bool valid = readCell(line,index,sheetOut(currentRow,currentColumn).text);
-    sheetOut(currentRow,currentColumn).text = StringUtils::getFormattedNumeric(sheetOut(currentRow,currentColumn).text);
+    bool valid = true;
     while (valid)
     {
+         valid = readCell(line,index,sheetOut(currentRow,currentColumn).text);
+         sheetOut(currentRow,currentColumn).text = StringUtils::getFormattedNumeric(sheetOut(currentRow,currentColumn).text);
+         if (!valid)
+         {
+             break;
+         }
         ++currentColumn;
     }
 }

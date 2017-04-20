@@ -106,9 +106,6 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     //Enable the Examined data format as default
     m_ui->m_rdbExamined->setChecked(true);
 
-    //Hide the date/time bar
-    m_ui->m_frmDateTime->hide();
-
     //Hide the output window
     m_ui->m_grpOutput->hide();
 
@@ -308,9 +305,7 @@ void UIRStatsSVA::onComboDataInputSheetSelected(int row)
 }
 
 void UIRStatsSVA::onUpdateClock()
-{
-    m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toCurrentShortDateString()));
-    m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::toCurrent12HourTimeString()));
+{    
     onValidate();
 }
 
@@ -318,7 +313,10 @@ void UIRStatsSVA::onExecute()
 {
     try
     {
+        //Update validation console
         onValidate();
+
+        //Setup the dataformat index
         RStatsDataFormatTypeIndex dfIndex;
         if (m_ui->m_rdbAudited->isChecked())
         {
@@ -355,17 +353,21 @@ void UIRStatsSVA::onExecute()
         }
         m_dataFormatType = dfIndex.type;
 
+        //Save the offsets for data sheet and size sheet
         size_t sizeSheetSampleColumn = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbSampleCountSizeTable->currentText().toStdString());
         size_t sizeSheetUniverseColumn = RStatsUtils::getColumnIndexFromLabel(m_ui->m_cmbUniverseCountSizeTable->currentText().toStdString());
         size_t sizeSheetRowDataStart = static_cast<size_t>(m_ui->m_cmbDataRowStartSizeTable->currentText().toInt() - 1);
         size_t dataSheetRowDataStart = static_cast<size_t>(m_ui->m_cmbDataRowStartDataTable->currentText().toInt() - 1);
         RStatsSVA sva;
+
+        //Set the audit name
         std::string auditName = m_ui->m_txtAuditName->text().toStdString();
         if (StringUtils::isEmpty(auditName))
         {
             auditName = m_ui->m_txtAuditName->placeholderText().toStdString();
         }
 
+        //Execute the stratified variable appraisal function
         sva.execute(auditName,
                   m_currentDataSheet,
                   m_currentSizeSheet,
@@ -375,10 +377,11 @@ void UIRStatsSVA::onExecute()
                   sizeSheetUniverseColumn,
                   sizeSheetRowDataStart);
 
+        //Save output of function to workbook object
         RStatsWorkbook workbook;
         sva.saveToWorkbook(workbook);
 
-        //Clear layout
+        //Initialize workbook control
         QLayoutItem *item;
         while ((item = m_ui->m_grpOutput->layout()->takeAt(0)))
         {
@@ -392,6 +395,7 @@ void UIRStatsSVA::onExecute()
         m_ui->m_lblNoData->hide();
         m_ui->m_grpOutput->show();
 
+        //Save output formats if selected
         if (!StringUtils::isEmpty(m_currentTextFileOutput.toStdString()))
         {
             workbook.save(m_currentTextFileOutput.toStdString());
@@ -401,14 +405,27 @@ void UIRStatsSVA::onExecute()
         {
             workbook.save(m_currentCSVFileOutput.toStdString());
         }
+
+        //Display results in full screen
         onToggleFullScreen();
 
+        //Set session data
         RStatsSVASessionData sessionData = getSessionData();
         sessionData.setCreationDate(DateUtils::getCurrentDate().toDateInteger());
         sessionData.setCreationTime(TimeUtils::getCurrentTime().toTimeInteger());
         m_recentSessionsMap[sessionData.getAuditName()]=RStatsModuleSessionDataPtr(new RStatsSVASessionData(sessionData));
         RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getAuditName()]);
         updateRecentSessions();
+
+
+        //Show results in browser if selected
+        if (m_ui->m_chkViewInBrowser->isChecked())
+        {
+            RStatsWorksheet worksheet = workbook.mergeSheets(RStatsWorkbookMergeDirection::MergeBottom,2);
+            std::string htmlPath = FileUtils::buildFilePath(SystemUtils::getUserTempDirectory(), FileUtils::getRandomFileName(10,0)+".html");
+            FileUtils::writeFileContents(htmlPath,worksheet.toHTMLTableString());
+            QDesktopServices::openUrl(QString::fromStdString(htmlPath));
+        }
     }
     catch (std::exception& e)
     {
@@ -461,12 +478,16 @@ void UIRStatsSVA::onToggleFullScreen()
 
 void UIRStatsSVA::importDataTable(const std::string &dataTableFilePath)
 {
+    // make sure the data table file exists
     if (StringUtils::isEmpty(dataTableFilePath) || !FileUtils::fileExists(dataTableFilePath))
     {
         return;
     }
+
     m_dataTableImportFilePath = QString::fromStdString(dataTableFilePath);
     m_ui->m_cmbDataInputSheets->clear();
+
+    //Load the data table and populate worksheet control
     try
     {
         std::string filePath = m_dataTableImportFilePath.toStdString();
@@ -586,7 +607,7 @@ void UIRStatsSVA::onImportSizeInput()
 void UIRStatsSVA::onHelp()
 {
     QString url = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_help/rstats_sva.pdf"));
-    if (!QDesktopServices::openUrl(url))
+    if (!QFile::exists(url) || !QDesktopServices::openUrl(url))
     {
         UIRStatsErrorMessage("Could not load help file","Could not open the help file located at \"" + url.toStdString() + "\"",false,this).exec();
     }
@@ -662,6 +683,7 @@ RStatsSVASessionData UIRStatsSVA::getSessionData() const
     data.setTextOutputFile(m_currentTextFileOutput.toStdString());
     data.setSizeTableSheetName(m_ui->m_cmbSizeInputSheets->currentText().toStdString());
     data.setDataTableSheetName(m_ui->m_cmbDataInputSheets->currentText().toStdString());
+    data.setViewInBrowserFlag(m_ui->m_chkViewInBrowser->isChecked());
     return data;
 }
 
@@ -672,6 +694,7 @@ void UIRStatsSVA::setSessionData(const RStatsSVASessionData &data)
     {
         text = RStatsUtils::getAuditName();
     }
+    m_ui->m_chkViewInBrowser->setChecked(data.isViewableInBrowser());
     m_ui->m_txtAuditName->setText(QString::fromStdString(text));
     m_currentDataWorkbook.clear();
     m_currentSizeWorkbook.clear();

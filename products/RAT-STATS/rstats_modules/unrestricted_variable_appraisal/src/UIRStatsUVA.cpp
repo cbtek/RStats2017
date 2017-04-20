@@ -72,6 +72,7 @@ UIRStatsUVA::UIRStatsUVA(QWidget *parent) :
     m_ui->m_rdbExamined->setChecked(true);
     m_autoSetFileOutput = false;
     updateRecentSessions();
+    onUpdateDataFormatSelection();
 
     //Initialize all UI events
     connect(m_ui->actionHelp,SIGNAL(triggered()),this,SLOT(onHelp()));
@@ -171,8 +172,6 @@ void UIRStatsUVA::onAddNewColumnToDataTable()
 
 void UIRStatsUVA::onUpdateClock()
 {
-    m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toCurrentShortDateString()));
-    m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::toCurrent12HourTimeString()));
     onValidate();
 }
 
@@ -278,7 +277,7 @@ UIRStatsUVA::~UIRStatsUVA()
 void UIRStatsUVA::onHelp()
 {
     QString url = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_help/rstats_uva.pdf"));
-    if (!QDesktopServices::openUrl(url))
+    if (!QFile::exists(url) || !QDesktopServices::openUrl(url))
     {
         UIRStatsErrorMessage("Could not load help file","Could not open the help file located at \"" + url.toStdString() + "\"",false,this).exec();
     }
@@ -360,13 +359,7 @@ void UIRStatsUVA::onExecute()
         UIRStatsUtils::bindSheetToUI(sheet,m_ui->m_tblOutput);
         m_clock.stop();
 
-        m_ui->m_lblNoData->hide();
         m_ui->m_frmOutput->show();
-        m_ui->m_frmTimeDate->show();
-
-        m_ui->m_lblDate->setText(QString::fromStdString(DateUtils::toCurrentShortDateString()));
-        m_ui->m_lblTime->setText(QString::fromStdString(TimeUtils::toCurrent12HourTimeString()));
-        m_ui->m_lblAudit->setText(QString::fromStdString(auditName));
         m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
         m_ui->m_tblOutput->horizontalHeader()->hide();
         m_ui->m_frmOutput->show();
@@ -382,6 +375,15 @@ void UIRStatsUVA::onExecute()
         m_recentSessionsMap[sessionData.getAuditName()] = RStatsModuleSessionDataPtr(new RStatsUVASessionData(sessionData));
         RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getAuditName()]);
         updateRecentSessions();
+
+        //Show results in browser if selected
+        if (m_ui->m_chkViewInBrowser->isChecked())
+        {
+            RStatsWorksheet worksheet = output.mergeSheets(RStatsWorkbookMergeDirection::MergeBottom,2);
+            std::string htmlPath = FileUtils::buildFilePath(SystemUtils::getUserTempDirectory(), FileUtils::getRandomFileName(10,0)+".html");
+            FileUtils::writeFileContents(htmlPath,worksheet.toHTMLTableString());
+            QDesktopServices::openUrl(QString::fromStdString(htmlPath));
+        }
 
     }
     catch (std::exception& e)
@@ -500,6 +502,7 @@ RStatsUVASessionData UIRStatsUVA::getSessionData() const
     data.setDataTableFilePath(m_dataTableImportFilePath.toStdString());
     data.setCSVOutputFile(m_currentCSVFileOutput.toStdString());
     data.setTextOutputFile(m_currentTextFileOutput.toStdString());
+    data.setViewInBrowserFlag(m_ui->m_chkViewInBrowser->isChecked());
     return data;
 }
 
@@ -508,7 +511,8 @@ void UIRStatsUVA::setSessionData(const RStatsUVASessionData& data)
     m_currentDataWorkbook.clear();
     m_currentDataSheet.setWorksheetTitle("Data Sheet");
     m_currentDataWorkbook.addWorksheet(m_currentDataSheet);
-    m_ui->m_spnUniverseSize->setValue(data.getUniverseSize());
+    m_ui->m_spnUniverseSize->setValue(static_cast<int>(data.getUniverseSize()));
+    m_ui->m_chkViewInBrowser->setChecked(data.isViewableInBrowser());
 
     //set audit name
     std::string text = (data.getAuditName());

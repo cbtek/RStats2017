@@ -65,6 +65,10 @@ private:
     */
      Ui_UIRStatsUAA *m_ui;
 
+     /**
+      * @brief setTextFileOutput
+      * @param textFile
+      */
      void setTextFileOutput(const std::string& textFile);
      void setCSVFileOutput(const std::string& csvFile);
 private slots:
