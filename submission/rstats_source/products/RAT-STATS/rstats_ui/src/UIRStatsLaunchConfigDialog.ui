@@ -146,7 +146,7 @@
          <item>
           <widget class="QPushButton" name="m_btnLaunch">
            <property name="text">
-            <string>Launch</string>
+            <string>Test</string>
            </property>
           </widget>
          </item>
@@ -272,7 +272,7 @@
   <tabstop>m_chkShowConsole</tabstop>
   <tabstop>m_btnSave</tabstop>
   <tabstop>m_btnLaunch</tabstop>
-  <tabstop>m_btnCancel</tabstop>  
+  <tabstop>m_btnCancel</tabstop>
  </tabstops>
  <resources/>
  <connections/>
