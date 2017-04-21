@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<module>
+    <name>Two-Stage RHC</name>
+    <category>Variable Appraisals</category>
+    <path>module_va_two_stage_rhc</path>
+    <script_path></script_path>
+    <type></type>
+    <working_dir></working_dir>
+    <icon>resx/img_module.png</icon>
+    <show_console>FALSE</show_console>
+    <args></args>
+</module>

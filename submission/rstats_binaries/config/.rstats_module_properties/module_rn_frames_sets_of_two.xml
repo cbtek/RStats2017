@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<module>
+    <name>Frames - Sets of Two Numbers</name>
+    <category>Random Numbers</category>
+    <path>module_rn_frames_sets_of_two</path>
+    <script_path></script_path>
+    <type></type>
+    <working_dir></working_dir>
+    <icon>resx/img_module.png</icon>
+    <show_console>FALSE</show_console>
+    <args></args>
+</module>

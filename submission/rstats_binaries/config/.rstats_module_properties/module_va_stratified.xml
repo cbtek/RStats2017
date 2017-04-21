@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<module>
+    <name>Stratified</name>
+    <category>Variable Appraisals</category>
+    <path>C:\Dev\CBTek\cpp\Contests\bin\TeamCBTek\release\module_va_stratified.exe</path>
+    <script_path></script_path>
+    <script_path_args></script_path_args>
+    <type></type>
+    <working_dir></working_dir>
+    <icon>resx/img_module.png</icon>
+    <show_console>FALSE</show_console>
+    <args></args>
+</module>

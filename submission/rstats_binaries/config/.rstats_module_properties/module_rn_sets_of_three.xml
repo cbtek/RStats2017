@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<module>
+    <name>Sets of Three Numbers</name>
+    <category>Random Numbers</category>
+    <path>module_rn_sets_of_three</path>
+    <script_path></script_path>
+    <type></type>
+    <working_dir></working_dir>
+    <icon>resx/img_module.png</icon>
+    <show_console>FALSE</show_console>
+    <args></args>
+</module>

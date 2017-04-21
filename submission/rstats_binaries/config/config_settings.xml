@@ -1,0 +1,6 @@
+<settings>
+    <setting id="fntSize" label="Default Font Size" type="NUMERIC" min="8" max="24" value="9" description="Font size for all readable text"/>    
+    <setting id="btnHeight" label="Default Button Height" type="NUMERIC" min="24" max="96" value="48" description="Height for of all clickable buttons"/>
+    <setting id="txtOutput" label="Default Output Directory" type="PATH_BROWSER" value="" description="Default location for output files"/>
+    <setting id="txtInput" label="Default Input Directory" type="PATH_BROWSER" value="" description="Default location for input files"/>    
+<settings>
