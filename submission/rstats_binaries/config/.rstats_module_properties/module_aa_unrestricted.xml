@@ -2,7 +2,7 @@
 <module>
     <name>Unrestricted</name>
     <category>Attribute Appraisals</category>
-    <path>C:\dev\RStats2017\submission\rstats_binaries\module_aa_unrestricted.exe</path>
+    <path>C:\Dev\CBTek\cpp\Contests\RStats2017\submission\rstats_binaries\module_aa_unrestricted.exe</path>
     <script_path></script_path>
     <script_path_args></script_path_args>
     <type>Executable</type>
