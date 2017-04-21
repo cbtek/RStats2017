@@ -34,12 +34,32 @@
 #include "utility/inc/StringUtils.hpp"
 #include "utility/inc/XMLUtils.h"
 
+#ifdef __WIN32
+    #include <windows.h>
+#else
+    #include <QDesktopServices>
+#endif
+
 namespace oig {
 namespace ratstats {
 namespace ui {
 
 namespace UIRStatsUtils
 {
+
+    /**
+     * @brief desktopOpen Opens files and web urls on the desktp
+     * @param url Location of item to open
+     */
+    inline void desktopOpen(const std::string& url)
+    {
+        #ifdef __WIN32
+            ShellExecute(NULL,"open",url.c_str(),NULL,NULL,SW_SHOWNORMAL);
+        #else
+            QDesktopServices::openUrl(QString::fromStdString(url));
+        #endif
+    }
+
     /**
      * @brief setButtonStyle
      * @param button

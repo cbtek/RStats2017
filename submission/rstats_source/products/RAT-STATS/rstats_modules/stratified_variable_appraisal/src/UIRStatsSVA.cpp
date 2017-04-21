@@ -10,7 +10,7 @@
 #include "RStatsSVA.h"
 
 #include <QFileDialog>
-#include <QDesktopServices>
+
 
 #include "rstats_ui/inc/UIRStatsAbout.h"
 #include "rstats_ui/inc/UIRStatsUtils.hpp"
@@ -424,7 +424,7 @@ void UIRStatsSVA::onExecute()
             RStatsWorksheet worksheet = workbook.mergeSheets(RStatsWorkbookMergeDirection::MergeBottom,2);
             std::string htmlPath = FileUtils::buildFilePath(SystemUtils::getUserTempDirectory(), FileUtils::getRandomFileName(10,0)+".html");
             FileUtils::writeFileContents(htmlPath,worksheet.toHTMLTableString());
-            QDesktopServices::openUrl(QString::fromStdString(htmlPath));
+            UIRStatsUtils::desktopOpen(htmlPath);
         }
     }
     catch (std::exception& e)
@@ -607,9 +607,13 @@ void UIRStatsSVA::onImportSizeInput()
 void UIRStatsSVA::onHelp()
 {
     QString url = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_help/rstats_sva.pdf"));
-    if (!QFile::exists(url) || !QDesktopServices::openUrl(url))
+    if (!QFile::exists(url))
     {
         UIRStatsErrorMessage("Could not load help file","Could not open the help file located at \"" + url.toStdString() + "\"",false,this).exec();
+    }
+    else
+    {
+        UIRStatsUtils::desktopOpen(url.toStdString());
     }
 }
 
