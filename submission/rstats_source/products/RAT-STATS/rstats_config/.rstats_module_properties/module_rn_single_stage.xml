@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<module>
+    <name>Single Stage Random Numbers</name>
+    <category>Random Numbers</category>
+    <path>module_rn_single_stage_random_numbers</path>
+    <script_path></script_path>
+    <type></type>
+    <working_dir></working_dir>
+    <icon></icon>
+    <show_console>TRUE</show_console>
+    <args></args>
+</module>

@@ -1,0 +1,46 @@
+<xml>
+    <group id="0" name="Random Numbers" icon="resx/img_group_rn.png">
+        <module isDisabled="false" isHidden="false" name="Single Stage Random Numbers" exe="module_rn_single_stage_random_numbers" shortcut="alt-1" id="0" icon=""/>    
+        <module isDisabled="true" isHidden="false" name="Sets of Two Numbers" exe="module_rn_sets_of_two" shortcut="alt-1" id="0" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Sets of Three Numbers" exe="module_rn_sets_of_three" shortcut="alt-1" id="0" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Sets of Four Numbers" exe="module_rn_sets_of_four" shortcut="alt-1" id="0" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Frames - Single Stage" exe="module_rn_frames_single_stage" shortcut="alt-1" id="0" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Frames - Sets of Two Numbers" exe="module_rn_frames_sets_of_two" shortcut="alt-1" id="0" icon=""/>
+        <module isDisabled="true" isHidden="false" name="RHC - Sample Selection" exe="module_rn_rhc_sample_selection" shortcut="alt-1" id="0" icon=""/>    
+    </group>
+    
+    <group id="1" name="Attribute Appraisals" icon="resx/img_group_aa.png">
+        <module isDisabled="false" isHidden="false" name="Unrestricted" exe="module_aa_unrestricted" shortcut="alt-1" id="1" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Stratified" exe="module_aa_stratified" shortcut="alt-1" id="1" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Two-Stage Unrestricted" exe="module_aa_two_stage_unrestricted" shortcut="alt-1" id="1" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Three-Stage Unrestricted" exe="module_aa_three_stage_unrestricted" shortcut="alt-1" id="1" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Two-Stage RHC" exe="module_aa_two_stage_rhc" shortcut="alt-1" id="1" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Three-Stage RHC" exe="module_aa_three_stage_rhc" shortcut="alt-1" id="1" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Stratified Cluster" exe="module_aa_stratified_cluster" shortcut="alt-1" id="1" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Stratified Multistage" exe="module_aa_stratified_multistage" shortcut="alt-1" id="1" icon=""/>
+    </group>
+    
+    <group id="2" name="Variable Appraisals" icon="resx/img_group_va.png">
+        <module isDisabled="false" isHidden="false" name="Unrestricted" exe="module_va_unrestricted" shortcut="alt-1" id="2" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Stratified" exe="module_va_stratified" shortcut="alt-1" id="2" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Two-Stage Unrestricted" exe="module_va_two_stage_unrestricted" shortcut="alt-1" id="2" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Three-Stage Unrestricted" exe="module_va_three_stage_unrestricted" shortcut="alt-1" id="2" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Two-Stage RHC" exe="module_va_two_stage_rhc" shortcut="alt-1" id="2" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Three-Stage RHC" exe="module_va_three_stage_rhc" shortcut="alt-1" id="2" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Stratified Cluster" exe="module_va_stratified_cluster" shortcut="alt-1" id="2" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Stratified Multistage" exe="module_va_stratified_multistage" shortcut="alt-1" id="2" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Post Stratification" exe="module_va_post_stratification" shortcut="alt-1" id="2" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Unknown Universe Size" exe="module_va_unknown_universe" shortcut="alt-1" id="2" icon=""/>
+    </group>
+        
+    <group id="3" name="Size Determination" icon="resx/img_group_sd.png">
+        <module isDisabled="true" isHidden="false" name="Variable Unrestricted Probe Sample" exe="module_vaasd_unrestricted_probe_sample" shortcut="alt-1" id="3" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Variable Unrestricted Estimated Error Rate" exe="module_vaasd_unrestricted_estimated_error_rate" shortcut="alt-1" id="3" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Variable Stratified" exe="module_vaasd_stratified" shortcut="alt-1" id="3" icon=""/>
+        <module isDisabled="true" isHidden="false" name="Attribute Size Determination" exe="module_vaasd_attribute_size_determination" shortcut="alt-1" id="3" icon=""/>
+    </group>     
+    
+    <group name="User-Created Modules" icon="resx/img_group_ud.png">
+        
+    </group>
+</xml>
