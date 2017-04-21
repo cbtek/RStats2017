@@ -86,7 +86,7 @@ UIRStatsMain::UIRStatsMain(QWidget *parent) :
 
     //Create SIGNAL/SLOT connections for all actions/buttons and other widgets
     connect(m_ui->m_actionExit,SIGNAL(triggered(bool)),this,SLOT(onExit()));
-    connect(m_ui->m_actionHelp_Topics,SIGNAL(triggered(bool)),this,SLOT(onHelp()));
+    connect(m_ui->m_actionHelp_Topics,SIGNAL(triggered(bool)),this,SLOT(onLaunchHelp()));
     connect(m_ui->m_actionSettings_Manager,SIGNAL(triggered(bool)),this,SLOT(onLaunchSettingsManager()));
     connect(m_ui->m_actionAbout_RAT_STATS_2017,SIGNAL(triggered(bool)),this,SLOT(onLaunchAbout()));
     connect(m_ui->m_actionAdd_New_Module,SIGNAL(triggered(bool)),this,SLOT(onAddNewModule()));
