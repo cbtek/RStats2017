@@ -140,21 +140,16 @@ void UIRStatsLaunchConfigDialog::onCancel()
 }
 
 void UIRStatsLaunchConfigDialog::onLaunch()
-{
-    std::string launcherPath = FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_launcher");
-    if (!FileUtils::fileExists(launcherPath))
-    {        
-        UIRStatsErrorMessage("Module Launch Error", "Can not launch this module.  Ensure that the module launcher (rstats_launcher) is installed.").exec();
-        return;
-    }
+{    
 
     RStatsModuleProperties props;
     onSave(props);
-    props.saveConfig(FileUtils::buildFilePath(SystemUtils::getUserTempDirectory(),"launchtest_"+StringUtils::createUUID()));
+    std::string tempFile = FileUtils::buildFilePath(SystemUtils::getUserTempDirectory(),"launchtest_"+StringUtils::createUUID());
+    props.saveConfig(tempFile);
     QString command = QString::fromStdString(props.getGeneratedApplicationCommand());
+    QMessageBox::information(this,"Test Launch Configuration", "Will attempt to test the following launch command: \n"+command+"\nPress OK to continue.");
     if (props.isConsoleShown())
-    {
-        std::cerr << command.toStdString() <<std::endl;
+    {        
         SystemUtils::execute(command.toStdString());
     }
     else
