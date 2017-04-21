@@ -18,6 +18,7 @@
 #include <QTableWidgetItem>
 #include <QPainter>
 #include <QFontDatabase>
+#include <QDesktopServices>
 
 #include "UIRStatsMain.h"
 #include "ui_UIRStatsMain.h"
@@ -85,11 +86,12 @@ UIRStatsMain::UIRStatsMain(QWidget *parent) :
 
     //Create SIGNAL/SLOT connections for all actions/buttons and other widgets
     connect(m_ui->m_actionExit,SIGNAL(triggered(bool)),this,SLOT(onExit()));
+    connect(m_ui->m_actionHelp_Topics,SIGNAL(triggered(bool)),this,SLOT(onHelp()));
     connect(m_ui->m_actionSettings_Manager,SIGNAL(triggered(bool)),this,SLOT(onLaunchSettingsManager()));
     connect(m_ui->m_actionAbout_RAT_STATS_2017,SIGNAL(triggered(bool)),this,SLOT(onLaunchAbout()));
     connect(m_ui->m_actionAdd_New_Module,SIGNAL(triggered(bool)),this,SLOT(onAddNewModule()));
     connect(m_ui->m_lstCategories,SIGNAL(currentRowChanged(int)),this,SLOT(onTabChanged(int)));
-    std::cerr << "Time To Init:" << TimeUtils::getCurrentMilliseconds() - start << std::endl;
+    //std::cerr << "Time To Init:" << TimeUtils::getCurrentMilliseconds() - start << std::endl;
 }
 
 UIRStatsMain::~UIRStatsMain()
@@ -181,9 +183,13 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
 
             //On windows make sure we append .exe to binary before checking if it exists
             #ifdef __WIN32
-                if (isDisabled)
+                if (isDisabled && !StringUtils::endsWith(props.getPath(),".exe",false))
                 {
                     isDisabled = !hasPathSeperator || !FileUtils::fileExists(props.getPath()+".exe") || !FileUtils::fileExists(props.getPath()+".EXE");
+                }
+                else if (isDisabled)
+                {
+                    isDisabled = !hasPathSeperator || !FileUtils::fileExists(props.getPath()) || !FileUtils::fileExists(props.getPath());
                 }
             #endif
 
@@ -191,16 +197,37 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
             if (isDisabled)
             {
                 #ifdef __WIN32
-                    std::string propsPath = FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),props.getPath()+".exe");
+                    std::string propsPath1 = FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),props.getPath()+".exe");
+                    std::string propsPath2 = FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),props.getPath()+".EXE");
+                    std::string propsPath3 = FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),props.getPath());
+                    if (FileUtils::fileExists(propsPath1))
+                    {
+                        props.setPath(propsPath1);
+                        isDisabled = false;
+                        props.saveConfig();
+                    }
+                    else if (FileUtils::fileExists(propsPath2))
+                    {
+                        props.setPath(propsPath2);
+                        isDisabled = false;
+                        props.saveConfig();
+                    }
+                    else if (FileUtils::fileExists(propsPath3))
+                    {
+                        props.setPath(propsPath3);
+                        isDisabled = false;
+                        props.saveConfig();
+                    }
                 #else
                     std::string propsPath = FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),props.getPath());
+                    if (FileUtils::fileExists(propsPath))
+                    {
+                        props.setPath(propsPath);
+                        isDisabled = false;
+                        props.saveConfig();
+                    }
                 #endif
-                if (FileUtils::fileExists(propsPath))
-                {
-                    props.setPath(propsPath);
-                    isDisabled = false;
-                    props.saveConfig();
-                }
+
             }
 
             QString path = QString::fromStdString(props.getDefinitionPath());
@@ -460,7 +487,11 @@ void UIRStatsMain::onLaunchAbout()
 
 void UIRStatsMain::onLaunchHelp()
 {
-
+    QString url = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_help/rstats_user_guide.pdf"));
+    if (!QFile::exists(url) || !QDesktopServices::openUrl(url))
+    {
+        UIRStatsErrorMessage("Could not load help file","Could not open the help file located at \"" + url.toStdString() + "\"",false,this).exec();
+    }
 }
 
 void UIRStatsMain::onTabChanged(int tab)
