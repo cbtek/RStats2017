@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<module>
+    <name>Single Stage Random Numbers</name>
+    <category>Random Numbers</category>
+    <path>C:\Dev\CBTek\cpp\Contests\bin\TeamCBTek\release\module_rn_single_stage_random_numbers.exe</path>
+    <script_path></script_path>
+    <script_path_args></script_path_args>
+    <type></type>
+    <working_dir></working_dir>
+    <icon></icon>
+    <show_console>TRUE</show_console>
+    <args></args>
+</module>
