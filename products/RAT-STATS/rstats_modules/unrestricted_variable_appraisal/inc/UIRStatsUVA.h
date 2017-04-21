@@ -116,8 +116,6 @@ private:
       void onExit();
       bool onValidate();
       void onUpdateClock();
-      void onLaunchCSVOutputProgram();
-      void onLaunchTextOutputProgram();
 };
 
 }}}}//end namespace

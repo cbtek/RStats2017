@@ -21,7 +21,6 @@
 
 #include <QFileDialog>
 #include <QListWidgetItem>
-#include <QDesktopServices>
 
 using namespace oig::ratstats::ui;
 using namespace oig::ratstats::utils;
@@ -277,9 +276,13 @@ UIRStatsUVA::~UIRStatsUVA()
 void UIRStatsUVA::onHelp()
 {
     QString url = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_help/rstats_uva.pdf"));
-    if (!QFile::exists(url) || !QDesktopServices::openUrl(url))
+    if (!QFile::exists(url))
     {
         UIRStatsErrorMessage("Could not load help file","Could not open the help file located at \"" + url.toStdString() + "\"",false,this).exec();
+    }
+    else
+    {
+        UIRStatsUtils::desktopOpen(url.toStdString());
     }
 }
 
@@ -381,8 +384,8 @@ void UIRStatsUVA::onExecute()
         {
             RStatsWorksheet worksheet = output.mergeSheets(RStatsWorkbookMergeDirection::MergeBottom,2);
             std::string htmlPath = FileUtils::buildFilePath(SystemUtils::getUserTempDirectory(), FileUtils::getRandomFileName(10,0)+".html");
-            FileUtils::writeFileContents(htmlPath,worksheet.toHTMLTableString());
-            QDesktopServices::openUrl(QString::fromStdString(htmlPath));
+            FileUtils::writeFileContents(htmlPath,worksheet.toHTMLTableString());            
+            UIRStatsUtils::desktopOpen(htmlPath);
         }
 
     }
@@ -695,16 +698,6 @@ void UIRStatsUVA::resizeEvent(QResizeEvent *)
     {
         setTextFileOutput(m_currentTextFileOutput.toStdString());
     }
-}
-
-void UIRStatsUVA::onLaunchCSVOutputProgram()
-{
-    QDesktopServices::openUrl(m_currentCSVFileOutput);
-}
-
-void UIRStatsUVA::onLaunchTextOutputProgram()
-{
-    QDesktopServices::openUrl(m_currentTextFileOutput);
 }
 
 }}}}//end namespace

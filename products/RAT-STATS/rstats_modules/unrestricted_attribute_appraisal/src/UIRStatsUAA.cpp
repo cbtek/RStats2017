@@ -12,7 +12,6 @@
 
 #include <QFileDialog>
 #include <QMessageBox>
-#include <QDesktopServices>
 #include <QFile>
 
 #include "rstats_ui/inc/UIRStatsAbout.h"
@@ -91,9 +90,13 @@ void UIRStatsUAA::onUpdateUniverseCount()
 void UIRStatsUAA::onHelp()
 {
     QString url = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_help/rstats_uaa.pdf"));
-    if (!QFile::exists(url) || !QDesktopServices::openUrl(url))
+    if (!QFile::exists(url))
     {
         UIRStatsErrorMessage("Could not load help file","Could not open the help file located at \"" + url.toStdString() + "\"",false,this).exec();
+    }
+    else
+    {
+        UIRStatsUtils::desktopOpen(url.toStdString());
     }
 }
 
@@ -163,8 +166,8 @@ void UIRStatsUAA::onExecute()
         if (m_ui->m_chkViewInBrowser->isChecked())
         {
             std::string htmlPath = FileUtils::buildFilePath(SystemUtils::getUserTempDirectory(), FileUtils::getRandomFileName(10,0)+".html");
-            FileUtils::writeFileContents(htmlPath,output.toHTMLTableString());
-            QDesktopServices::openUrl(QString::fromStdString(htmlPath));
+            FileUtils::writeFileContents(htmlPath,output.toHTMLTableString());            
+            UIRStatsUtils::desktopOpen(htmlPath);
         }
     }
     catch (std::exception& e)
