@@ -100,13 +100,14 @@ void RStatsUVA::saveToWorkbook(RStatsWorkbook& workbook)
         sheet("A7") = "Creation Time:";
         sheet("A8") = "Created By:";        
 
+        sheet("C1") = "Kurtosis:";
         sheet("C2") = "Mean:";
         sheet("C3") = "Skewness:";
         sheet("C4") = "Total Sum:";
         sheet("C5") = "Std. Deviation:";
         sheet("C6") = "Std. Err. Mean:";
         sheet("C7") = "Std. Err. Total:";
-        sheet("C8") = "Point Estimate:";
+        sheet("C8") = "Point Estimate:";        
 
         sheet("A12") = "Lower:";
         sheet("A13") = "Upper:";
@@ -135,6 +136,7 @@ void RStatsUVA::saveToWorkbook(RStatsWorkbook& workbook)
         sheet("B7") = TimeUtils::to12HourTimeString(TimeUtils::getCurrentTime());
         sheet("B8") = SystemUtils::getUserName();
 
+        sheet("D1") = StringUtils::toString(outputData.kurtosis,2);
         sheet("D2") = StringUtils::toString(outputData.mean,2);
         sheet("D3") = StringUtils::toString(outputData.skewness,2);
         sheet("D4") = StringUtils::toString(outputData.totalAmount,2);
@@ -323,6 +325,42 @@ void RStatsUVA::execute(const utils::RStatsFloatList &values,
     }    
 }
 
+//'----------CALCULATE KURTOSIS-------------
+void RStatsUVA::calculateKurtosis()
+{
+    for (size_t a1 = 0; a1 < 3; ++a1)
+    {
+        if (m_sampleSize > 0 &&
+            m_totalNonZeroCount(a1) > 0)
+        {
+
+            RStatsFloat cubeRt = m_totalPowerOfThreeAmount(a1);
+            RStatsFloat quadRt = m_totalPowerOfFourAmount(a1);
+            RStatsFloat sqRt = m_totalPowerOfTwoAmount(a1);
+            RStatsFloat sampSize = static_cast<RStatsFloat>(m_sampleSize);
+            RStatsFloat mean = m_means(a1);
+
+            RStatsFloat temp1 = quadRt / sampSize;
+            temp1 -= (4 * (cubeRt / sampSize)) * mean;
+            temp1 += (6 * (sqRt / sampSize) * std::pow(mean,2));
+            temp1 -= (3 * std::pow(mean,4));
+            RStatsFloat temp2 = 0.;
+            if (sqRt / sampSize > std::pow(mean,2))
+            {
+                temp2 = std::sqrt(sqRt / sampSize - std::pow(mean,2));
+            }
+            else
+            {
+                temp2 = 0;
+            }
+            if (temp2 > 1 || RStatsUtils::isEqual(temp2,1.))
+            {
+                m_kurtosis(a1) = temp1 / std::pow(temp2,4);
+            }
+        }
+    }
+}
+
 void RStatsUVA::createOutputData(const std::string &title, size_t index)
 {
     RStatsUVAOutputData outputData;
@@ -334,10 +372,12 @@ void RStatsUVA::createOutputData(const std::string &title, size_t index)
     outputData.skewness = m_skewAmount(index);
     outputData.mean = m_means(index);
     outputData.nonZeroSize = static_cast<RStatsInteger>(m_totalNonZeroCount(index));
+    outputData.kurtosis = m_kurtosis(index);
+    if (outputData.pointEstimate < 0)
+    {
 
-    outputData.tValue80 = m_temporary80;
-    outputData.tValue90 = m_temporary90;
-    outputData.tValue95 = m_temporary95;
+
+    }
     outputData.lower80 = m_lower80(index);
     outputData.lower90 = m_lower90(index);
     outputData.lower95 = m_lower95(index);
@@ -346,6 +386,9 @@ void RStatsUVA::createOutputData(const std::string &title, size_t index)
     outputData.upper90 = m_upper90(index);
     outputData.upper95 = m_upper95(index);
 
+    outputData.tValue80 = m_temporary80;
+    outputData.tValue90 = m_temporary90;
+    outputData.tValue95 = m_temporary95;    
     outputData.populationSize = m_universeSize;
     outputData.precisionPercent80 = m_precision80(index) * m_universeSize;
     outputData.precisionPercent90 = m_precision90(index) * m_universeSize;
@@ -525,6 +568,7 @@ void RStatsUVA::calculateSkewness()
             //std::cerr << "Skew:" <<m_skewAmount(a1)<<std::endl;
         }
     }
+    calculateKurtosis();
 }
 
 void RStatsUVA::processSamplingError()

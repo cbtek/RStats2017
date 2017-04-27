@@ -21,7 +21,7 @@
 
 #include <QFileDialog>
 #include <QFile>
-
+#include <QDesktopServices>
 
 using namespace oig::ratstats::ui;
 using namespace oig::ratstats::utils;
@@ -95,7 +95,7 @@ UIRStatsSSRN::~UIRStatsSSRN()
     delete m_ui;
 }
 
-void UIRStatsSSRN::onValidate()
+bool UIRStatsSSRN::onValidate()
 {
     m_logger.clear();
     m_ui->m_lstErrorConsole->clear();
@@ -120,7 +120,7 @@ void UIRStatsSSRN::onValidate()
                         "Total number of values to be generated exceed 10,000.  RAT-STATS 2017 will still work but this value exceeds data limits of previous versions.");
 
 
-    m_logger.addWarning((high - low)  < (order + spare),
+    m_logger.addError((high - low)  < (order + spare),
                         "The sampling frame is less than the total number of values to be generated!");
 
     size_t index = 0;
@@ -129,7 +129,7 @@ void UIRStatsSSRN::onValidate()
         m_ui->m_dockOutput->hide();
         m_ui->m_btnExecute->setEnabled(true);
         m_ui->actionExecute->setEnabled(true);
-        return;
+        return true;
     }
     m_ui->m_dockOptions->show();
     for(const std::string & message : m_logger.getMessages())
@@ -156,11 +156,13 @@ void UIRStatsSSRN::onValidate()
     {
         m_ui->m_btnExecute->setEnabled(false);
         m_ui->actionExecute->setEnabled(false);
+        return false;
     }
     else
     {
         m_ui->m_btnExecute->setEnabled(true);
         m_ui->actionExecute->setEnabled(true);
+        return true;
     }
 }
 
@@ -203,10 +205,15 @@ void UIRStatsSSRN::onUpdateClock()
 
 void UIRStatsSSRN::onExecute()
 {
+    if (!onValidate())
+    {
+        return;
+    }
+
     try
     {
         onUpdateClock();
-        m_ui->m_tblOutput->clear();                
+
         //Make sure the audit name is correct
         std::string name = m_ui->m_txtAuditName->text().toStdString();
         if (StringUtils::isEmpty(name))
@@ -223,10 +230,12 @@ void UIRStatsSSRN::onExecute()
                                                        m_ui->m_spnLowNumber->value(),
                                                        m_ui->m_spnHighNumber->value());
 
+        //Save results to a worksheet
         RStatsWorksheet worksheet;
-        ssrn.saveToWorksheet(worksheet);
-        UIRStatsUtils::bindSheetToUI(worksheet,m_ui->m_tblOutput,false,0,0);
-        FileUtils::writeFileContents("table.html", worksheet.toHTMLTableString());
+        ssrn.saveToWorksheet(worksheet);                
+
+        //Save output to view
+        m_ui->m_txtOutput->setHtml(QString::fromStdString(worksheet.toHTMLTableString()));
 
         //Write output files if they are selected
         if (!StringUtils::isEmpty(m_currentTextFileOutput.toStdString()))
@@ -239,10 +248,7 @@ void UIRStatsSSRN::onExecute()
         {
             FileUtils::writeFileContents(m_currentCSVFileOutput.toStdString(),
                                          worksheet.toCommaDelimitedString());
-        }
-
-        m_ui->m_tblOutput->resizeColumnsToContents();
-        m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+        }       
         m_ui->m_grpOutput->show();                
         m_ui->m_lblNoData->hide();
 
@@ -259,7 +265,7 @@ void UIRStatsSSRN::onExecute()
         {
             std::string htmlPath = FileUtils::buildFilePath(SystemUtils::getUserTempDirectory(), FileUtils::getRandomFileName(10,0)+".html");
             FileUtils::writeFileContents(htmlPath,worksheet.toHTMLTableString());
-            UIRStatsUtils::desktopOpen(htmlPath);
+            QDesktopServices::openUrl(QString::fromStdString(htmlPath));
         }
     }
     catch (std::exception& e)
@@ -272,15 +278,11 @@ void UIRStatsSSRN::onExecute()
 
 
 void UIRStatsSSRN::onHelp()
-{
+{    
     QString url = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_help/rstats_ssrn.pdf"));
-    if (!QFile::exists(url))
+    if (!QFile::exists(url) || !QDesktopServices::openUrl(url))
     {
         UIRStatsErrorMessage("Could not load help file","Could not open the help file located at \"" + url.toStdString() + "\"",false,this).exec();
-    }
-    else
-    {
-        UIRStatsUtils::desktopOpen(url.toStdString());
     }
 }
 
@@ -359,6 +361,7 @@ void UIRStatsSSRN::onRecentSessionSelected(QAction *action)
             setSessionData(*data);
         }
     }
+    onValidate();
 }
 
 void UIRStatsSSRN::updateRecentSessions()

@@ -194,6 +194,12 @@ private:
     void calculateUpperAndLowerLimits();
 
     /**
+     * @brief calculateKurtosis
+     * @param inputData
+     */
+    void calculateKurtosis();
+
+    /**
      * @brief calculateOverallPrecision Calculates Overall precision
      */
     void calculateOverallPrecision();

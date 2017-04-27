@@ -12,15 +12,17 @@
 
 #include "rstats_ui/inc/UIRStatsAbout.h"
 #include "rstats_ui/inc/UIRStatsUtils.hpp"
-#include "rstats_ui/inc/UIRStatsImportWorksheet.h"
 #include "rstats_ui/inc/UIRStatsErrorMessage.h"
 
 #include "rstats_utils/inc/RStatsWorkbookStreamFactory.h"
 
 #include "utility/inc/DateTimeUtils.hpp"
 
+
 #include <QFileDialog>
 #include <QListWidgetItem>
+#include <QDesktopServices>
+#include <QAbstractButton>
 
 using namespace oig::ratstats::ui;
 using namespace oig::ratstats::utils;
@@ -41,7 +43,11 @@ UIRStatsUVA::UIRStatsUVA(QWidget *parent) :
 
     //Initialize output labels for status bar
     m_currentCSVFileOutputLabel = nullptr;
-    m_currentTextFileOutputLabel = nullptr;
+    m_currentTextFileOutputLabel = nullptr;        
+
+    //Initialize preview table widget
+    m_tblPreview = new UIRStatsTablePreviewWidget;
+    m_ui->dockWidgetContents->layout()->addWidget(m_tblPreview);
 
     //Set icons that get reused (validation console)
     m_iconError = UIRStatsUtils::getIcon("img_error.png");
@@ -84,30 +90,26 @@ UIRStatsUVA::UIRStatsUVA(QWidget *parent) :
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));    
     connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));    
     connect(m_ui->m_btnExecute,SIGNAL(clicked(bool)),this,SLOT(onExecute()));
-    connect(m_ui->m_cmbDataInputSheets,SIGNAL(currentIndexChanged(int)),this,SLOT(onComboDataInputSheetSelected(int)));
-    connect(m_ui->m_rdbAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
-    connect(m_ui->m_rdbExamined,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
-    connect(m_ui->m_rdbDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
-    connect(m_ui->m_rdbAuditedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
-    connect(m_ui->m_rdbExaminedAndAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
-    connect(m_ui->m_rdbExaminedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
+    connect(m_ui->m_cmbDataInputSheets,SIGNAL(currentIndexChanged(int)),this,SLOT(onComboDataInputSheetSelected(int)));    
+    connect(m_ui->m_rdbAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+    connect(m_ui->m_rdbExamined,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+    connect(m_ui->m_rdbDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+    connect(m_ui->m_rdbAuditedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+    connect(m_ui->m_rdbExaminedAndAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+    connect(m_ui->m_rdbExaminedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+
     connect(&m_clock,SIGNAL(timeout()),this,SLOT(onUpdateClock()));
 
     onUpdateClock();
     m_clock.start(1000);
+
+    onSetTabOrder();
 }
-
-
-void UIRStatsUVA::onAddNewRowToDataTable()
-{
-    m_ui->m_tblData->setRowCount(m_ui->m_tblData->rowCount()+1);
-}
-
 
 void UIRStatsUVA::onImportDataInput()
 {
     //Show the "File Browser"
-    m_dataTableImportFilePath = QFileDialog::getOpenFileName(this,"Import Stratified Variable Appraisal Sample Input File...","","Supported Input Files(*.csv *.xlsx *.dif)");
+    m_dataTableImportFilePath = QFileDialog::getOpenFileName(this,"Import Stratified Variable Appraisal Sample Input File...","","Supported Input Files(*.csv *.xlsx *.dif *.xls)");
 
     //Make sure imported file is valid before attempting to import data table
     if (!m_dataTableImportFilePath.isEmpty() && QFile::exists(m_dataTableImportFilePath))
@@ -158,24 +160,70 @@ void UIRStatsUVA::importDataTable(const std::string& dataTableFilePath)
     }
 }
 
-void UIRStatsUVA::onAddNewColumnToDataTable()
-{
-    m_ui->m_tblData->setColumnCount(m_ui->m_tblData->columnCount()+1);
-    size_t index = static_cast<size_t>(m_ui->m_tblData->columnCount());
-    std::string headerPushButton = RStatsUtils::getColumnLabelFromIndex(index - 1);
-    QTableWidgetItem * item = new QTableWidgetItem;
-    item->setText(QString::fromStdString(headerPushButton));
-    m_ui->m_tblData->setHorizontalHeaderItem(m_ui->m_tblData->columnCount()-1,item);
-
-}
-
 void UIRStatsUVA::onUpdateClock()
 {
     onValidate();
 }
 
-void UIRStatsUVA::onUpdateDataFormatSelection()
+void UIRStatsUVA::onSetTabOrder()
 {
+    this->setTabOrder(m_ui->m_txtAuditName,m_ui->m_spnUniverseSize);
+    this->setTabOrder(m_ui->m_spnUniverseSize,m_ui->m_rdbExamined);
+    this->setTabOrder(m_ui->m_rdbExamined,m_ui->m_rdbAudited);
+    this->setTabOrder(m_ui->m_rdbAudited,m_ui->m_rdbDifference);
+    this->setTabOrder(m_ui->m_rdbDifference,m_ui->m_rdbExaminedAndAudited);
+    this->setTabOrder(m_ui->m_rdbExaminedAndAudited,m_ui->m_rdbAuditedAndDifference);
+    this->setTabOrder(m_ui->m_rdbAuditedAndDifference,m_ui->m_rdbExaminedAndDifference);
+    this->setTabOrder(m_ui->m_rdbExaminedAndDifference,m_ui->m_chkCSVOutput);
+    this->setTabOrder(m_ui->m_chkCSVOutput,m_ui->m_chkTextOutput);
+    this->setTabOrder(m_ui->m_chkTextOutput,m_ui->m_chkViewInBrowser);
+    this->setTabOrder(m_ui->m_chkViewInBrowser,m_ui->m_cmbDataInputSheets);
+    this->setTabOrder(m_ui->m_cmbDataInputSheets,m_ui->m_btnImportSampleInputData);
+    this->setTabOrder(m_ui->m_btnImportSampleInputData,m_ui->m_cmbDataRowStartDataTable);
+    this->setTabOrder(m_ui->m_cmbDataRowStartDataTable,m_ui->m_cmbExaminedDataTable);
+    this->setTabOrder(m_ui->m_cmbExaminedDataTable,m_ui->m_cmbAuditedDataTable);
+    this->setTabOrder(m_ui->m_cmbAuditedDataTable,m_ui->m_cmbDifferenceDataTable);
+    this->setTabOrder(m_ui->m_cmbDifferenceDataTable,m_tblPreview);
+    this->setTabOrder(m_tblPreview,m_ui->m_txtOutput);
+    this->setTabOrder(m_ui->m_txtOutput,m_ui->m_btnHelp);
+    this->setTabOrder(m_ui->m_btnHelp,m_ui->m_btnExecute);
+    this->setTabOrder(m_ui->m_btnExecute,m_ui->m_btnExit);
+    this->setTabOrder(m_ui->m_btnExit,m_ui->m_lstValidationConsole);
+}
+
+void UIRStatsUVA::onUpdateDataFormatButtons()
+{
+    QAbstractButton * button = qobject_cast<QAbstractButton*>(sender());
+    if (button)
+    {
+        disconnect(m_ui->m_rdbAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+        disconnect(m_ui->m_rdbExamined,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+        disconnect(m_ui->m_rdbDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+        disconnect(m_ui->m_rdbAuditedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+        disconnect(m_ui->m_rdbExaminedAndAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+        disconnect(m_ui->m_rdbExaminedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+
+        m_ui->m_rdbAudited->setChecked(false);
+        m_ui->m_rdbExamined->setChecked(false);
+        m_ui->m_rdbDifference->setChecked(false);
+        m_ui->m_rdbAuditedAndDifference->setChecked(false);
+        m_ui->m_rdbExaminedAndAudited->setChecked(false);
+        m_ui->m_rdbExaminedAndDifference->setChecked(false);
+        button->setChecked(true);
+        onUpdateDataFormatSelection();
+
+        connect(m_ui->m_rdbAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+        connect(m_ui->m_rdbExamined,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+        connect(m_ui->m_rdbDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+        connect(m_ui->m_rdbAuditedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+        connect(m_ui->m_rdbExaminedAndAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+        connect(m_ui->m_rdbExaminedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+        onValidate();
+    }
+}
+
+void UIRStatsUVA::onUpdateDataFormatSelection()
+{    
     m_ui->m_cmbAuditedDataTable->setEnabled(false);
     m_ui->m_cmbExaminedDataTable->setEnabled(false);
     m_ui->m_cmbDifferenceDataTable->setEnabled(false);
@@ -226,10 +274,10 @@ void UIRStatsUVA::onUpdateRowColumnExtentsForDataTable()
 
 void UIRStatsUVA::onSampleDataInputSheetSelected(const RStatsWorksheet& sheet)
 {
-    UIRStatsUtils::bindSheetToUI(sheet,m_ui->m_tblData,true,0,0);
+    UIRStatsUtils::bindSheetToUI(sheet,m_tblPreview,true,0,0);
     m_currentDataSheet = sheet;
     onUpdateRowColumnExtentsForDataTable();
-    m_ui->m_tblData->verticalHeader()->show();
+    m_tblPreview->verticalHeader()->show();
 }
 
 void UIRStatsUVA::onComboDataInputSheetSelected(int row)
@@ -276,13 +324,9 @@ UIRStatsUVA::~UIRStatsUVA()
 void UIRStatsUVA::onHelp()
 {
     QString url = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_help/rstats_uva.pdf"));
-    if (!QFile::exists(url))
+    if (!QFile::exists(url) || !QDesktopServices::openUrl(url))
     {
         UIRStatsErrorMessage("Could not load help file","Could not open the help file located at \"" + url.toStdString() + "\"",false,this).exec();
-    }
-    else
-    {
-        UIRStatsUtils::desktopOpen(url.toStdString());
     }
 }
 
@@ -346,30 +390,26 @@ void UIRStatsUVA::onExecute()
         RStatsWorkbook output;
         uva.saveToWorkbook(output);
 
+        //Merge all output sheets into one
+        RStatsWorksheet worksheet = output.mergeSheets(RStatsWorkbookMergeDirection::MergeBottom,2);
+        m_ui->m_txtOutput->setHtml(QString::fromStdString(worksheet.toHTMLTableString()));
+
         //Save CSV file (for Excel/Access) if applicable
         if (m_ui->m_chkCSVOutput->isChecked())
         {
-            output.save(m_currentCSVFileOutput.toStdString());
+            FileUtils::writeFileContents(m_currentCSVFileOutput.toStdString(),worksheet.toCommaDelimitedString());
         }
 
         //Save Text file, if applicable
         if (m_ui->m_chkTextOutput->isChecked())
         {
-            output.save(m_currentTextFileOutput.toStdString());
-        }
+            FileUtils::writeFileContents(m_currentCSVFileOutput.toStdString(),worksheet.toEvenlySpacedString());
+        }            
 
-        RStatsWorksheet sheet = output.mergeSheets();
-        UIRStatsUtils::bindSheetToUI(sheet,m_ui->m_tblOutput);
         m_clock.stop();
-
+        m_ui->m_frmOutput->show();        
         m_ui->m_frmOutput->show();
-        m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-        m_ui->m_tblOutput->horizontalHeader()->hide();
-        m_ui->m_frmOutput->show();
-        m_ui->m_lblNoData->hide();
-        m_ui->m_tblOutput->setSelectionMode(QAbstractItemView::NoSelection);
-        m_ui->m_tblOutput->setGridStyle(Qt::NoPen);
-
+        m_ui->m_lblNoData->hide();        
 
         //Save the session data
         RStatsUVASessionData sessionData = getSessionData();
@@ -379,13 +419,14 @@ void UIRStatsUVA::onExecute()
         RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getAuditName()]);
         updateRecentSessions();
 
+
         //Show results in browser if selected
         if (m_ui->m_chkViewInBrowser->isChecked())
         {
             RStatsWorksheet worksheet = output.mergeSheets(RStatsWorkbookMergeDirection::MergeBottom,2);
             std::string htmlPath = FileUtils::buildFilePath(SystemUtils::getUserTempDirectory(), FileUtils::getRandomFileName(10,0)+".html");
-            FileUtils::writeFileContents(htmlPath,worksheet.toHTMLTableString());            
-            UIRStatsUtils::desktopOpen(htmlPath);
+            FileUtils::writeFileContents(htmlPath,worksheet.toHTMLTableString());
+            QDesktopServices::openUrl(QString::fromStdString(htmlPath));
         }
 
     }
@@ -420,10 +461,10 @@ bool UIRStatsUVA::onValidate()
                                    m_ui->m_cmbAuditedDataTable->count() < 2,
                                    "There are NOT enough columns for this 'difference' data format.\n Please choose another data format or import a different worksheet.");
 
-     m_conditionLogger.addError((m_ui->m_tblData->rowCount() == 0),
+     m_conditionLogger.addError((m_tblPreview->rowCount() == 0),
                                 "You have NOT imported any content rows into the data table.");
 
-     m_conditionLogger.addError((m_ui->m_tblData->columnCount() == 0),
+     m_conditionLogger.addError((m_tblPreview->columnCount() == 0),
                                 "You have NOT imported any content columns into the data table.");
 
      m_conditionLogger.addWarning((!m_ui->m_chkCSVOutput->isChecked() && !m_ui->m_chkTextOutput->isChecked()),
@@ -618,6 +659,7 @@ void UIRStatsUVA::onRecentSessionSelected(QAction* action)
         RStatsUVASessionData * data = dynamic_cast<RStatsUVASessionData*>(m_recentSessionsMap[name].get());
         setSessionData(*data);
     }
+    onValidate();
 }
 
 void UIRStatsUVA::updateRecentSessions()
@@ -699,6 +741,5 @@ void UIRStatsUVA::resizeEvent(QResizeEvent *)
         setTextFileOutput(m_currentTextFileOutput.toStdString());
     }
 }
-
 }}}}//end namespace
 

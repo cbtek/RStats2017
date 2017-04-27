@@ -7,6 +7,7 @@
 
 #include "UIRStatsWorkbook.h"
 #include "ui_UIRStatsWorkbook.h"
+#include <QTextBrowser>
 
 #include "UIRStatsUtils.hpp"
 
@@ -28,83 +29,42 @@ UIRStatsWorkbook::UIRStatsWorkbook(const RStatsWorkbook &workbook, QWidget *pare
 }
 
 void UIRStatsWorkbook::setWorkbook(const RStatsWorkbook &workbook)
-{
-    QList<int> sizes;
-    sizes << 100 << 700;
-    m_ui->splitter->setSizes(sizes);
-
+{            
+    clear();
     m_workbook = workbook;
-    std::vector<std::string> names = m_workbook.getWorksheetNames();
-    for(const std::string& name : names)
+    for (const auto& sheet : m_workbook.getWorksheets())
     {
-        m_ui->m_lstWorksheets->addItem(QString::fromStdString(name));
+        QTextBrowser *table = new QTextBrowser;
+        table->setHtml(QString::fromStdString(sheet.toHTMLTableString()));
+        //UIRStatsUtils::bindSheetToUI(sheet,table);
+        m_ui->m_tabWorkbook->addTab(table,QString::fromStdString(sheet.getWorksheetTitle()));
+        //table->resizeColumnsToContents();
+        //table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     }
-    if (m_ui->m_lstWorksheets->count())
+    if (m_ui->m_tabWorkbook->count() > 0)
     {
-        m_ui->m_lstWorksheets->setCurrentRow(0);
-        onSheetSelected(0);
+        m_ui->m_tabWorkbook->setCurrentIndex(0);
     }
-    connect(m_ui->m_lstWorksheets,SIGNAL(currentRowChanged(int)),this,SLOT(onSheetSelected(int)));
 }
 
-RStatsWorksheet UIRStatsWorkbook::getCurrentSheet() const
+void UIRStatsWorkbook::clear()
 {
-    return m_currentSheet;
-}
+    for(int a1 = 0; a1 < m_ui->m_tabWorkbook->count();++a1)
+    {
+        QWidget * widget = m_ui->m_tabWorkbook->widget(a1);
+        if (widget)
+        {
+            delete widget;
+        }
+        m_ui->m_tabWorkbook->removeTab(a1);
+    }
 
+    int x = m_ui->m_tabWorkbook->count();
+}
 
 UIRStatsWorkbook::~UIRStatsWorkbook()
 {
     delete m_ui;
-}
-
-void UIRStatsWorkbook::onPopulateTable(const RStatsWorksheet &sheet)
-{    
-    m_currentSheet = sheet;
-    UIRStatsUtils::bindSheetToUI(sheet,m_ui->m_tblCurrentSheet,false,0,0);
-    emit sheetSelected(sheet);
-    emit sheetSelected(m_ui->m_tblCurrentSheet);
-}
-
-void UIRStatsWorkbook::onSheetSelected(int index)
-{
-    if (index >=0 && index < m_workbook.getNumWorksheets())
-    {
-        onPopulateTable(m_workbook(index));
-        onResizeToContents();
-        onStretchToContents();
-    }
-}
-
-
-void UIRStatsWorkbook::onResizeToContents()
-{
-
-//    if (m_ui->m_tblCurrentSheet->columnCount() > 0)
-//    {
-//        m_ui->m_tblCurrentSheet->horizontalHeader()->setSectionResizeMode(m_ui->m_tblCurrentSheet->columnCount()-1,QHeaderView::ResizeToContents);
-//    }
-
-    m_ui->m_tblCurrentSheet->resizeColumnsToContents();
-    m_ui->m_tblCurrentSheet->resizeRowsToContents();    
-    //m_ui->m_tblCurrentSheet->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    m_ui->m_tblCurrentSheet->update();
-    this->update();
-}
-
-void UIRStatsWorkbook::onShowGridLines()
-{
-    m_ui->m_tblCurrentSheet->setGridStyle(Qt::SolidLine);
-}
-
-void UIRStatsWorkbook::onHideGridLines()
-{
-    m_ui->m_tblCurrentSheet->setGridStyle(Qt::NoPen);
-}
-
-void UIRStatsWorkbook::onStretchToContents()
-{
-    m_ui->m_tblCurrentSheet->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 }
 }}}//end namespace
 

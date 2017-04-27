@@ -16,6 +16,8 @@
 
 #include "rstats_utils/inc/RStatsUtils.hpp"
 
+#include "contrib/mini_excel/MiniExcelReader.h"
+
 using namespace oig::ratstats::utils;
 using namespace cbtek::common::utility;
 
@@ -33,84 +35,107 @@ RStatsXLSXWorkbookStream::RStatsXLSXWorkbookStream(const std::string &filePath)
 
 void RStatsXLSXWorkbookStream::write(const RStatsWorkbook &workbook)
 {
-    THROW_GENERIC_EXCEPTION("The XLSX writing feature has not been added")
+    THROW_GENERIC_EXCEPTION("The XLSX writing feature has not been added")            
 }
 
 RStatsWorkbook RStatsXLSXWorkbookStream::read()
 {
     RStatsWorkbook workbook;
-    std::string outputPath = SystemUtils::getUserTempDirectory();
-    outputPath = FileUtils::buildFilePath(outputPath,".gov.oig.ratstats.xlsxstream.extract_"+DateTimeUtils::getTimeStamp());
-    std::string unzipPath = RStatsUtils::getUnzipCommandPath();
-    std::ostringstream args;
-    FileUtils::createDirectory(outputPath);
-    if (FileUtils::isDirectoryWritable(outputPath))
+    MiniExcelReader::ExcelFile reader;
+    if (!reader.open(m_filePath.c_str()))
     {
-        args << " -o -q -d \""<<outputPath<<"\" \""<<m_filePath<<"\"";
-        SystemUtils::execute(unzipPath,args.str());
+        THROW_GENERIC_EXCEPTION("Unable to open excel document at "+m_filePath)
     }
-    std::string worksheetsPath = FileUtils::buildFilePath(outputPath,"xl/worksheets");
-    std::string workbookPath = FileUtils::buildFilePath(outputPath,"xl/workbook.xml");
-    std::string workbookRelationshipPath = FileUtils::buildFilePath(outputPath,"xl/_rels/workbook.xml.rels");
-    std::string sharedStringsPath = FileUtils::buildFilePath(outputPath,"xl/sharedStrings.xml");
+    for (MiniExcelReader::Sheet& sheetIn : reader.sheets())
+    {
+        RStatsWorksheet sheetOut;
+        sheetOut.setWorksheetTitle(sheetIn.getName());
+        MiniExcelReader::Range range = sheetIn.getDimension();
+        for (int r = 0; r < range.lastRow; r++)
+          {
+              for (int c = 0; c < range.lastCol; c++)
+              {
+                  MiniExcelReader::Cell* cell = sheetIn.getCell(r+1, c+1);
+                  std::string str =
+                  sheetOut(r,c).text = cell ? cell->value : "";
+              }
+          }
+        workbook.addWorksheet(sheetOut);
+    }
+//    std::string outputPath = SystemUtils::getUserTempDirectory();
+//    outputPath = FileUtils::buildFilePath(outputPath,".gov.oig.ratstats.xlsxstream.extract_"+DateTimeUtils::getTimeStamp());
+//    std::string unzipPath = RStatsUtils::getUnzipCommandPath();
+//    std::ostringstream args;
+//    FileUtils::createDirectory(outputPath);
+//    if (FileUtils::isDirectoryWritable(outputPath))
+//    {
+//        args << " -o -q -d \""<<outputPath<<"\" \""<<m_filePath<<"\"";
+//        SystemUtils::execute(unzipPath,args.str());
+//    }
+//    std::string worksheetsPath = FileUtils::buildFilePath(outputPath,"xl/worksheets");
+//    std::string workbookPath = FileUtils::buildFilePath(outputPath,"xl/workbook.xml");
+//    std::string workbookRelationshipPath = FileUtils::buildFilePath(outputPath,"xl/_rels/workbook.xml.rels");
+//    std::string sharedStringsPath = FileUtils::buildFilePath(outputPath,"xl/sharedStrings.xml");
 
-    std::map<std::string,RStatsXLSXWorkbookStream::XLSXWorksheetDefinition> sheetDefs = getWorksheetDefinitions(workbookPath,workbookRelationshipPath);
-    std::map<size_t, std::string> sharedStringsMap = getSharedStrings(sharedStringsPath);
-    std::vector<std::string> sheetFileList = FileUtils::getFileEntries(worksheetsPath,"xml");
-    for (const std::string& sheetFile : sheetFileList)
-    {
-        RStatsWorksheet sheet;
-        XMLReader reader;
-        reader.load(sheetFile);
-        std::string sheetFileKey = StringUtils::toUpperTrimmed(FileUtils::getFileName(sheetFile));
-        XLSXWorksheetDefinition def = sheetDefs[sheetFileKey];
-        if (StringUtils::isEmpty(def.sheetName))
-        {
-            def.sheetName = "Sheet"+std::to_string(s_SHEET_COUNT);
-            s_SHEET_COUNT++;
-        }
-        sheet.setWorksheetTitle(def.sheetName);
-        XMLDataElement * sheetXML = reader.getElement("worksheet");
-        if (sheetXML)
-        {
-            XMLDataElement * sheetDataXML = sheetXML->getChild("sheetData");
-            if (sheetDataXML)
-            {
-                for (size_t a1 = 0; a1 < sheetDataXML->getNumChildren();++a1)
-                {
-                    XMLDataElement * rowDataXML = sheetDataXML->getChildAt(a1);
-                    if (rowDataXML)
-                    {
-                        for (size_t a2 = 0; a2 < rowDataXML->getNumChildren();++a2)
-                        {
-                            XMLDataElement* columnDataXML = rowDataXML->getChildAt(a2);
-                            if (columnDataXML)
-                            {
-                                bool isSharedString = (StringUtils::equals(columnDataXML->getAttributeValue("t"),"s"));
-                                std::string cellLabel = columnDataXML->getAttributeValue("r");
-                                auto index = RStatsUtils::getCellIndexFromAddress(cellLabel);
-                                XMLDataElement * cellDataXML = columnDataXML->getChild("v");
-                                if (cellDataXML)
-                                {
-                                    if (isSharedString)
-                                    {
-                                        size_t sharedStringIndex = StringUtils::toUInt(cellDataXML->getElementData());
-                                        sheet(index.first,index.second) = sharedStringsMap[sharedStringIndex];
-                                    }
-                                    else
-                                    {
-                                        sheet(index.first,index.second) = cellDataXML->getElementData();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            workbook.addWorksheet(sheet);
-        }
-    }
-    FileUtils::deleteFolder(outputPath);
+//    std::map<std::string,RStatsXLSXWorkbookStream::XLSXWorksheetDefinition> sheetDefs = getWorksheetDefinitions(workbookPath,workbookRelationshipPath);
+//    std::map<size_t, std::string> sharedStringsMap = getSharedStrings(sharedStringsPath);
+//    std::vector<std::string> sheetFileList = FileUtils::getFileEntries(worksheetsPath,"xml");
+//    for (const std::string& sheetFile : sheetFileList)
+//    {
+//        RStatsWorksheet sheet;
+//        XMLReader reader;
+//        reader.load(sheetFile);
+//        std::string sheetFileKey = StringUtils::toUpperTrimmed(FileUtils::getFileName(sheetFile));
+//        XLSXWorksheetDefinition def = sheetDefs[sheetFileKey];
+//        if (StringUtils::isEmpty(def.sheetName))
+//        {
+//            def.sheetName = "Sheet"+std::to_string(s_SHEET_COUNT);
+//            s_SHEET_COUNT++;
+//        }
+//        sheet.setWorksheetTitle(def.sheetName);
+//        XMLDataElement * sheetXML = reader.getElement("worksheet");
+//        if (sheetXML)
+//        {
+//            XMLDataElement * sheetDataXML = sheetXML->getChild("sheetData");
+//            if (sheetDataXML)
+//            {
+//                for (size_t a1 = 0; a1 < sheetDataXML->getNumChildren();++a1)
+//                {
+//                    XMLDataElement * rowDataXML = sheetDataXML->getChildAt(a1);
+//                    if (rowDataXML)
+//                    {
+//                        for (size_t a2 = 0; a2 < rowDataXML->getNumChildren();++a2)
+//                        {
+//                            XMLDataElement* columnDataXML = rowDataXML->getChildAt(a2);
+//                            if (columnDataXML)
+//                            {
+//                                bool isSharedString = (StringUtils::equals(columnDataXML->getAttributeValue("t"),"s"));
+//                                std::string cellLabel = columnDataXML->getAttributeValue("r");
+//                                auto index = RStatsUtils::getCellIndexFromAddress(cellLabel);
+//                                XMLDataElement * cellDataXML = columnDataXML->getChild("v");
+//                                if (cellDataXML)
+//                                {
+//                                    if (isSharedString)
+//                                    {
+//                                        size_t sharedStringIndex = StringUtils::toUInt(cellDataXML->getElementData());
+//                                        sheet(index.first,index.second) = sharedStringsMap[sharedStringIndex];
+//                                    }
+//                                    else
+//                                    {
+//                                        sheet(index.first,index.second) = cellDataXML->getElementData();
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//            workbook.addWorksheet(sheet);
+//        }
+//    }
+//    FileUtils::deleteFolder(outputPath);
+
+
     return workbook;
 }
 

@@ -4,14 +4,13 @@
 
 */
 
-#ifndef _OIG_RATSTATS_UI_UIRSTATSWORKBOOK_H
-#define _OIG_RATSTATS_UI_UIRSTATSWORKBOOK_H
+#pragma once
 
 #include <QWidget>
 #include <QTableWidget>
 
 #include "rstats_utils/inc/RStatsWorkbook.h"
-
+#include "UIRStatsTablePreviewWidget.h"
 
 
 class Ui_UIRStatsWorkbook;
@@ -39,13 +38,12 @@ public:
      * @brief setWorkbook
      * @param workbook
      */
-    void setWorkbook(const utils::RStatsWorkbook& workbook);
-    
+    void setWorkbook(const utils::RStatsWorkbook& workbook);        
+
     /**
-     * @brief getCurrentSheet
-     * @return
+     * @brief clear
      */
-    oig::ratstats::utils::RStatsWorksheet getCurrentSheet() const;
+    void clear();
 
     //! Destructor for UIRStatsWorkbook
     ~UIRStatsWorkbook();
@@ -56,20 +54,6 @@ private:
      Ui_UIRStatsWorkbook *m_ui;
      oig::ratstats::utils::RStatsWorksheet m_currentSheet;
      oig::ratstats::utils::RStatsWorkbook m_workbook;
-
-public slots:
-     void onPopulateTable(const oig::ratstats::utils::RStatsWorksheet& sheet);
-     void onSheetSelected(int index);
-     void onResizeToContents();     
-     void onStretchToContents();
-     void onShowGridLines();
-     void onHideGridLines();
-
-signals:
-     void sheetSelected(const oig::ratstats::utils::RStatsWorksheet& sheet);
-     void sheetSelected(const QTableWidget* sheetWidget);
 };
 
 }}}//end namespace
-
-#endif // _OIG_RATSTATS_UI_UIRSTATSWORKBOOK_H

@@ -37,4 +37,12 @@ add_library(${CURR_TARGET}
 #==============================================================================
 
 add_dependencies(${CURR_TARGET}                 
-                 common_utils)
+                 common_utils
+                 basic_excel
+                 mini_excel)
+
+
+target_link_libraries(${CURR_TARGET}
+                 common_utils
+                 basic_excel
+                 mini_excel)

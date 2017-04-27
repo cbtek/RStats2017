@@ -13,6 +13,8 @@
 
 #include "rstats_utils/inc/RStatsWorkbook.h"
 #include "rstats_utils/inc/RStatsConditionLogger.h"
+
+#include "rstats_ui/inc/UIRStatsTablePreviewWidget.h"
 #include "rstats_ui/inc/UIRStatsWorkbook.h"
 
 #include "RStatsSVASessionData.h"
@@ -38,14 +40,6 @@ public:
 
     //! Destructor for UIRStatsSVA
     ~UIRStatsSVA();
-
-protected:
-
-    /**
-     * @brief keyPressEvent
-     * @param evt
-     */
-    void keyPressEvent(QKeyEvent*evt);
 
 private:
 
@@ -87,6 +81,19 @@ private:
      oig::ratstats::utils::RStatsWorksheet m_currentSizeSheet;
      oig::ratstats::utils::RStatsWorkbook m_currentDataWorkbook;
      oig::ratstats::utils::RStatsWorkbook m_currentSizeWorkbook;
+
+
+     /**
+      * @brief m_tblSizeInputPreview Subclassed QTableWidget object representing
+      * size input preview table
+      */
+     oig::ratstats::ui::UIRStatsTablePreviewWidget * m_tblSizeInputPreview;
+
+     /**
+      * @brief m_tblDataInputPreview Subclassed QTableWidget object representing
+      * data input preview table
+      */
+     oig::ratstats::ui::UIRStatsTablePreviewWidget * m_tblDataInputPreview;
 
      /**
       * @brief Used by validation console
@@ -228,12 +235,7 @@ protected slots:
      /**
       * @brief onExit
       */
-     void onExit();
-
-     /**
-      * @brief onToggleFullScreen
-      */
-     void onToggleFullScreen();
+     void onExit();  
 
      /**
       * @brief onSampleSizeInputSheetSelected
@@ -293,6 +295,16 @@ protected slots:
       * @brief onAbout
       */
      void onAbout();
+
+     /**
+      * @brief onUpdateDataFormatButtons
+      */
+     void onUpdateDataFormatButtons();
+
+     /**
+      * @brief onSetTabOrder
+      */
+     void onSetTabOrder();
 };
 
 }}}}//end namespace

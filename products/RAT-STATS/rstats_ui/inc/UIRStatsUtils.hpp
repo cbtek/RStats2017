@@ -250,7 +250,7 @@ namespace UIRStatsUtils
      * @param padRows
      * @param padColumns
      */
-    inline void bindSheetToUI(const oig::ratstats::utils::RStatsWorksheet &sheetIn, QTableWidget *table, bool checkableHeader = false,int padRows=10,int padColumns=10)
+    inline void bindSheetToUI(const oig::ratstats::utils::RStatsWorksheet &sheetIn, QTableWidget *table, bool checkableHeader = false,int padRows=0,int padColumns=0)
     {
         utils::RStatsWorksheet sheet = sheetIn;
         sheet.setThousandsSeperatorEnabled(true);

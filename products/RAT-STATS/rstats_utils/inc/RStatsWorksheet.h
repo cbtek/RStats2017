@@ -222,7 +222,7 @@ public:
      * @brief toHTMLTableString
      * @return
      */
-    std::string toHTMLTableString() const;
+    std::string toHTMLTableString(bool includeRowLabels=false, bool includeColumnLabels=false) const;
 
     /**
      * @brief toCommaDelimitedString

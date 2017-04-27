@@ -15,6 +15,7 @@
 #include "streams/RStatsDelimitedWorkbookStream.h"
 #include "streams/RStatsDIFWorkbookStream.h"
 #include "streams/RStatsXLSXWorkbookStream.h"
+#include "streams/RStatsXLSWorkbookStream.h"
 #include "streams/RStatsCSVWorkbookStream.h"
 #include "streams/RStatsAccessWorkbookStream.h"
 
@@ -34,7 +35,7 @@ RStatsWorkbookStreamPtr RStatsWorkbookStreamFactory::create(const std::string &f
     }
     else if (ext == "XLS")
     {
-        THROW_GENERIC_EXCEPTION("XLS not supported yet")
+        return RStatsWorkbookStreamPtr(new streams::RStatsXLSWorkbookStream(filePath));
     }
     else if (ext == "CSV")
     {

@@ -42,7 +42,7 @@
     <item>
      <widget class="QGroupBox" name="m_grpOutput">
       <property name="title">
-       <string>Output Data: (Press F11 to Toggle Full-Screen View)</string>
+       <string>Output Data:</string>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_9">
        <property name="leftMargin">
@@ -58,13 +58,6 @@
         <number>11</number>
        </property>
       </layout>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="m_btnViewInBrowser">
-      <property name="text">
-       <string>View In Web Browser</string>
-      </property>
      </widget>
     </item>
     <item>
@@ -303,12 +296,18 @@
                 <property name="text">
                  <string>Examined</string>
                 </property>
+                <property name="autoExclusive">
+                 <bool>false</bool>
+                </property>
                </widget>
               </item>
               <item row="0" column="1">
                <widget class="QRadioButton" name="m_rdbAudited">
                 <property name="text">
                  <string>Audited</string>
+                </property>
+                <property name="autoExclusive">
+                 <bool>false</bool>
                 </property>
                </widget>
               </item>
@@ -317,12 +316,18 @@
                 <property name="text">
                  <string>Difference</string>
                 </property>
+                <property name="autoExclusive">
+                 <bool>false</bool>
+                </property>
                </widget>
               </item>
               <item row="1" column="0">
                <widget class="QRadioButton" name="m_rdbExaminedAndAudited">
                 <property name="text">
                  <string>Examined / Audited</string>
+                </property>
+                <property name="autoExclusive">
+                 <bool>false</bool>
                 </property>
                </widget>
               </item>
@@ -331,12 +336,18 @@
                 <property name="text">
                  <string>Audited / Difference</string>
                 </property>
+                <property name="autoExclusive">
+                 <bool>false</bool>
+                </property>
                </widget>
               </item>
               <item row="1" column="2">
                <widget class="QRadioButton" name="m_rdbExaminedAndDifference">
                 <property name="text">
                  <string>Examined / Difference</string>
+                </property>
+                <property name="autoExclusive">
+                 <bool>false</bool>
                 </property>
                </widget>
               </item>
@@ -434,36 +445,8 @@
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
-   <widget class="QWidget" name="dockWidgetContents_3">
+   <widget class="QWidget" name="m_dockSampleSizeInputContainer">
     <layout class="QGridLayout" name="gridLayout_5">
-     <item row="3" column="0">
-      <widget class="QTableWidget" name="m_tblSizes">
-       <property name="editTriggers">
-        <set>QAbstractItemView::NoEditTriggers</set>
-       </property>
-       <property name="selectionMode">
-        <enum>QAbstractItemView::NoSelection</enum>
-       </property>
-       <property name="selectionBehavior">
-        <enum>QAbstractItemView::SelectItems</enum>
-       </property>
-       <property name="verticalScrollMode">
-        <enum>QAbstractItemView::ScrollPerPixel</enum>
-       </property>
-       <property name="horizontalScrollMode">
-        <enum>QAbstractItemView::ScrollPerPixel</enum>
-       </property>
-       <property name="rowCount">
-        <number>0</number>
-       </property>
-       <attribute name="horizontalHeaderStretchLastSection">
-        <bool>true</bool>
-       </attribute>
-       <attribute name="verticalHeaderVisible">
-        <bool>false</bool>
-       </attribute>
-      </widget>
-     </item>
      <item row="2" column="0">
       <layout class="QGridLayout" name="gridLayout_6">
        <property name="leftMargin">
@@ -564,7 +547,7 @@
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
-   <widget class="QWidget" name="dockWidgetContents_2">
+   <widget class="QWidget" name="m_dockSampleDataInputContainer">
     <layout class="QVBoxLayout" name="verticalLayout_6">
      <item>
       <layout class="QGridLayout" name="gridLayout_8">
@@ -665,31 +648,6 @@
         <widget class="QComboBox" name="m_cmbDifferenceDataTable"/>
        </item>
       </layout>
-     </item>
-     <item>
-      <widget class="QTableWidget" name="m_tblData">
-       <property name="editTriggers">
-        <set>QAbstractItemView::NoEditTriggers</set>
-       </property>
-       <property name="selectionMode">
-        <enum>QAbstractItemView::SingleSelection</enum>
-       </property>
-       <property name="selectionBehavior">
-        <enum>QAbstractItemView::SelectItems</enum>
-       </property>
-       <property name="verticalScrollMode">
-        <enum>QAbstractItemView::ScrollPerPixel</enum>
-       </property>
-       <property name="horizontalScrollMode">
-        <enum>QAbstractItemView::ScrollPerPixel</enum>
-       </property>
-       <attribute name="horizontalHeaderStretchLastSection">
-        <bool>true</bool>
-       </attribute>
-       <attribute name="verticalHeaderVisible">
-        <bool>false</bool>
-       </attribute>
-      </widget>
      </item>
     </layout>
    </widget>
@@ -832,14 +790,12 @@
   <tabstop>m_btnImportSampleSizeData</tabstop>
   <tabstop>m_cmbUniverseCountSizeTable</tabstop>
   <tabstop>m_cmbSampleCountSizeTable</tabstop>
-  <tabstop>m_tblSizes</tabstop>
   <tabstop>m_cmbDataInputSheets</tabstop>
   <tabstop>m_btnImportSampleInputData</tabstop>
   <tabstop>m_cmbDataRowStartDataTable</tabstop>
   <tabstop>m_cmbExaminedDataTable</tabstop>
   <tabstop>m_cmbAuditedDataTable</tabstop>
   <tabstop>m_cmbDifferenceDataTable</tabstop>
-  <tabstop>m_tblData</tabstop>
   <tabstop>m_btnHelp</tabstop>
   <tabstop>m_btnExecute</tabstop>
   <tabstop>m_btnExit</tabstop>

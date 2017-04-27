@@ -143,24 +143,48 @@ std::string RStatsWorksheet::toTabDelimitedString() const
     return toString("","\t","");
 }
 
-std::string RStatsWorksheet::toHTMLTableString() const
+std::string RStatsWorksheet::toHTMLTableString(bool includeRowLabels,
+                                               bool includeColumnLabels) const
 {
     std::ostringstream out;
     XMLStreamWriter xml(out);
     xml.writeStartElementNoAttributes("html");
-    xml.writeStartElementNoAttributes("head");
+    xml.writeStartElementNoAttributes("head");        
     xml.writeTextElement("title",m_worksheetTitle+" Output");
     xml.writeEndElement("head");
     xml.writeStartElementNoAttributes("body");
     xml.writeStartElement("table");
-    xml.writeLastAttribute("style","border: 1px solid black; padding 5px;");
+    xml.writeLastAttribute("style","border-collapse:collapse;border: 1px solid black; padding 5px;");
+
     size_t cols = getNumColumns();
     size_t rows = getNumRows();
+
+    //Need to finish implementing adding row/column headers
     for(size_t r = 0;r<rows;++r)
     {
+        if (includeColumnLabels && r == 0)
+        {
+            xml.writeStartElementNoAttributes("tr");
+            xml.writeTextElement("td","");
+            for(size_t c = 0;c<cols;++c)
+            {
+                xml.writeStartElement("td");
+                xml.writeLastAttribute("style","background:#"+((c%2)? std::string("AAAAAA;"): std::string("DEDEDE;"))+"border:1px solid black;");
+                xml.writeText(RStatsUtils::getColumnLabelFromIndex(c));
+                xml.writeEndElement("td");
+            }
+            xml.writeEndElement("tr");
+        }
         xml.writeStartElementNoAttributes("tr");
         for(size_t c = 0;c<cols;++c)
         {
+            if (includeRowLabels && c == 0)
+            {
+                xml.writeStartElement("td");
+                xml.writeLastAttribute("style","color:black;background:#"+((r%2)? std::string("AAAAAA;"): std::string("DEDEDE;"))+"border:1px solid black;");
+                xml.writeText(StringUtils::toString(r+1));
+                xml.writeEndElement("td");
+            }
             const RStatsCell& cell = getCell(r,c);
             xml.writeStartElement("td");
             xml.writeLastAttribute("style",getCellCSSStyle(cell));
@@ -178,7 +202,7 @@ std::string RStatsWorksheet::toHTMLTableString() const
     }
     xml.writeEndElement("table");
     xml.writeEndElement("body");
-    xml.writeEndElement("html");
+    xml.writeEndElement("html");    
     return out.str();
 }
 
@@ -456,6 +480,7 @@ std::string RStatsWorksheet::getCellCSSStyle(const RStatsCell &cell) const
         css += "background: " + cell.bgColor.toString(colorStringStyle::RGB_HTML_HEX) + ";";
         css += "color: " + cell.fgColor.toString(colorStringStyle::RGB_HTML_HEX) + ";";
     }
+    css += "border: 1px solid black;";
     css += "font-size: " + StringUtils::toString(cell.font.getPointSize()+2)+"px;";
     css += "font-weight: " + std::string(cell.font.isBold() ? "bold;" : "normal;");
     css += "font-family: " + cell.font.getFontFamily()+";";

@@ -157,7 +157,7 @@ private slots:
       * @brief onValidate Occurs prior to onExecute completing.  Ensures that all fields are valid and
       * updates the validation console with any new messages.
       */
-     void onValidate();
+     bool onValidate();
 
      /**
       * @brief onSaveCSVFile Event occurs when user clicks the checkbox to save csv file.  This will

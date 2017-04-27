@@ -9,11 +9,13 @@
 #include <QLabel>
 #include <QComboBox>
 #include <QTimer>
+#include <QButtonGroup>
 
 #include "rstats_utils/inc/RStatsWorkbook.h"
 #include "rstats_utils/inc/RStatsConditionLogger.h"
 
 #include "rstats_ui/inc/UIRStatsWorkbook.h"
+#include "rstats_ui/inc/UIRStatsTablePreviewWidget.h"
 
 #include "RStatsUVASessionData.h"
 
@@ -79,13 +81,14 @@ private:
     oig::ratstats::utils::RStatsWorksheet m_currentDataSheet;
     oig::ratstats::utils::RStatsWorkbook m_currentDataWorkbook;
 
+    QButtonGroup m_rdbButtons;
     /**
     * @brief Used by validation console
     */
     oig::ratstats::utils::RStatsConditionLogger m_conditionLogger;
     bool m_fullScreenToggle;
-    utils::RStatsDataFormatType m_dataFormatType;
-
+    utils::RStatsDataFormatType m_dataFormatType;    
+    oig::ratstats::ui::UIRStatsTablePreviewWidget * m_tblPreview;
     void importDataTable(const std::string& dataTableFilePath);
     void importSizeTable(const std::string& sizeTableFilePath);
     void populateWithColumns(const std::set<size_t>& columns, QComboBox* comboBox);
@@ -105,9 +108,7 @@ private:
       void onSampleDataInputSheetSelected(const oig::ratstats::utils::RStatsWorksheet& sheet);
       void onUpdateRowColumnExtentsForDataTable();
       void onUpdateDataFormatSelection();
-      void onClearRecentSessions();
-      void onAddNewRowToDataTable();
-      void onAddNewColumnToDataTable();
+      void onClearRecentSessions();      
       void onSaveTextFile();
       void onSaveCSVFile();
       void onHelp();
@@ -116,7 +117,10 @@ private:
       void onExit();
       bool onValidate();
       void onUpdateClock();
+      void onSetTabOrder();
+      void onUpdateDataFormatButtons();
 };
+
 
 }}}}//end namespace
 

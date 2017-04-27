@@ -119,17 +119,17 @@ RStatsSVAOutputDataList RStatsSVA::execute(const std::string& auditName,
 
     if (m_dataFormatTypeAvailableFlag(constants::EXAMINE))
     {
-        summary.examine.typeName = "Examined Values";
+        summary.examine.typeName = "Examined Values (Summary)";
         processSummaryTotals(summary.examine,constants::EXAMINE);
     }
     if (m_dataFormatTypeAvailableFlag(constants::AUDIT))
     {
-        summary.audit.typeName = "Audited Values";
+        summary.audit.typeName = "Audited Values (Summary)";
         processSummaryTotals(summary.audit,constants::AUDIT);
     }
     if (m_dataFormatTypeAvailableFlag(constants::DIFF))
     {
-        summary.difference.typeName = "Difference Values";
+        summary.difference.typeName = "Difference Values (Summary)";
         processSummaryTotals(summary.difference,constants::DIFF);
     }
 
@@ -186,6 +186,16 @@ void RStatsSVA::saveToWorkbook(RStatsWorkbook &workbookOut)
             RStatsWorksheet sheet;
             isSummary = data.examine.isDisplaySummary;
             saveOutputDataToWorksheet(data.examine,sheet);
+            if (!data.examine.isDisplaySummary)
+            {
+                sheet("B1").alignment = RStatsTextAlignment::AlignLeft;
+                sheet("B1") = "Stratum "+std::to_string(counter) + " - " + data.examine.typeName;
+            }
+            else
+            {
+                sheet("B1").alignment = RStatsTextAlignment::AlignLeft;
+                sheet("B1") = data.examine.typeName;
+            }
             sheet.setRowBackgroundColor(sheet.getNumRows(),Color(50,50,50));
             stratumWorkbook.addWorksheet(sheet);
         }
@@ -195,6 +205,16 @@ void RStatsSVA::saveToWorkbook(RStatsWorkbook &workbookOut)
             RStatsWorksheet sheet;
             isSummary = data.audit.isDisplaySummary;
             saveOutputDataToWorksheet(data.audit,sheet);
+            if (!data.audit.isDisplaySummary)
+            {
+                sheet("B1").alignment = RStatsTextAlignment::AlignLeft;
+                sheet("B1") = "Stratum "+std::to_string(counter) + " - " + data.audit.typeName;
+            }
+            else
+            {
+                sheet("B1").alignment = RStatsTextAlignment::AlignLeft;
+                sheet("B1") = data.audit.typeName;
+            }
             sheet.setRowBackgroundColor(sheet.getNumRows(),Color(50,50,50));
             stratumWorkbook.addWorksheet(sheet);
         }
@@ -204,6 +224,16 @@ void RStatsSVA::saveToWorkbook(RStatsWorkbook &workbookOut)
             RStatsWorksheet sheet;
             isSummary = data.difference.isDisplaySummary;
             saveOutputDataToWorksheet(data.difference,sheet);
+            if (!data.difference.isDisplaySummary)
+            {
+                sheet("B1").alignment = RStatsTextAlignment::AlignLeft;
+                sheet("B1") = "Stratum "+std::to_string(counter) + " - " + data.difference.typeName;
+            }
+            else
+            {
+                sheet("B1").alignment = RStatsTextAlignment::AlignLeft;
+                sheet("B1") = data.difference.typeName;
+            }
             sheet.setRowBackgroundColor(sheet.getNumRows(),Color(50,50,50));
             stratumWorkbook.addWorksheet(sheet);
         }
@@ -220,6 +250,7 @@ void RStatsSVA::saveToWorkbook(RStatsWorkbook &workbookOut)
             title = "Stratum "+std::to_string(counter);
             ++counter;
         }
+
         stratumSheet.setWorksheetTitle(title);
         workbookOut.addWorksheet(stratumSheet);
 
@@ -266,7 +297,7 @@ void RStatsSVA::saveOutputDataToWorksheet(const RStatsSVAOutputData &data,
     sheet("C10").fgColor.set(1,1,1);
     sheet("D10").fgColor.set(1,1,1);
     sheet.setDefaultTextAlignment(RStatsTextAlignment::AlignLeft);
-    sheet("B1") = data.typeName;
+
     sheet("B2") = m_auditName;
     sheet("B3") = data.populationSize;
     sheet("B4") = data.sampleSize;
@@ -397,15 +428,15 @@ void RStatsSVA::copyOutputData(RStatsSVAOutputData& outputData,
 
     if (dataFormatIndex == constants::AUDIT)
     {
-        outputData.typeName = "Summary for Audit Values";
+        outputData.typeName = "Audit Values";
     }
     else if (dataFormatIndex == constants::EXAMINE)
     {
-        outputData.typeName = "Summary for Examine Values";
+        outputData.typeName = "Examine Values";
     }
     else
     {
-        outputData.typeName = "Summary for Difference Values";
+        outputData.typeName = "Difference Values";
     }
 
     outputData.isValid = true;

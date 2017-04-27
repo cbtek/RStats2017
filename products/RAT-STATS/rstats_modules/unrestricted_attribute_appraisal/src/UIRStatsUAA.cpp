@@ -12,11 +12,12 @@
 
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QDesktopServices>
 #include <QFile>
+#include <QListWidgetItem>
 
 #include "rstats_ui/inc/UIRStatsAbout.h"
 #include "rstats_ui/inc/UIRStatsUtils.hpp"
-#include "rstats_ui/inc/UIRStatsImportWorksheet.h"
 #include "rstats_ui/inc/UIRStatsErrorMessage.h"
 
 #include "utility/inc/DateTimeUtils.hpp"
@@ -39,29 +40,12 @@ UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
     m_ui->m_dockOptions->setTitleBarWidget(new QWidget());
 
 
-    connect(m_ui->actionExecute,SIGNAL(triggered(bool)),this,SLOT(onExecute()));
-    connect(m_ui->actionExit,SIGNAL(triggered(bool)),this,SLOT(onExit()));
-    connect(m_ui->actionHelp,SIGNAL(triggered(bool)),this,SLOT(onHelp()));
-    connect(m_ui->actionAbout,SIGNAL(triggered(bool)),this,SLOT(onAbout()));
-    connect(m_ui->m_btnExecute,SIGNAL(clicked()),this,SLOT(onExecute()));
-    connect(m_ui->m_btnExit,SIGNAL(clicked()),this,SLOT(onExit()));
-    connect(m_ui->m_btnHelp,SIGNAL(clicked()),this,SLOT(onHelp()));
-    connect(m_ui->m_spnSampleSize,SIGNAL(valueChanged(int)),this,SLOT(onUpdateSampleCount()));
-    connect(m_ui->m_spnUniverseSize,SIGNAL(valueChanged(int)),this,SLOT(onUpdateUniverseCount()));
-    connect(m_ui->m_chkCSVOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveCSVFile()));
-    connect(m_ui->m_chkTextOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveTextFile()));
+    //Load icons used by validation console
+    m_iconError = UIRStatsUtils::getIcon("img_error.png");
+    m_iconWarning = UIRStatsUtils::getIcon("img_warning.png");
+    m_iconOK = UIRStatsUtils::getIcon("img_ok.png");
 
-    m_currentCSVFileOutputLabel = nullptr;
-    m_currentTextFileOutputLabel = nullptr;
-    m_autoSetFileOutput = false;
-    m_ui->m_txtAuditName->setPlaceholderText(QString::fromStdString(RStatsUtils::getAuditName()));
-    m_ui->m_frmOutput->hide();
-    onUpdateUniverseCount();
-    onUpdateSampleCount();
-    updateRecentSessions();
-
-    int buttonHeight = 32;
-
+    //Initialize all buttons and menu items
     UIRStatsUtils::initButton(m_ui->m_btnExecute, "img_run.png");
     UIRStatsUtils::initButton(m_ui->m_btnExit, "img_exit.png");
     UIRStatsUtils::initButton(m_ui->m_btnHelp, "img_help.png");
@@ -70,6 +54,44 @@ UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
     UIRStatsUtils::initAction(m_ui->actionExit,"img_exit.png","Alt+Q");
     UIRStatsUtils::initAction(m_ui->actionHelp,"img_help.png","Alt+H");
     UIRStatsUtils::initAction(m_ui->actionRecentlyUsed,"img_clock.png","Alt+S");
+
+    //bind all UI events to the functions that handle them
+    connect(m_ui->actionExecute,SIGNAL(triggered(bool)),this,SLOT(onExecute()));
+    connect(m_ui->actionExit,SIGNAL(triggered(bool)),this,SLOT(onExit()));
+    connect(m_ui->actionHelp,SIGNAL(triggered(bool)),this,SLOT(onHelp()));
+    connect(m_ui->actionAbout,SIGNAL(triggered(bool)),this,SLOT(onAbout()));
+    connect(m_ui->m_btnExecute,SIGNAL(clicked()),this,SLOT(onExecute()));
+    connect(m_ui->m_btnExit,SIGNAL(clicked()),this,SLOT(onExit()));
+    connect(m_ui->m_btnHelp,SIGNAL(clicked()),this,SLOT(onHelp()));
+    connect(m_ui->m_chkCSVOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveCSVFile()));
+    connect(m_ui->m_chkTextOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveTextFile()));
+    connect(&m_clock,SIGNAL(timeout()),this,SLOT(onUpdateClock()));
+    connect(m_ui->m_spnSampleSize,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
+    connect(m_ui->m_spnUniverseSize,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
+    connect(m_ui->m_spnCOI,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
+
+
+    //Set the status bar output labels to null
+    m_currentCSVFileOutputLabel = nullptr;
+    m_currentTextFileOutputLabel = nullptr;
+
+    //Set auto save flag to false
+    m_autoSetFileOutput = false;
+
+    //Initialize audit name with default text
+    m_ui->m_txtAuditName->setPlaceholderText(QString::fromStdString(RStatsUtils::getAuditName()));
+
+    //Hide the output frame since there is no data
+    m_ui->m_frmOutput->hide();        
+
+    //Update the recently used items
+    updateRecentSessions();
+
+    //Start the clock that checks validation
+    m_clock.start(1000);
+
+    //Start initial validation
+    onValidate();
 }
 
 UIRStatsUAA::~UIRStatsUAA()
@@ -90,13 +112,9 @@ void UIRStatsUAA::onUpdateUniverseCount()
 void UIRStatsUAA::onHelp()
 {
     QString url = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_help/rstats_uaa.pdf"));
-    if (!QFile::exists(url))
+    if (!QFile::exists(url) || !QDesktopServices::openUrl(url))
     {
         UIRStatsErrorMessage("Could not load help file","Could not open the help file located at \"" + url.toStdString() + "\"",false,this).exec();
-    }
-    else
-    {
-        UIRStatsUtils::desktopOpen(url.toStdString());
     }
 }
 
@@ -105,20 +123,103 @@ void UIRStatsUAA::onAbout()
     UIRStatsAbout().exec();
 }
 
+bool UIRStatsUAA::onValidate()
+{
+    m_conditionLogger.clear();
+    m_ui->m_lstValidationConsole->clear();
+
+    //Define list of conditions for condition logger
+     m_conditionLogger.addError((m_ui->m_spnCOI->value() > m_ui->m_spnSampleSize->value()),
+                                "The number of items with characteristics of interest (COI) must be less than the sample size.");
+
+     m_conditionLogger.addError((m_ui->m_spnSampleSize->value() > m_ui->m_spnUniverseSize->value()),
+                                "The sample size must be less than the universe size.");
+
+     m_conditionLogger.addWarning((!m_ui->m_chkCSVOutput->isChecked() && !m_ui->m_chkTextOutput->isChecked()),
+                                "You have NOT selected an output file for the results.  Assuming screen display only.");
+
+     m_conditionLogger.addWarning(m_ui->m_txtAuditName->text().isEmpty(),
+                                  "You have NOT set the name for this audit.  Using auto-generated name: '"+m_ui->m_txtAuditName->placeholderText().toStdString()+"'");
+
+     //Check if any conditions passed
+    if (!m_conditionLogger.hasMessages())
+    {
+        m_ui->m_dockValidationConsole->hide();
+        m_ui->m_btnExecute->setEnabled(true);
+        m_ui->actionExecute->setEnabled(true);
+        return true;
+    }
+    else
+    {
+        m_ui->m_dockValidationConsole->show();
+        m_ui->m_lstValidationConsole->setVisible(true);
+    }
+
+
+    //Loop over condition messages and populate listbox in validation console
+     size_t index = 0;
+     for(const std::string & message : m_conditionLogger.getMessages())
+     {
+         QListWidgetItem * item = new QListWidgetItem;
+         item->setText(QString::fromStdString(message));
+         if (m_conditionLogger.isError(index))
+         {
+             item->setIcon(m_iconError);
+         }
+         else if (m_conditionLogger.isWarning(index))
+         {
+             item->setIcon(m_iconWarning);
+         }
+         else
+         {
+             item->setIcon(m_iconOK);
+         }
+         ++index;
+         m_ui->m_lstValidationConsole->addItem(item);
+     }
+
+     if (m_conditionLogger.hasError())
+     {
+         m_ui->m_btnExecute->setEnabled(false);
+         m_ui->actionExecute->setEnabled(false);
+         return false;
+     }
+     else
+     {
+         m_ui->m_btnExecute->setEnabled(true);
+         m_ui->actionExecute->setEnabled(true);
+         return true;
+     }
+}
+
+void UIRStatsUAA::onUpdateClock()
+{
+    onValidate();
+}
+
 void UIRStatsUAA::onExecute()
 {
+    if (!onValidate())
+    {
+        return;
+    }
+
     try
     {
+
+        //Grab the values from the UI
         RStatsInteger sampleSize = m_ui->m_spnSampleSize->value();
         RStatsInteger universeSize = m_ui->m_spnUniverseSize->value();
         RStatsInteger coiSize = m_ui->m_spnCOI->value();
 
+        //Grab the name of the audit
         std::string name = m_ui->m_txtAuditName->text().toStdString();
         if (StringUtils::trimmed(name).empty())
         {
             name = m_ui->m_txtAuditName->placeholderText().toStdString();
         }
 
+        //Determine two-sided or one-sided interval type
         RStatsUAAConfidenceIntervalType type = RStatsUAAConfidenceIntervalType::TwoSided;
         if (coiSize == 0 || coiSize == sampleSize)
         {
@@ -128,10 +229,13 @@ void UIRStatsUAA::onExecute()
                 type = (coiSize == 0) ? RStatsUAAConfidenceIntervalType::OneSidedUpper : RStatsUAAConfidenceIntervalType::OneSidedLower;
             }
         }
+
+        //Execute the unrestricted attribute appraisal function
         RStatsUAA::inst().execute(name,sampleSize,universeSize,coiSize,type);
+
+        //Save output to a worksheet
         RStatsWorksheet output;
-        RStatsUAA::inst().saveToWorksheet(output);
-        UIRStatsUtils::bindSheetToUI(output,m_ui->m_tblOutput,false,0,1);
+        RStatsUAA::inst().saveToWorksheet(output);        
 
         //Save CSV file (for Excel/Access) if applicable
         if (m_ui->m_chkCSVOutput->isChecked())
@@ -146,13 +250,10 @@ void UIRStatsUAA::onExecute()
             FileUtils::writeFileContents(m_currentTextFileOutput.toStdString(),
                                          output.toEvenlySpacedString());
         }
-        m_ui->m_tblOutput->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-        m_ui->m_tblOutput->horizontalHeader()->hide();
+
         m_ui->m_frmOutput->show();
         m_ui->m_lblNoData->hide();
-        m_ui->m_tblOutput->setSelectionMode(QAbstractItemView::NoSelection);
-        m_ui->m_tblOutput->setGridStyle(Qt::NoPen);
-
+        m_ui->m_txtOutput->setHtml(QString::fromStdString(output.toHTMLTableString()));
 
         //Save the session data
         RStatsUAASessionData sessionData = getSessionData();
@@ -166,8 +267,8 @@ void UIRStatsUAA::onExecute()
         if (m_ui->m_chkViewInBrowser->isChecked())
         {
             std::string htmlPath = FileUtils::buildFilePath(SystemUtils::getUserTempDirectory(), FileUtils::getRandomFileName(10,0)+".html");
-            FileUtils::writeFileContents(htmlPath,output.toHTMLTableString());            
-            UIRStatsUtils::desktopOpen(htmlPath);
+            FileUtils::writeFileContents(htmlPath,output.toHTMLTableString());
+            QDesktopServices::openUrl(QString::fromStdString(htmlPath));
         }
     }
     catch (std::exception& e)
@@ -185,6 +286,7 @@ void UIRStatsUAA::onExit()
 
 RStatsUAASessionData UIRStatsUAA::getSessionData() const
 {
+
     QString text = m_ui->m_txtAuditName->text();
     if (text.isEmpty())
     {
@@ -267,6 +369,7 @@ void UIRStatsUAA::onRecentSessionSelected(QAction* action)
         RStatsUAASessionData * data = dynamic_cast<RStatsUAASessionData*>(m_recentSessionsMap[name].get());
         setSessionData(*data);
     }
+    onValidate();
 }
 
 void UIRStatsUAA::updateRecentSessions()

@@ -10,11 +10,10 @@
 #include "RStatsSVA.h"
 
 #include <QFileDialog>
-
+#include <QDesktopServices>
 
 #include "rstats_ui/inc/UIRStatsAbout.h"
 #include "rstats_ui/inc/UIRStatsUtils.hpp"
-#include "rstats_ui/inc/UIRStatsImportWorksheet.h"
 #include "rstats_ui/inc/UIRStatsErrorMessage.h"
 
 #include "rstats_utils/inc/RStatsWorkbookStreamFactory.h"
@@ -41,8 +40,17 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     m_ui->menuFile->setTitle("&File");
     m_ui->menuHelp->setTitle("&Help");
 
-    //Disable fullscreen
-    m_fullScreenToggle = false;
+    //Initialize size input preview table and add to dock container
+    m_tblSizeInputPreview = new UIRStatsTablePreviewWidget;
+    m_ui->m_dockSampleSizeInputContainer->layout()->addWidget(m_tblSizeInputPreview);
+
+    //Initialize data input preview table and add to dock container
+    m_tblDataInputPreview = new UIRStatsTablePreviewWidget;
+    m_ui->m_dockSampleDataInputContainer->layout()->addWidget(m_tblDataInputPreview);
+
+    //Initialize output table and add to its group box container
+    m_outputWorkbook = new UIRStatsWorkbook;
+    m_ui->m_grpOutput->layout()->addWidget(m_outputWorkbook);
 
     //Set audit name text to default
     m_ui->m_txtAuditName->setPlaceholderText(QString::fromStdString(RStatsUtils::getAuditName()));
@@ -60,9 +68,7 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
 
     m_currentDataFormat = RStatsDataFormatType::Examine;
 
-    //Initialize button/action elements
-    int buttonHeight = 32;
-
+    //Initialize button/action elements    
     UIRStatsUtils::initButton(m_ui->m_btnImportSampleInputData, "img_folder.png");
     UIRStatsUtils::initButton(m_ui->m_btnImportSampleSizeData, "img_folder.png");
     UIRStatsUtils::initButton(m_ui->m_btnExecute, "img_run.png");
@@ -96,12 +102,12 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     connect(m_ui->m_cmbDataInputSheets,SIGNAL(currentIndexChanged(int)),this,SLOT(onComboDataInputSheetSelected(int)));
     connect(m_ui->m_cmbSizeInputSheets,SIGNAL(currentIndexChanged(int)),this,SLOT(onComboSizeInputSheetSelected(int)));
     connect(&m_clock,SIGNAL(timeout()),this,SLOT(onUpdateClock()));    
-    connect(m_ui->m_rdbAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
-    connect(m_ui->m_rdbExamined,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
-    connect(m_ui->m_rdbDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
-    connect(m_ui->m_rdbAuditedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
-    connect(m_ui->m_rdbExaminedAndAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));
-    connect(m_ui->m_rdbExaminedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatSelection()));    
+    connect(m_ui->m_rdbAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+    connect(m_ui->m_rdbExamined,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+    connect(m_ui->m_rdbDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+    connect(m_ui->m_rdbAuditedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+    connect(m_ui->m_rdbExaminedAndAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+    connect(m_ui->m_rdbExaminedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
 
     //Enable the Examined data format as default
     m_ui->m_rdbExamined->setChecked(true);
@@ -115,19 +121,45 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     //Start the internal clock
     m_clock.start(1000);    
     onUpdateClock();
+
+    onSetTabOrder();
+}
+
+
+void UIRStatsSVA::onSetTabOrder()
+{
+    this->setTabOrder(m_ui->m_txtAuditName,m_ui->m_rdbExamined);
+    this->setTabOrder(m_ui->m_rdbExamined,m_ui->m_rdbAudited);
+    this->setTabOrder(m_ui->m_rdbAudited,m_ui->m_rdbDifference);
+    this->setTabOrder(m_ui->m_rdbDifference,m_ui->m_rdbExaminedAndAudited);
+    this->setTabOrder(m_ui->m_rdbExaminedAndAudited,m_ui->m_rdbAuditedAndDifference);
+    this->setTabOrder(m_ui->m_rdbAuditedAndDifference,m_ui->m_rdbExaminedAndDifference);
+    this->setTabOrder(m_ui->m_rdbExaminedAndDifference,m_ui->m_chkCSVOutput);
+    this->setTabOrder(m_ui->m_chkCSVOutput,m_ui->m_chkTextOutput);
+    this->setTabOrder(m_ui->m_chkTextOutput,m_ui->m_chkViewInBrowser);
+    this->setTabOrder(m_ui->m_chkViewInBrowser,m_ui->m_cmbSizeInputSheets);
+    this->setTabOrder(m_ui->m_cmbSizeInputSheets,m_ui->m_btnImportSampleSizeData);
+    this->setTabOrder(m_ui->m_btnImportSampleSizeData,m_ui->m_cmbDataRowStartSizeTable);
+    this->setTabOrder(m_ui->m_cmbDataRowStartSizeTable,m_ui->m_cmbUniverseCountSizeTable);
+    this->setTabOrder(m_ui->m_cmbUniverseCountSizeTable,m_ui->m_cmbSampleCountSizeTable);
+    this->setTabOrder(m_ui->m_cmbSampleCountSizeTable,m_tblSizeInputPreview);
+    this->setTabOrder(m_tblSizeInputPreview,m_outputWorkbook);
+    this->setTabOrder(m_outputWorkbook,m_ui->m_btnHelp);
+    this->setTabOrder(m_ui->m_btnHelp,m_ui->m_btnExecute);
+    this->setTabOrder(m_ui->m_btnExecute,m_ui->m_btnExit);
+    this->setTabOrder(m_ui->m_btnExit,m_ui->m_cmbDataInputSheets);
+    this->setTabOrder(m_ui->m_cmbDataInputSheets,m_ui->m_btnImportSampleInputData);
+    this->setTabOrder(m_ui->m_btnImportSampleInputData,m_ui->m_cmbDataRowStartDataTable);
+    this->setTabOrder(m_ui->m_cmbDataRowStartDataTable,m_ui->m_cmbExaminedDataTable);
+    this->setTabOrder(m_ui->m_cmbExaminedDataTable,m_ui->m_cmbAuditedDataTable);
+    this->setTabOrder(m_ui->m_cmbAuditedDataTable,m_ui->m_cmbDifferenceDataTable);
+    this->setTabOrder(m_ui->m_cmbDifferenceDataTable,m_tblDataInputPreview);
+    this->setTabOrder(m_tblDataInputPreview,m_ui->m_lstErrorConsole);
 }
 
 UIRStatsSVA::~UIRStatsSVA()
 {
     delete m_ui;
-}
-
-void UIRStatsSVA::keyPressEvent(QKeyEvent *evt)
-{
-    if (evt->key() == Qt::Key_F11)
-    {
-        onToggleFullScreen();
-    }
 }
 
 void UIRStatsSVA::populateWithColumns(const std::set<size_t>& columns,
@@ -187,16 +219,16 @@ bool UIRStatsSVA::onValidate()
                                    m_ui->m_cmbAuditedDataTable->count() < 2,
                                    "There are NOT enough columns for this 'difference' data format.\n Please choose another data format or import a different worksheet.");
 
-     m_conditionLogger.addError((m_ui->m_tblData->rowCount() == 0),
+     m_conditionLogger.addError((m_tblDataInputPreview->rowCount() == 0),
                                 "You have NOT created/imported any content rows into the data table.");
 
-     m_conditionLogger.addError((m_ui->m_tblSizes->rowCount() == 0),
+     m_conditionLogger.addError((m_tblSizeInputPreview->rowCount() == 0),
                                 "You have NOT created/imported any content rows into the universe/sample size table.");
 
-     m_conditionLogger.addError((m_ui->m_tblData->columnCount() == 0),
+     m_conditionLogger.addError((m_tblDataInputPreview->columnCount() == 0),
                                 "You have NOT created/imported any content columns into the data table.");
 
-     m_conditionLogger.addError((m_ui->m_tblSizes->columnCount() == 0),
+     m_conditionLogger.addError((m_tblSizeInputPreview->columnCount() == 0),
                                 "You have NOT created/imported any content columns into the universe/sample size table.");
 
      m_conditionLogger.addWarning((!m_ui->m_chkCSVOutput->isChecked() && !m_ui->m_chkTextOutput->isChecked()),
@@ -208,24 +240,18 @@ bool UIRStatsSVA::onValidate()
 
      if (!m_conditionLogger.hasMessages())
      {         
-         if (!m_fullScreenToggle)
-         {
-            m_ui->m_dockErrorConsole->hide();
-            m_ui->m_lblErrorConsole->setVisible(true);
-            m_ui->m_lstErrorConsole->setVisible(false);
-         }
-
-
+         m_ui->m_dockErrorConsole->hide();
+         m_ui->m_lblErrorConsole->setVisible(true);
+         m_ui->m_lstErrorConsole->setVisible(false);
          m_ui->m_btnExecute->setEnabled(true);
          m_ui->actionExecute->setEnabled(true);
          return true;
      }     
-     if (!m_fullScreenToggle)
-     {
-        m_ui->m_dockErrorConsole->show();
-        m_ui->m_lblErrorConsole->setVisible(false);
-        m_ui->m_lstErrorConsole->setVisible(true);
-     }
+
+     m_ui->m_dockErrorConsole->show();
+     m_ui->m_lblErrorConsole->setVisible(false);
+     m_ui->m_lstErrorConsole->setVisible(true);
+
      size_t index = 0;
      for(const std::string & message : m_conditionLogger.getMessages())
      {
@@ -251,29 +277,30 @@ bool UIRStatsSVA::onValidate()
      {
          m_ui->m_btnExecute->setEnabled(false);
          m_ui->actionExecute->setEnabled(false);
+         return false;
      }
      else
      {
          m_ui->m_btnExecute->setEnabled(true);
          m_ui->actionExecute->setEnabled(true);
-     }
-     return false;
+         return true;
+     }     
 }
 
 void UIRStatsSVA::onSampleSizeInputSheetSelected(const RStatsWorksheet &sheet)
 {    
-    UIRStatsUtils::bindSheetToUI(sheet,m_ui->m_tblSizes,true,0,0);
+    UIRStatsUtils::bindSheetToUI(sheet,m_tblSizeInputPreview,true,0,0);
     m_currentSizeSheet = sheet;
     onUpdateRowColumnExtentsForSizeTable();
-    m_ui->m_tblSizes->verticalHeader()->show();
+    m_tblSizeInputPreview->verticalHeader()->show();
 }
 
 void UIRStatsSVA::onSampleDataInputSheetSelected(const RStatsWorksheet &sheet)
 {
-    UIRStatsUtils::bindSheetToUI(sheet,m_ui->m_tblData,true,0,0);
+    UIRStatsUtils::bindSheetToUI(sheet,m_tblDataInputPreview,true,0,0);
     m_currentDataSheet = sheet;
     onUpdateRowColumnExtentsForDataTable();
-    m_ui->m_tblData->verticalHeader()->show();
+    m_tblDataInputPreview->verticalHeader()->show();
 }
 
 void UIRStatsSVA::onComboSizeInputSheetSelected(int row)
@@ -311,11 +338,14 @@ void UIRStatsSVA::onUpdateClock()
 
 void UIRStatsSVA::onExecute()
 {
+    //Update validation console
+    if (!onValidate())
+    {
+        return;
+    }
+
     try
     {
-        //Update validation console
-        onValidate();
-
         //Setup the dataformat index
         RStatsDataFormatTypeIndex dfIndex;
         if (m_ui->m_rdbAudited->isChecked())
@@ -381,17 +411,9 @@ void UIRStatsSVA::onExecute()
         RStatsWorkbook workbook;
         sva.saveToWorkbook(workbook);
 
-        //Initialize workbook control
-        QLayoutItem *item;
-        while ((item = m_ui->m_grpOutput->layout()->takeAt(0)))
-        {
-            delete item;
-        }
-        m_outputWorkbook = new UIRStatsWorkbook;
-        m_ui->m_grpOutput->layout()->addWidget(m_outputWorkbook);
+        //Save output of function to display workbook
+        m_outputWorkbook->clear();
         m_outputWorkbook->setWorkbook(workbook);
-        m_outputWorkbook->onStretchToContents();
-        m_outputWorkbook->onHideGridLines();
         m_ui->m_lblNoData->hide();
         m_ui->m_grpOutput->show();
 
@@ -405,9 +427,6 @@ void UIRStatsSVA::onExecute()
         {
             workbook.save(m_currentCSVFileOutput.toStdString());
         }
-
-        //Display results in full screen
-        onToggleFullScreen();
 
         //Set session data
         RStatsSVASessionData sessionData = getSessionData();
@@ -424,8 +443,9 @@ void UIRStatsSVA::onExecute()
             RStatsWorksheet worksheet = workbook.mergeSheets(RStatsWorkbookMergeDirection::MergeBottom,2);
             std::string htmlPath = FileUtils::buildFilePath(SystemUtils::getUserTempDirectory(), FileUtils::getRandomFileName(10,0)+".html");
             FileUtils::writeFileContents(htmlPath,worksheet.toHTMLTableString());
-            UIRStatsUtils::desktopOpen(htmlPath);
+            QDesktopServices::openUrl(QString::fromStdString(htmlPath));
         }
+
     }
     catch (std::exception& e)
     {
@@ -436,44 +456,8 @@ void UIRStatsSVA::onExecute()
 }
 
 void UIRStatsSVA::onExit()
-{
-    if (m_fullScreenToggle)
-    {
-        onToggleFullScreen();
-    }
-    else
-    {
-        this->close();
-    }
-}
-
-void UIRStatsSVA::onToggleFullScreen()
-{
-    m_fullScreenToggle = !m_fullScreenToggle;
-    if (m_fullScreenToggle)
-    {
-        m_ui->m_dockErrorConsole->hide();
-        m_ui->m_dockOptions->hide();
-        m_ui->m_dockSampleDataInput->hide();
-        m_ui->m_dockSampleSizeInput->hide();
-        m_ui->m_btnHelp->hide();
-        m_ui->m_btnExecute->hide();
-        m_ui->m_btnExit->setText("Click here or press F11 to exit full-screen mode");
-        m_ui->m_grpOutput->setTitle("Output Data (Press F11 to exit full-screen mode)");
-        this->setWindowState(Qt::WindowMaximized);
-    }
-    else
-    {
-        m_ui->m_dockErrorConsole->show();
-        m_ui->m_dockOptions->show();
-        m_ui->m_dockSampleDataInput->show();
-        m_ui->m_dockSampleSizeInput->show();
-        m_ui->m_frmCommand->show();
-        m_ui->m_grpOutput->setTitle("Output Data:");
-        m_ui->m_btnHelp->show();
-        m_ui->m_btnExecute->show();
-        m_ui->m_btnExit->setText("Exit");
-    }
+{  
+    this->close();
 }
 
 void UIRStatsSVA::importDataTable(const std::string &dataTableFilePath)
@@ -607,13 +591,9 @@ void UIRStatsSVA::onImportSizeInput()
 void UIRStatsSVA::onHelp()
 {
     QString url = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_help/rstats_sva.pdf"));
-    if (!QFile::exists(url))
+    if (!QFile::exists(url) || !QDesktopServices::openUrl(url))
     {
         UIRStatsErrorMessage("Could not load help file","Could not open the help file located at \"" + url.toStdString() + "\"",false,this).exec();
-    }
-    else
-    {
-        UIRStatsUtils::desktopOpen(url.toStdString());
     }
 }
 
@@ -622,6 +602,36 @@ void UIRStatsSVA::onAbout()
     UIRStatsAbout().exec();
 }
 
+void UIRStatsSVA::onUpdateDataFormatButtons()
+{
+    QAbstractButton * button = qobject_cast<QAbstractButton*>(sender());
+    if (button)
+    {
+        disconnect(m_ui->m_rdbAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+        disconnect(m_ui->m_rdbExamined,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+        disconnect(m_ui->m_rdbDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+        disconnect(m_ui->m_rdbAuditedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+        disconnect(m_ui->m_rdbExaminedAndAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+        disconnect(m_ui->m_rdbExaminedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+
+        m_ui->m_rdbAudited->setChecked(false);
+        m_ui->m_rdbExamined->setChecked(false);
+        m_ui->m_rdbDifference->setChecked(false);
+        m_ui->m_rdbAuditedAndDifference->setChecked(false);
+        m_ui->m_rdbExaminedAndAudited->setChecked(false);
+        m_ui->m_rdbExaminedAndDifference->setChecked(false);
+        button->setChecked(true);
+        onUpdateDataFormatSelection();
+
+        connect(m_ui->m_rdbAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+        connect(m_ui->m_rdbExamined,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+        connect(m_ui->m_rdbDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+        connect(m_ui->m_rdbAuditedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+        connect(m_ui->m_rdbExaminedAndAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+        connect(m_ui->m_rdbExaminedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+        onValidate();
+    }
+}
 
 void UIRStatsSVA::onUpdateDataFormatSelection()
 {
@@ -822,6 +832,7 @@ void UIRStatsSVA::onRecentSessionSelected(QAction* action)
         RStatsSVASessionData * data = dynamic_cast<RStatsSVASessionData*>(m_recentSessionsMap[name].get());
         setSessionData(*data);
     }
+    onValidate();
 }
 
 void UIRStatsSVA::updateRecentSessions()

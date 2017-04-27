@@ -94,7 +94,7 @@ void RStatsSSRN::saveToWorksheet(RStatsWorksheet &worksheetOut)
     size_t r = 1;
     for (const RStatsSSRNValue& value : m_outputData.values)
     {
-        std::string type = (value.orderType==RStatsSSRNOrderType::RandomlyOrdered?"(Random)":"(Spare)");
+        std::string type = (value.orderType==RStatsSSRNOrderType::RandomlyOrdered?"(Spares)":"(Original Sample)");
         Color typeBg = (value.orderType==RStatsSSRNOrderType::RandomlyOrdered?Color(255,255,200):Color(200,255,255));
         Color typeFg = Color(1,1,1);
         worksheetOut(r,2) = type;
