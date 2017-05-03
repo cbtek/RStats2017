@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>957</width>
+    <width>1024</width>
     <height>768</height>
    </rect>
   </property>
@@ -231,7 +231,7 @@
   </widget>
   <widget class="QDockWidget" name="m_dockOptions">
    <property name="features">
-    <set>QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetVerticalTitleBar</set>
+    <set>QDockWidget::NoDockWidgetFeatures</set>
    </property>
    <property name="allowedAreas">
     <set>Qt::BottomDockWidgetArea|Qt::TopDockWidgetArea</set>
@@ -260,7 +260,7 @@
       <widget class="QFrame" name="m_frmOptions">
        <layout class="QHBoxLayout" name="horizontalLayout_4">
         <property name="spacing">
-         <number>11</number>
+         <number>6</number>
         </property>
         <property name="leftMargin">
          <number>2</number>
@@ -275,41 +275,60 @@
          <number>2</number>
         </property>
         <item>
-         <widget class="QGroupBox" name="m_grpNumberingOptions">
+         <widget class="QGroupBox" name="m_grpCustomSeed">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
           <property name="title">
-           <string>Input Options:</string>
+           <string>Audit / Review Name:</string>
           </property>
-          <layout class="QGridLayout" name="gridLayout">
+          <layout class="QVBoxLayout" name="verticalLayout_13">
+           <property name="leftMargin">
+            <number>11</number>
+           </property>
            <property name="topMargin">
+            <number>11</number>
+           </property>
+           <property name="rightMargin">
             <number>11</number>
            </property>
            <property name="bottomMargin">
             <number>11</number>
            </property>
-           <item row="0" column="3">
-            <widget class="QLabel" name="label_2">
-             <property name="text">
-              <string>Spares</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
+           <item>
+            <widget class="QLineEdit" name="m_txtAuditName"/>
            </item>
-           <item row="1" column="2">
-            <widget class="QSpinBox" name="m_spnOrder">
-             <property name="maximum">
-              <number>100000</number>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="verticalGroupBox_4">
+          <property name="title">
+           <string>Custom Seed Number:</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_12">
+           <property name="leftMargin">
+            <number>11</number>
+           </property>
+           <property name="topMargin">
+            <number>11</number>
+           </property>
+           <property name="rightMargin">
+            <number>11</number>
+           </property>
+           <property name="bottomMargin">
+            <number>11</number>
+           </property>
+           <item>
             <widget class="QDoubleSpinBox" name="m_spnSeed">
              <property name="decimals">
               <number>8</number>
@@ -322,17 +341,84 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="5">
-            <widget class="QSpinBox" name="m_spnHighNumber">
-             <property name="minimum">
-              <number>-999999999</number>
-             </property>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="verticalGroupBox_3">
+          <property name="title">
+           <string>Sequential Count:</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_10">
+           <property name="leftMargin">
+            <number>11</number>
+           </property>
+           <property name="topMargin">
+            <number>11</number>
+           </property>
+           <property name="rightMargin">
+            <number>11</number>
+           </property>
+           <property name="bottomMargin">
+            <number>11</number>
+           </property>
+           <item>
+            <widget class="QSpinBox" name="m_spnOrder">
              <property name="maximum">
-              <number>999999999</number>
+              <number>100000</number>
              </property>
             </widget>
            </item>
-           <item row="1" column="4">
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="verticalGroupBox_2">
+          <property name="title">
+           <string>Spares Count:</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_9">
+           <property name="leftMargin">
+            <number>11</number>
+           </property>
+           <property name="topMargin">
+            <number>11</number>
+           </property>
+           <property name="rightMargin">
+            <number>11</number>
+           </property>
+           <property name="bottomMargin">
+            <number>11</number>
+           </property>
+           <item>
+            <widget class="QSpinBox" name="m_spnSpares">
+             <property name="maximum">
+              <number>100000</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="verticalGroupBox">
+          <property name="title">
+           <string>Low Number:</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_8">
+           <property name="leftMargin">
+            <number>11</number>
+           </property>
+           <property name="topMargin">
+            <number>11</number>
+           </property>
+           <property name="rightMargin">
+            <number>11</number>
+           </property>
+           <property name="bottomMargin">
+            <number>11</number>
+           </property>
+           <item>
             <widget class="QSpinBox" name="m_spnLowNumber">
              <property name="minimum">
               <number>-999999999</number>
@@ -342,63 +428,34 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="2">
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string>Sequential</string>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="verticalGroupBox">
+          <property name="title">
+           <string>High Number:</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_7">
+           <property name="leftMargin">
+            <number>11</number>
+           </property>
+           <property name="topMargin">
+            <number>11</number>
+           </property>
+           <property name="rightMargin">
+            <number>11</number>
+           </property>
+           <property name="bottomMargin">
+            <number>11</number>
+           </property>
+           <item>
+            <widget class="QSpinBox" name="m_spnHighNumber">
+             <property name="minimum">
+              <number>-999999999</number>
              </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="4">
-            <widget class="QLabel" name="label_3">
-             <property name="text">
-              <string>Low</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="5">
-            <widget class="QLabel" name="label_4">
-             <property name="text">
-              <string>High</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="3">
-            <widget class="QSpinBox" name="m_spnSpares">
              <property name="maximum">
-              <number>100000</number>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLineEdit" name="m_txtAuditName"/>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_6">
-             <property name="text">
-              <string>Audit/Review Name</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QCheckBox" name="m_chkCustomSeed">
-             <property name="text">
-              <string>Custom Seed Number</string>
-             </property>
-             <property name="checked">
-              <bool>false</bool>
+              <number>999999999</number>
              </property>
             </widget>
            </item>
@@ -469,7 +526,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>957</width>
+     <width>1024</width>
      <height>20</height>
     </rect>
    </property>
@@ -506,7 +563,7 @@
     </size>
    </property>
    <property name="features">
-    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetVerticalTitleBar</set>
+    <set>QDockWidget::DockWidgetVerticalTitleBar</set>
    </property>
    <property name="allowedAreas">
     <set>Qt::BottomDockWidgetArea|Qt::TopDockWidgetArea</set>
@@ -582,7 +639,6 @@
  </widget>
  <tabstops>
   <tabstop>m_txtAuditName</tabstop>
-  <tabstop>m_chkCustomSeed</tabstop>
   <tabstop>m_spnSeed</tabstop>
   <tabstop>m_spnOrder</tabstop>
   <tabstop>m_spnSpares</tabstop>

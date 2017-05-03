@@ -135,7 +135,7 @@ void UIRStatsSettingsManager::onInitScriptProviders()
     }
     table->verticalHeader()->hide();
     table->horizontalHeader()->hide();
-    table->setSelectionMode(QTableWidget::NoSelection);
+    table->setSelectionMode(QTableWidget::NoSelection);    
     table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     table->setShowGrid(false);
     table->setAlternatingRowColors(true);

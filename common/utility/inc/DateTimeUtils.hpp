@@ -35,6 +35,13 @@ SOFTWARE.
 namespace cbtek{
 namespace common{
 namespace utility{
+
+/**
+ * @brief This embedded class contains utilities in support of DateTimeUtils
+ * Although the DRY is violated, this class can stay dependency free and be used
+ * freely without needing external support
+ *
+ */
 class DateTimeUtils_EmbeddedUtils
 {
 
@@ -115,11 +122,11 @@ public:
 
 
     /**
-     * @brief contains
-     * @param src
-     * @param subStr
+     * @brief contains Checks to see if subStr exists within srcStr
+     * @param srcStr The original source string
+     * @param subStr The substring to look for
      * @param caseSensitive
-     * @return
+     * @return Return true if subStr exists within srcStr, false otherwise
      */
     static bool contains(const std::string &srcStr,
                          const std::string &subStr,
@@ -143,6 +150,12 @@ public:
         return false;
     }
 
+
+    /**
+     * @brief toNumber Converts string value to numeric type
+     * @param value The string to convert
+     * @return Returns numeric type of conversion
+     */
     template<typename T>
     static T toNumber(const std::string & value)
     {
@@ -151,14 +164,19 @@ public:
         in>>returnValue;
         return returnValue;
     }
-
-
 };
 
+/**
+ * @brief The DateEntity class represents a single date object
+ * for use in DateTimeUtils and DateUtils
+ */
 class CBTEK_UTILS_DLL DateEntity
 {
 
 public:
+    /**
+     * @brief DateEntity (Constructor) Default
+     */
     DateEntity()
     {
         m_month = 1;
@@ -166,6 +184,13 @@ public:
         m_year = 1970;
     }
 
+    /**
+     * @brief DateEntity (Constructor) Send in integer components
+     * for month, day and year
+     * @param month The month to set
+     * @param day The day to set
+     * @param year The year to set
+     */
     DateEntity(const size_t &month, const size_t &day, const size_t &year)
     {
         m_month = month;
@@ -173,6 +198,11 @@ public:
         m_year = year;
     }
 
+    /**
+     * @brief DateEntity (Constructor) Send in integer containing date components in
+     * form of YYYYMMDD
+     * @param dateInteger The date components to set
+     */
     DateEntity(const size_t &dateInteger)
     {
         std::string dateStr = std::to_string(dateInteger);
@@ -190,36 +220,64 @@ public:
         }
     }
 
+    /**
+     * @brief getMonth Gets the month value
+     * @return Returns the month value
+     */
     size_t getMonth() const
     {
         return m_month;
     }
 
+    /**
+     * @brief getDay Gets the day value
+     * @return Returns the day value
+     */
     size_t getDay() const
     {
         return m_day;
     }
 
+    /**
+     * @brief getYear Gets the year value
+     * @return Returns the year value
+     */
     size_t getYear() const
     {
         return m_year;
     }
 
+    /**
+     * @brief setMonth Sets the month value
+     * @param month The month to set
+     */
     void setMonth(const size_t &month)
     {
         m_month = month;
     }
 
+    /**
+     * @brief setDay Sets the day value
+     * @param day The day to set
+     */
     void setDay(const size_t &day)
     {
         m_day = day;
     }
 
+    /**
+     * @brief setYear Sets the year value
+     * @param year The year to set
+     */
     void setYear(const size_t &year)
     {
         m_year = year;
     }
 
+    /**
+     * @brief toDateInteger Converts date object into unique integer
+     * @return Return date as integer YYYYMMDD
+     */
     size_t toDateInteger() const
     {
         std::string dateStr = std::to_string(m_year)+
@@ -228,37 +286,72 @@ public:
         return DateTimeUtils_EmbeddedUtils::toNumber<size_t>(dateStr);
     }
 
+    /**
+     * @brief operator< Checks if date is less than or equal to (*this)
+     * @param date The date to compare against
+     * @return True if (*this) is less than date, false otherwise
+     */
     bool operator <(const DateEntity &date) const
     {
        return toDateInteger() < date.toDateInteger();
     }
 
+    /**
+     * @brief operator<= Checks if date is less than or equal to (*this)
+     * @param date The date to compare against
+     * @return True if (*this) is less than or equal to date, false otherwise
+     */
     bool operator<= (const DateEntity &date) const
     {
         return toDateInteger()<=  date.toDateInteger();
     }
 
+    /**
+     * @brief operator> Checks if date is greater than to (*this)
+     * @param date The date to compare against
+     * @return True if (*this) is greater than to date, false otherwise
+     */
     bool operator >(const DateEntity &date) const
     {
         return toDateInteger()>date.toDateInteger();
     }
 
+    /**
+     * @brief operator>= Checks if date is greater than or equal to (*this)
+     * @param date The date to compare against
+     * @return True if (*this) is greater than or equal to date, false otherwise
+     */
     bool operator>= (const DateEntity &date) const
     {
         return toDateInteger()>= date.toDateInteger();
     }
 
+    /**
+     * @brief operator!= Checks if date is equal to (*this)
+     * @param date The date to compare against
+     * @return True if dates are equal, false otherwise
+     */
     bool operator  ==  (const DateEntity &date) const
     {
         return toDateInteger() ==  date.toDateInteger();
     }
 
+    /**
+     * @brief operator!= Checks if date is not equal to (*this)
+     * @param date The date to compare against
+     * @return True if dates are not equal, false otherwise
+     */
     bool operator!= (const DateEntity &date) const
     {
         return toDateInteger()!= date.toDateInteger();
     }
 
-    size_t operator -(const DateEntity &date) const
+    /**
+     * @brief operator- Get number of days between two dates
+     * @param date The second date to subtract from
+     * @return Total number of days between this->m_day and date.getDay()
+     */
+    size_t operator-(const DateEntity &date) const
     {
 
         size_t lowYear = 0,highYear = 0;
@@ -299,6 +392,10 @@ public:
         return days;
     }
 
+    /**
+     * @brief isLeapYear Determine if current year is leap year
+     * @return Returns true if leap year, false otherwise
+     */
     bool isLeapYear() const
     {
     //    The year is evenly divisible by 4;
@@ -307,6 +404,10 @@ public:
         return ((m_year % 4  ==  0 && m_year % 100 !=  0) || m_year % 400  ==   0);
     }
 
+    /**
+     * @brief getDays() Gets number of days since beginning of year
+     * @return Total number of days since beginning of year
+     */
     size_t getDays() const
     {
         size_t daysInMonth[12] = {31,28,31,30,31,30,31,31,30,31,30,31};
@@ -334,11 +435,30 @@ private:
     size_t m_year;
 };
 
-
+/**
+ * @brief The TimeEntity class represents a single time object
+ * for use in DateTimeUtils and TimeUtils
+ */
 class CBTEK_UTILS_DLL TimeEntity
 {
 public:
 
+    /**
+     * @brief TimeEntity (Constructor) Default
+     */
+    TimeEntity()
+    {
+        m_hour = 0;
+        m_minute = 0;
+        m_second = 0;
+        m_millisecond = 0;
+    }
+
+    /**
+     * @brief TimeEntity (Constructor) Create time object with integer
+     * containing time components in the form of HHMMSS
+     * @param time Integer containing HHMMSS components
+     */
     TimeEntity(const size_t &time)
     {
 
@@ -365,18 +485,18 @@ public:
         m_millisecond = 0;
     }
 
-    TimeEntity()
-    {
-        m_hour = 0;
-        m_minute = 0;
-        m_second = 0;
-        m_millisecond = 0;
-    }
-
+    /**
+     * @brief TimeEntity (Constructor) Creates TimeEntity object
+     * with hour, minute, second and optional millisecond components
+     * @param hour The hour to set
+     * @param minute The minute to set
+     * @param second The second to set
+     * @param millisecond The millisecond to set
+     */
     TimeEntity(size_t hour,
-                           size_t minute,
-                           size_t second,
-                           size_t millisecond = 0)
+               size_t minute,
+               size_t second,
+               size_t millisecond = 0)
     {
         m_hour = hour;
         m_minute = minute;
@@ -384,71 +504,141 @@ public:
         m_millisecond = millisecond;
     }
 
+    /**
+     * @brief operator> Checks if the time object
+     * is greater than the (*this) object
+     * @param time The time object to compare against
+     * @return True if (*this) is greater than time, false otherwise
+     */
     bool operator>(const TimeEntity &time) const
     {
         return (this->getAsSeconds() > time.getAsSeconds());
     }
 
+
+    /**
+     * @brief operator< Checks if the time object
+     * is less than the (*this) object
+     * @param time The time object to compare against
+     * @return True if (*this) is less than time, false otherwise
+     */
     bool operator<(const TimeEntity &time) const
     {
         return (this->getAsSeconds() < time.getAsSeconds());
     }
 
+    /**
+     * @brief operator<= Checks if the time object
+     * is less than or equal to (*this) object
+     * @param time The time object to compare against
+     * @return True if (*this) is less than or equal to time,
+     * false otherwise
+     */
     bool operator<= (const TimeEntity &time) const
     {
         return (this->getAsSeconds() <=  time.getAsSeconds());
     }
 
+    /**
+     * @brief operator>= Checks if the time object
+     * is greater than or equal to (*this) object
+     * @param time The time object to compare against
+     * @return True if (*this) is greater than or equal to time,
+     * false otherwise
+     */
     bool operator>= (const TimeEntity &time) const
     {
         return (this->getAsSeconds() >=  time.getAsSeconds());
     }
 
+    /**
+     * @brief operator== Checks if the time object
+     * is equal to (*this) object
+     * @param time The time object to compare against
+     * @return True if (*this) is equal to time, false otherwise
+     */
     bool operator==  (const TimeEntity &time) const
     {
         return (time.getHour() ==  m_hour && time.getMinute() ==  m_minute && time.getSecond() ==  m_second && time.getMillisecond() ==  m_millisecond);
     }
 
+    /**
+     * @brief setHour Sets the hour value
+     * @param hour The hour to set
+     */
     void setHour(const size_t &hour)
     {
         m_hour = hour;
     }
 
+    /**
+     * @brief setMinute Sets the minute value
+     * @param minute The minute to set
+     */
     void setMinute(const size_t &minute)
     {
         m_minute = minute;
     }
 
+    /**
+     * @brief setSecond Sets the second value
+     * @param second The second to set
+     */
     void setSecond(const size_t &second)
     {
         m_second = second;
     }
 
+    /**
+     * @brief setMillisecond Sets the millisecond value
+     * @param millisecond The millisecond to set
+     */
     void setMillisecond(const size_t &millisecond)
     {
         m_millisecond = millisecond;
     }
 
+    /**
+     * @brief getHour Get the hour value
+     * @return Value of m_hour
+     */
     size_t getHour() const
     {
         return m_hour;
     }
 
+    /**
+     * @brief getMinute Get the minute value
+     * @return Value of m_minute
+     */
     size_t getMinute() const
     {
         return m_minute;
     }
 
+    /**
+     * @brief getSecond Get the second value
+     * @return Value of m_second
+     */
     size_t getSecond() const
     {
         return m_second;
     }
 
+    /**
+     * @brief getMillisecond Get the millisecond value
+     * @return Value of m_millisecond
+     */
     size_t getMillisecond() const
     {
         return m_millisecond;
     }
 
+    /**
+     * @brief toTimeInteger Returns integer of (*this) time value
+     * in form of HHMMSS integer
+     * @return Return integer of current time components
+     */
     size_t toTimeInteger() const
     {
         std::string hourStr = std::to_string(m_hour);
@@ -458,21 +648,37 @@ public:
         return DateTimeUtils_EmbeddedUtils::toNumber<size_t>(timeStr);
     }
 
+    /**
+     * @brief getAsMinutes Get total number of minutes
+     * @return  Return integer of total number of minutes
+     */
     size_t getAsMinutes() const
     {
         return (m_hour*60)+m_minute;
     }
 
+    /**
+     * @brief getAsSeconds Get total number of seconds
+     * @return Return integer of total number of seconds
+     */
     size_t getAsSeconds() const
     {
         return (getAsMinutes()*60)+m_second;
     }
 
+    /**
+     * @brief getAsMilliseconds Get total number of milliseconds
+     * @return Return integer of total number of milliseconds
+     */
     size_t getAsMilliseconds() const
     {
         return (getAsSeconds()*1000)+m_millisecond;
     }
 
+    /**
+     * @brief getAsMicroseconds Get total number of microseconds
+     * @return Return integer of total number of microseconds
+     */
     size_t getAsMicroseconds() const
     {
         return (getAsMilliseconds()*1000);
@@ -486,7 +692,9 @@ private:
 };
 
 
-
+/**
+ * @brief Defining some typdefs for commonly used types
+ */
 typedef std::chrono::system_clock SystemClock;
 typedef std::chrono::high_resolution_clock HighResolutionClock;
 typedef HighResolutionClock::time_point HighResolutionTimePoint;
@@ -496,6 +704,10 @@ typedef std::chrono::microseconds Microseconds;
 typedef std::chrono::nanoseconds Nanoseconds;
 typedef std::chrono::seconds Seconds;
 
+/**
+ * @brief The TimeUtils class contains useful functions for dealing
+ * the TimeEntity class
+ */
 class TimeUtils
 {
 
@@ -658,7 +870,9 @@ public:
     }
 };
 
-
+/**
+ * @brief The DateUtils class
+ */
 class DateUtils
 {
 

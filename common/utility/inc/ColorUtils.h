@@ -33,47 +33,53 @@ namespace cbtek {
 namespace common {
 namespace utility {
 
-namespace colorStringStyle
+/**
+ * @brief The ColorStringStyle enum contains
+ * style associated with parsing strings
+ * with color information
+ */
+enum class ColorStringStyle
 {
-    enum ColorStringStyle
-    {
-        RGB_255        //eg. 255 127 64
-        ,RGBA_255      //eg. 255 127 64 255
-        ,RGB_FLOAT     //eg. 1.0 0.5 0.25
-        ,RGBA_FLOAT    //eg. 1.0 0.5 0.25 1.0
-        ,RGB_HTML_HEX  //eg. #FFAA33
-        ,RGBA_HTML_HEX //eg. #FFAA33AA
-        ,ARGB_HTML_HEX //eg. #AARRGGBB
-    };
-}
+    RGB_255        //eg. 255 127 64
+    ,RGBA_255      //eg. 255 127 64 255
+    ,RGB_FLOAT     //eg. 1.0 0.5 0.25
+    ,RGBA_FLOAT    //eg. 1.0 0.5 0.25 1.0
+    ,RGB_HTML_HEX  //eg. #FFAA33
+    ,RGBA_HTML_HEX //eg. #FFAA33AA
+    ,ARGB_HTML_HEX //eg. #AARRGGBB
+};
+
 class Color
 {
 public:
 
     /**
-     * @brief Color
+     * @brief Color Constructor for this class
      */
     Color();
 
     /**
-     * @brief Color
-     * @param color
+     * @brief Color Constructor for this class
+     * @param color 32-bit color defined as 8
+     * bit components of RGBA
      */
     Color(std::uint32_t color);
 
     /**
-     * @brief Color
-     * @param rgbaHex
+     * @brief Color Constructor for this class
+     * @param rgbaHex Hexadecimal string representing the
+     * color to be set upon construction
      */
     Color(const std::string & rgbaHex);
 
     /**
-     * @brief Color
-     * @param name
-     * @param red
-     * @param green
-     * @param blue
-     * @param alpha
+     * @brief Color Constructor for this class
+     * @param name String name/id for the color
+     * @param red 8-bit red component for this color [0-255]
+     * @param green 8-bit green component for this color [0-255]
+     * @param blue 8-bit blue component for this color [0-255]
+     * @param alpha 8-bit opacity component for this color [0-255]
+     * Higher value results in less transparency
      */
     Color(const std::string & name,const uint8_t & red,
           const uint8_t & green,
@@ -81,11 +87,12 @@ public:
           const uint8_t & alpha=255);
 
     /**
-     * @brief Color
-     * @param red
-     * @param green
-     * @param blue
-     * @param alpha
+     * @brief Color Constructor for this class
+     * @param red 8-bit red component for this color [0-255]
+     * @param green 8-bit green component for this color [0-255]
+     * @param blue 8-bit blue component for this color [0-255]
+     * @param alpha 8-bit opacity component for this color [0-255]
+     * Higher value results in less transparency
      */
     Color(const uint8_t & red,
           const uint8_t & green,
@@ -93,11 +100,12 @@ public:
           const uint8_t & alpha=255);
 
     /**
-     * @brief set
-     * @param red
-     * @param green
-     * @param blue
-     * @param alpha
+     * @brief set Sets the color using rgba components
+     * @param red 8-bit red component for this color [0-255]
+     * @param green 8-bit green component for this color [0-255]
+     * @param blue 8-bit blue component for this color [0-255]
+     * @param alpha 8-bit opacity component for this color [0-255]
+     * Higher value results in less transparency
      */
     void set (const uint8_t & red,
               const uint8_t & green,
@@ -105,101 +113,103 @@ public:
               const uint8_t & alpha=255);
 
     /**
-     * @brief set
-     * @param htmlColor
+     * @brief set Sets the color from a html string
+     * @param htmlColor The string containing color information
+     * (e.g #AAFFCC, #abc, #ef41af)
      */
     void set(const std::string& htmlColor);
 
     /**
-     * @brief setRed
-     * @param red
+     * @brief setRed Sets the red component
+     * @param Red intensity value for the red component [0-255]
      */
     void setRed(const uint8_t & red);
 
     /**
-     * @brief setGreen
-     * @param green
+     * @brief setGreen Sets the green component
+     * @param Green intensity value for the green component [0-255]
      */
     void setGreen(const uint8_t & green);
 
     /**
-     * @brief setBlue
-     * @param blue
+     * @brief setBlue Sets the blue component
+     * @param Blue intensity value for the blue component [0-255]
      */
     void setBlue(const uint8_t & blue);
 
     /**
-     * @brief setAlpha
-     * @param alpha
+     * @brief setAlpha Sets the alpha component
+     * @param Alpha intensity value for the alpha component [0-255]
      */
     void setAlpha(const uint8_t & alpha);
 
     /**
-     * @brief getRed
-     * @return
-     */
-    uint8_t getRed() const;
-
-    /**
-     * @brief toInteger
-     * @return
+     * @brief toInteger Converts color to 32-bit numeric value
+     * @return Integer of converted color
      */
     std::uint32_t toInteger() const;
 
     /**
-     * @brief operator ==
-     * @param color
-     * @return
+     * @brief operator == Determine if two colors are equal
+     * @param color The color to test against
+     * @return Return true if colors match, false otherwise
      */
     bool operator==(const Color & color) const;
 
     /**
-     * @brief operator !=
-     * @param color
-     * @return
+     * @brief operator != Determine if two colors are not equal
+     * @param color The color to test against
+     * @return Return true if colors don't match, false otherwise
      */
     bool operator!=(const Color & color) const;
 
     /**
-     * @brief getGreen
-     * @return
+     * @brief getRed Gets the red component
+     * @return 8-bit red component value
+     */
+    uint8_t getRed() const;
+
+    /**
+     * @brief getGreen Gets the green component
+     * @return 8-bit green component value
      */
     uint8_t getGreen() const;
 
     /**
-     * @brief getBlue
-     * @return
+     * @brief getBlue Gets the blue component
+     * @return 8-bit blue component value
      */
     uint8_t getBlue() const;
 
     /**
-     * @brief getAlpha
-     * @return
+     * @brief getAlpha Gets the alpha component
+     * @return 8-bit alpha component value
      */
     uint8_t getAlpha() const;
 
     /**
-     * @brief toString
-     * @param style
-     * @return
-     */
-    std::string toString(const colorStringStyle::ColorStringStyle &style=colorStringStyle::RGBA_255) const;
-
-    /**
-     * @brief isTransparent
-     * @return
+     * @brief isTransparent Return true if color
+     *  can be considered transparent
+     * @return Return true if transparent, false otherwise
      */
     bool isTransparent() const;
 
     /**
-     * @brief getName
-     * @return
+     * @brief toString Convert color to string
+     * @param style Use string style in ColorStringStyle
+     * @return Converted string
+     */
+    std::string toString(const ColorStringStyle& style = ColorStringStyle::RGBA_255) const;
+
+    /**
+     * @brief getName Get the name of this color
+     * @return Return name of color
      */
     std::string getName() const;
 
     /**
-     * @brief setName
-     * @param name
+     * @brief setName Sets name for current color
+     * @param name String representing name
      */
     void setName(const std::string & name);
 

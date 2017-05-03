@@ -20,14 +20,18 @@
 #include <QActionGroup>
 #include <QPushButton>
 #include <QPixmap>
+#include <QUrl>
+#include <QDesktopServices>
+#include <QComboBox>
 
 #include <map>
 
 #include "rstats_utils/inc/RStatsUtils.hpp"
 #include "rstats_utils/inc/RStatsModuleSessionDataImpl.h"
 #include "rstats_utils/inc/RStatsWorkbook.h"
-
 #include "rstats_utils/inc/RStatsSettingsManager.h"
+
+#include "UIRStatsErrorMessage.h"
 
 #include "utility/inc/SystemUtils.hpp"
 #include "utility/inc/FileUtils.hpp"
@@ -58,6 +62,47 @@ namespace UIRStatsUtils
         #else
             QDesktopServices::openUrl(QString::fromStdString(url));
         #endif
+    }
+
+    /**
+     * @brief launchHelp
+     * @param pdf
+     */
+    inline void launchHelp(const std::string& pdf)
+    {
+        QUrl url = QUrl(QString::fromStdString(cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getCurrentExecutableDirectory(),"rstats_help/"+pdf)));
+        if (!QFile::exists(url.toString()) || !QDesktopServices::openUrl(url))
+        {
+            UIRStatsErrorMessage("Could not load help file","Could not open the help file located at \"" + url.toString().toStdString() + "\"",false).exec();
+        }
+    }
+
+
+    /**
+     * @brief setCurrentText
+     * @param combo
+     * @param text
+     */
+    inline void setCurrentText(QComboBox * combo, const std::string & text)
+    {
+        int index = -1;
+        for (int a1 = 0; a1 < combo->count(); ++a1)
+        {
+            if (combo->itemText(a1).toUpper().toStdString() == cbtek::common::utility::StringUtils::toUpper(text))
+            {
+                index = a1;
+                break;
+            }
+        }
+        if (index > -1)
+        {
+            combo->setCurrentIndex(index);
+        }
+        else
+        {
+            combo->addItem(QString::fromStdString(text));
+            combo->setCurrentIndex(combo->count()-1);
+        }
     }
 
     /**

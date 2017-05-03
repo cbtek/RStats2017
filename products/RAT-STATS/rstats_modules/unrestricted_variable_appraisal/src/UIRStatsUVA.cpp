@@ -18,7 +18,6 @@
 
 #include "utility/inc/DateTimeUtils.hpp"
 
-
 #include <QFileDialog>
 #include <QListWidgetItem>
 #include <QDesktopServices>
@@ -323,11 +322,7 @@ UIRStatsUVA::~UIRStatsUVA()
 
 void UIRStatsUVA::onHelp()
 {
-    QString url = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_help/rstats_uva.pdf"));
-    if (!QFile::exists(url) || !QDesktopServices::openUrl(url))
-    {
-        UIRStatsErrorMessage("Could not load help file","Could not open the help file located at \"" + url.toStdString() + "\"",false,this).exec();
-    }
+    UIRStatsUtils::launchHelp("rstats_uva.pdf");
 }
 
 void UIRStatsUVA::onAbout()
@@ -595,10 +590,10 @@ void UIRStatsUVA::setSessionData(const RStatsUVASessionData& data)
         case RStatsDataFormatType::Audit:m_ui->m_rdbAudited->setChecked(true);break;
     }
 
-    m_ui->m_cmbAuditedDataTable->setCurrentText(QString::fromStdString(data.getAuditColumn()));
-    m_ui->m_cmbExaminedDataTable->setCurrentText(QString::fromStdString(data.getExamineColumn()));
-    m_ui->m_cmbDifferenceDataTable->setCurrentText(QString::fromStdString(data.getDifferenceColumn()));
-    m_ui->m_cmbDataRowStartDataTable->setCurrentText(QString::number(data.getDataRowStart()));
+    UIRStatsUtils::setCurrentText(m_ui->m_cmbAuditedDataTable,data.getAuditColumn());
+    UIRStatsUtils::setCurrentText(m_ui->m_cmbExaminedDataTable,data.getExamineColumn());
+    UIRStatsUtils::setCurrentText(m_ui->m_cmbDifferenceDataTable,data.getDifferenceColumn());
+    UIRStatsUtils::setCurrentText(m_ui->m_cmbDataRowStartDataTable,std::to_string(data.getDataRowStart()));
 
     m_autoSetFileOutput = true;
     if (!data.getCSVOutputFile().empty())

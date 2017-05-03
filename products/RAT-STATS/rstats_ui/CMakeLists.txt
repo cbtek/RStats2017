@@ -18,8 +18,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-find_package(Qt5Widgets REQUIRED)
-
+find_package(Qt5Widgets)
 #==============================================================================
 # Include Source Files
 #==============================================================================
@@ -31,6 +30,7 @@ file(GLOB CURR_TARGET_RESOURCES "resx/*.qrc")
 #==============================================================================
 # Add Executable
 #==============================================================================
+
 add_library(${CURR_TARGET}
                ${LIBRARY_MODE}
                ${CURR_TARGET_SOURCES}
@@ -39,15 +39,11 @@ add_library(${CURR_TARGET}
                ${CURR_TARGET_RESOURCES}
                )
 
+qt5_use_modules(${CURR_TARGET} Widgets)
 #==============================================================================
 # Add Dependencies
 #==============================================================================
-
-qt5_use_modules(${CURR_TARGET}
-                 Widgets)
-
 add_dependencies(${CURR_TARGET}
-                 rstats_utils
-                 Qt5::Widgets)
+                 rstats_utils)
 
 

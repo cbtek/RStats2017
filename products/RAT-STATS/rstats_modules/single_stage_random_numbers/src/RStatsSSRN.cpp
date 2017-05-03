@@ -74,7 +74,7 @@ void RStatsSSRN::saveToWorksheet(RStatsWorksheet &worksheetOut)
     worksheetOut.setDefaultFont(Font("arial",10,true));
     worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignLeft);
     worksheetOut("B1") = m_outputData.auditName;
-    worksheetOut("B2") = StringUtils::toString(m_outputData.seed,2);
+    worksheetOut("B2") = StringUtils::toString(m_outputData.seed,12);
     worksheetOut("B3") = StringUtils::toString(m_outputData.frameSize);
     worksheetOut("B4") = DateUtils::toLongDateString(m_outputData.createDate);
     worksheetOut("B5") = TimeUtils::to12HourTimeString(m_outputData.createTime);

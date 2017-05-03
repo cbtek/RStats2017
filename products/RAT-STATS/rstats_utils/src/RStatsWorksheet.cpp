@@ -477,8 +477,8 @@ std::string RStatsWorksheet::getCellCSSStyle(const RStatsCell &cell) const
     std::string css;
     if (cell.bgColor != cell.fgColor)
     {
-        css += "background: " + cell.bgColor.toString(colorStringStyle::RGB_HTML_HEX) + ";";
-        css += "color: " + cell.fgColor.toString(colorStringStyle::RGB_HTML_HEX) + ";";
+        css += "background: " + cell.bgColor.toString(ColorStringStyle::RGB_HTML_HEX) + ";";
+        css += "color: " + cell.fgColor.toString(ColorStringStyle::RGB_HTML_HEX) + ";";
     }
     css += "border: 1px solid black;";
     css += "font-size: " + StringUtils::toString(cell.font.getPointSize()+2)+"px;";

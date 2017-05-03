@@ -31,8 +31,8 @@ add_library(${CURR_TARGET}
 #==============================================================================
 # Install 
 #==============================================================================
-if (ENABLE_COMMON_UTILS_STATIC_LIB)
-	install(TARGETS ${CURR_TARGET} ARCHIVE DESTINATION lib)
-else()
-	install(TARGETS ${CURR_TARGET} LIBRARY DESTINATION lib)
+if (${ENABLE_COMMON_UTILS_DYNAMIC_LIB})
+    install(TARGETS ${CURR_TARGET} LIBRARY DESTINATION lib)
+else()	
+    install(TARGETS ${CURR_TARGET} ARCHIVE DESTINATION lib)
 endif()

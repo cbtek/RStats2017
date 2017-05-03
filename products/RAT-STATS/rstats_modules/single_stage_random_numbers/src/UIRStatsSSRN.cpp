@@ -56,7 +56,7 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     connect(m_ui->m_spnOrder,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
     connect(m_ui->m_chkCSVOutput,SIGNAL(clicked(bool)),this,SLOT(onSaveCSVFile()));
     connect(m_ui->m_chkTextOutput,SIGNAL(clicked(bool)),this,SLOT(onSaveTextFile()));    
-    connect(m_ui->m_chkCustomSeed,SIGNAL(toggled(bool)),this,SLOT(onSeedBoxToggled(bool)));
+    connect(m_ui->m_grpCustomSeed,SIGNAL(toggled(bool)),this,SLOT(onSeedBoxToggled(bool)));
     onUpdateClock();    
     m_autoSetFileOutput = false;
     QString defaultAuditName = QString::fromStdString(RStatsUtils::getAuditName());
@@ -196,7 +196,7 @@ void UIRStatsSSRN::onSaveTextFile()
 
 void UIRStatsSSRN::onUpdateClock()
 {
-    if (!m_ui->m_chkCustomSeed->isChecked() && !m_ui->m_spnSeed->isEnabled())
+    if (!m_ui->m_grpCustomSeed->isChecked() && !m_ui->m_spnSeed->isEnabled())
     {        
         m_ui->m_spnSeed->setValue(static_cast<RStatsFloat>(TimeUtils::getSecondsNow()) /
                                   static_cast<RStatsFloat>(m_rnd.next(10,1000)));
@@ -279,11 +279,7 @@ void UIRStatsSSRN::onExecute()
 
 void UIRStatsSSRN::onHelp()
 {    
-    QString url = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_help/rstats_ssrn.pdf"));
-    if (!QFile::exists(url) || !QDesktopServices::openUrl(url))
-    {
-        UIRStatsErrorMessage("Could not load help file","Could not open the help file located at \"" + url.toStdString() + "\"",false,this).exec();
-    }
+    UIRStatsUtils::launchHelp("rstats_ssrn.pdf");
 }
 
 void UIRStatsSSRN::onAbout()
@@ -320,7 +316,7 @@ RStatsSSRNSessionData UIRStatsSSRN::getSessionData() const
 void UIRStatsSSRN::setSessionData(const RStatsSSRNSessionData &data)
 {
     m_ui->m_chkViewInBrowser->setChecked(data.isViewableInBrowser());
-    m_ui->m_chkCustomSeed->setEnabled(true);
+    m_ui->m_grpCustomSeed->setEnabled(true);
     m_ui->m_txtAuditName->setText(QString::fromStdString(data.getAuditName()));
     m_ui->m_spnSeed->setValue(data.getSeed());
     m_ui->m_spnSeed->setEnabled(true);

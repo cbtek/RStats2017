@@ -8,6 +8,7 @@
 #define _OIG_RATSTATS_MAIN_UIRSTATSABOUT_H
 #include <QDialog>
 
+
 class Ui_UIRStatsAbout;
 
 namespace oig {

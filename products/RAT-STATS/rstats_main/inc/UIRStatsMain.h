@@ -15,9 +15,12 @@
 #include <QTableWidget>
 #include <QKeySequence>
 #include <QPaintEvent>
+#include <QListWidget>
+#include <QTreeWidgetItem>
 
 #include "rstats_ui/inc/UIRStatsShortcut.h"
 #include "rstats_utils/inc/RStatsModuleProperties.h"
+#include <QAccessibleWidget>
 
 class Ui_UIRStatsMain;
 
@@ -49,7 +52,7 @@ private:
 
      //Private data memebers
      QVector<QToolButton*> m_allLaunchButtons;
-     QMap<size_t, QTableWidget*> m_tableMap;
+     QMap<size_t, QListWidget*> m_tableMap;
      QMap<size_t, QButtonGroup*> m_launchButtonMap;
      QMap<size_t, QButtonGroup*> m_editButtonMap;
      QMap<size_t, QButtonGroup*> m_removeButtonMap;
@@ -79,11 +82,11 @@ private:
      bool m_tableHasFocus;
 
      //GUI Table to hold all modules
-     QTableWidget * m_currentTable;
+     QListWidget * m_currentTable;
 
      //Functions used internally
      void onInitialize(int defaultCategoryIndex = 0);
-     QString getKeyAssignment(int count) const;
+     QString getKeyAssignment(int count, bool isLaunch=true, bool isEdit=false, bool isRemove=false) const;
      QKeySequence getKeyLaunchSequence(int count, QString & keyString) const;
      QKeySequence getKeyEditSequence(int count, QString & keyString) const;
      QKeySequence getKeyRemoveSequence(int count, QString & keyString) const;
@@ -103,19 +106,20 @@ protected:
 protected slots:
     void onExit();    
 
-    //SLots for launching other windows
+    //SLots for launching other windows    
     void onLaunchSettingsManager();
     void onLaunchAbout();
     void onLaunchHelp();
     void onLaunchModule(QAbstractButton* button);
     void onLaunchModuleShortcut(QShortcut* button);
-    void onUpdateTableHeader(bool isModuleListSelected);
-    void onTabChanged(int tab);
+    void onUpdateTableHeader(bool isModuleListSelected);    
     void onAddNewModule();        
     void onRemoveModuleShortcut(QShortcut* button);
     void onRemoveModule(QAbstractButton* button);
     void onEditModuleShortcut(QShortcut* button);
     void onEditModule(QAbstractButton* button);    
+    void onItemChanged(QListWidgetItem* item);
+    void onRepopulateModules(const std::vector<utils::RStatsModuleProperties> &propsIn);
 };
 
 }}}//end namespace

@@ -111,11 +111,7 @@ void UIRStatsUAA::onUpdateUniverseCount()
 
 void UIRStatsUAA::onHelp()
 {
-    QString url = QString::fromStdString(FileUtils::buildFilePath(SystemUtils::getCurrentExecutableDirectory(),"rstats_help/rstats_uaa.pdf"));
-    if (!QFile::exists(url) || !QDesktopServices::openUrl(url))
-    {
-        UIRStatsErrorMessage("Could not load help file","Could not open the help file located at \"" + url.toStdString() + "\"",false,this).exec();
-    }
+    UIRStatsUtils::launchHelp("rstats_user_uaa.pdf");
 }
 
 void UIRStatsUAA::onAbout()

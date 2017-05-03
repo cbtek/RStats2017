@@ -78,23 +78,44 @@ void UIRStatsLaunchConfigDialog::onInit()
     //Populate combobox with available categories
     std::vector<std::string> categories = RStatsUtils::getModuleCategories();
     m_ui->m_cmbCategories->clear();
+    int index = -1;
+    int count = 0;
     for (const auto& category : categories)
     {        
-        m_ui->m_cmbCategories->addItem(QString::fromStdString(category));
+        m_ui->m_cmbCategories->addItem(QString::fromStdString(category));        
+        if (StringUtils::equals(category, m_props.getCategory()))
+        {
+            index = count;
+        }
+        ++count;
     }
-    m_ui->m_cmbCategories->setCurrentText(QString::fromStdString(m_props.getCategory()));
+
+    if (index > -1)
+    {
+        m_ui->m_cmbCategories->setCurrentIndex(index);
+    }
 
     std::vector<RStatsScriptProviderProperties> scriptProps = RStatsUtils::getScriptProviderPropertiesList();
     m_ui->m_cmbTypes->clear();
     m_ui->m_cmbTypes->addItem(UIRStatsUtils::getIcon("img_terminal.png"),"Executable");
+    index = -1;
+    count = 0;
     for (const RStatsScriptProviderProperties& prop:scriptProps)
     {        
         m_ui->m_cmbTypes->addItem(UIRStatsUtils::getIcon(prop.getIcon()),
                                   QString::fromStdString(prop.getName()),
                                   QString::fromStdString(prop.getPath()+" "+prop.getArgs()));
+        if (StringUtils::equals(m_props.getType(), prop.getName()))
+        {
+            index = count;
+        }
+        ++count;
     }
 
-    m_ui->m_cmbTypes->setCurrentText(QString::fromStdString(m_props.getType()));
+    if (index > -1)
+    {
+        m_ui->m_cmbTypes->setCurrentIndex(index);
+    }
 
     //Grab icon for this module
     QIcon icon = UIRStatsUtils::getIcon(m_props.getIcon());
@@ -125,8 +146,8 @@ void UIRStatsLaunchConfigDialog::onSave(RStatsModuleProperties &out)
 {
     //Save property values and close
     out.setName(m_ui->m_txtName->text().toStdString());
-    out.setPath(m_ui->m_txtLocation->text().toStdString());
-    out.setScriptPath(m_ui->m_cmbTypes->currentData(Qt::UserRole).toString().toStdString());
+    out.setPath(m_ui->m_txtLocation->text().toStdString());    
+    out.setScriptPath(m_ui->m_cmbTypes->property("scriptPath").toString().toStdString());
     out.setType(m_ui->m_cmbTypes->currentText().toStdString());
     out.setCategory(m_ui->m_cmbCategories->currentText().toStdString());
     out.setArgs(m_ui->m_txtArgs->text().toStdString());

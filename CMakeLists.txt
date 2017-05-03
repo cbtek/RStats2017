@@ -29,4 +29,6 @@ include_directories("${PROJECT_SOURCE_DIR}/products/RAT-STATS")
 
 #Projects
 add_subdirectory("${PROJECT_SOURCE_DIR}/common/utility")
+add_subdirectory("${PROJECT_SOURCE_DIR}/common/contrib/mini_excel")
+add_subdirectory("${PROJECT_SOURCE_DIR}/common/contrib/basic_excel")
 add_subdirectory("${PROJECT_SOURCE_DIR}/products/RAT-STATS")

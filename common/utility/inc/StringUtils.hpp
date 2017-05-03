@@ -1747,15 +1747,14 @@ static inline bool isEmpty(const std::string& srcStr)
     return StringUtils::trimmed(srcStr).empty();
 }
 
-
 /**
- * @brief isNumber
+ * @brief isNumeric
  * @param potentialNumber
+ * @param numberOut
  * @return
  */
-
 inline bool isNumeric(const std::string& potentialNumber, std::string& numberOut)
-{    
+{
     std::string numberStr = StringUtils::trimmed(potentialNumber);
     if (numberStr.size() == 0 ||
        (numberStr.size() == 1 &&
@@ -1778,12 +1777,22 @@ inline bool isNumeric(const std::string& potentialNumber, std::string& numberOut
             isUnsignedInteger(numberStr));
 }
 
+/**
+ * @brief isNumeric
+ * @param potentialNumber
+ * @return
+ */
 inline bool isNumeric(const std::string& potentialNumber)
 {
     std::string numberOut;
     return isNumeric(potentialNumber,numberOut);
 }
 
+/**
+ * @brief getFormattedNumeric Get number that is formatted
+ * @param potentialNumber
+ * @return
+ */
 inline std::string getFormattedNumeric(const std::string& potentialNumber)
 {
     std::string numberOut;
@@ -1793,5 +1802,4 @@ inline std::string getFormattedNumeric(const std::string& potentialNumber)
     }
     return potentialNumber;
 }
-
 }}}} //namespace

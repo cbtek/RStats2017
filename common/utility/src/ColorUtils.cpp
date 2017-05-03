@@ -112,32 +112,32 @@ std::uint32_t Color::toInteger() const
   return (((((m_alpha << 8) + m_red) << 8) + m_green) << 8) + m_blue;
 }
 
-std::string Color::toString(const colorStringStyle::ColorStringStyle &style) const
+std::string Color::toString(const ColorStringStyle &style) const
 {
     std::ostringstream out;
     switch (style)
     {
-        case colorStringStyle::RGBA_255:
+        case ColorStringStyle::RGBA_255:
         out << (int)m_red<<" "<<(int)m_green<<" "<<(int)m_blue<<" "<<(int)m_alpha;
         return out.str();
         break;
 
-        case colorStringStyle::RGB_255:
+        case ColorStringStyle::RGB_255:
         out << (int)m_red<<" "<<(int)m_green<<" "<<(int)m_blue;
         return out.str();
         break;
 
-        case colorStringStyle::RGBA_FLOAT:
+        case ColorStringStyle::RGBA_FLOAT:
         out << (float)m_red*0.003921568f<<" "<<(float)m_green*0.003921568f<<" "<<(float)m_blue*0.003921568f<<" "<<(float)m_alpha*0.003921568f;
         return out.str();
         break;
 
-        case colorStringStyle::RGB_FLOAT:
+        case ColorStringStyle::RGB_FLOAT:
         out << (float)m_red*0.003921568f<<" "<<(float)m_green*0.003921568f<<" "<<(float)m_blue*0.003921568f;
         return out.str();
         break;
 
-        case colorStringStyle::RGBA_HTML_HEX:
+        case ColorStringStyle::RGBA_HTML_HEX:
 
         out<<"#"<<
              (m_red<16?"0":"")<<toHex(m_red)<<
@@ -147,7 +147,7 @@ std::string Color::toString(const colorStringStyle::ColorStringStyle &style) con
 
         return out.str();
         break;
-        case colorStringStyle::ARGB_HTML_HEX:
+        case ColorStringStyle::ARGB_HTML_HEX:
 
         out<<"#"<<
              (m_alpha<16?"0":"")<<toHex(m_alpha)<<
@@ -158,7 +158,7 @@ std::string Color::toString(const colorStringStyle::ColorStringStyle &style) con
         return out.str();
         break;
 
-        case colorStringStyle::RGB_HTML_HEX:
+        case ColorStringStyle::RGB_HTML_HEX:
         out<<"#"<<
              (m_red<16?"0":"")<<toHex(m_red)<<
              (m_green<16?"0":"")<<toHex(m_green)<<
