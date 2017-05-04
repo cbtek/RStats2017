@@ -87,7 +87,7 @@ UIRStatsMain::UIRStatsMain(QWidget *parent) :
     connect(m_ui->m_actionSettings_Manager,SIGNAL(triggered(bool)),this,SLOT(onLaunchSettingsManager()));
     connect(m_ui->m_actionAbout_RAT_STATS_2017,SIGNAL(triggered(bool)),this,SLOT(onLaunchAbout()));
     connect(m_ui->m_actionAdd_New_Module,SIGNAL(triggered(bool)),this,SLOT(onAddNewModule()));
-    connect(m_ui->m_lstModuleCategories,SIGNAL(itemChanged(QListWidgetItem*,int)),this,SLOT(onItemChanged(QListWidgetItem*)));
+    connect(m_ui->m_lstModuleCategories,SIGNAL(currentRowChanged(int)),this,SLOT(onCategoryChanged(int)));
 }
 
 UIRStatsMain::~UIRStatsMain()
@@ -106,6 +106,7 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
     //Clear modules
     m_ui->m_lstModuleCategories->clear();
 
+    m_groupedModules.clear();
     //Grab the modules
     std::vector<RStatsModuleProperties> propsList;
     try
@@ -120,8 +121,7 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
         return;
     }
 
-    //Loop over modules and determine which groups they belong to
-    std::map<std::string, std::vector<RStatsModuleProperties> > groupedModules;
+    //Loop over modules and determine which groups they belong to    
     for(const RStatsModuleProperties& props : propsList)
     {
         std::string category = props.getCategory();
@@ -129,13 +129,13 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
         {
             category = "Uncategorized";
         }        
-        groupedModules[category].push_back(props);
+        m_groupedModules[category].push_back(props);
     }
 
     //Lets loop over all modules by group and populate the module tables
     size_t tableIndex = 0;    
     size_t totalItemCount = 0;
-    for (const auto& it : groupedModules)
+    for (const auto& it : m_groupedModules)
     {
         //Initialize button groups and table to hold module items
         QString name = QString::fromStdString(it.first);                
@@ -145,10 +145,8 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
         QButtonGroup * launchButtons = m_launchButtonMap[tableIndex];
         QButtonGroup * editButtons = m_editButtonMap[tableIndex];
         QButtonGroup * removeButtons = m_removeButtonMap[tableIndex];
-
         QListWidgetItem * moduleParent = new QListWidgetItem;
-        moduleParent->setText(name);
-        onRepopulateModules(it.second);
+        moduleParent->setText(name);                        
         m_ui->m_lstModuleCategories->addItem(moduleParent);
         ++tableIndex;
         connect(launchButtons,SIGNAL(buttonClicked(QAbstractButton*)),this,SLOT(onLaunchModule(QAbstractButton*)));
@@ -164,6 +162,7 @@ void UIRStatsMain::onInitialize(int defaultCategoryIndex)
             m_ui->m_lstModuleCategories->setCurrentItem(item);
         }
     }
+    onRepopulateModules(m_groupedModules[m_ui->m_lstModuleCategories->currentItem()->text().toStdString()]);
 }
 
 
@@ -515,9 +514,13 @@ void UIRStatsMain::launchModule(const QString &propsPath)
     }
 }
 
-void UIRStatsMain::onItemChanged(QListWidgetItem *item)
+void UIRStatsMain::onCategoryChanged(int row)
 {
-
+    QListWidgetItem * item = m_ui->m_lstModuleCategories->item(row);
+    if (item)
+    {
+        onRepopulateModules(m_groupedModules[item->text().toStdString()]);
+    }
 }
 
 void UIRStatsMain::onRepopulateModules(const std::vector<RStatsModuleProperties>& propsIn)

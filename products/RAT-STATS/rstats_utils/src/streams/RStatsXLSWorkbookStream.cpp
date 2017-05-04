@@ -56,7 +56,7 @@ RStatsWorkbook RStatsXLSWorkbookStream::read()
             RStatsWorksheet sheetOut;
             size_t rowCount = sheetIn->GetTotalRows();
             size_t columnCount = sheetIn->GetTotalCols();
-            std::cerr << rowCount << " x "<<columnCount << std::endl;
+            //std::cerr << rowCount << " x "<<columnCount << std::endl;
             for (size_t r = 0; r < rowCount; ++r)
             {
                 for (size_t c = 0; c < columnCount; ++c)

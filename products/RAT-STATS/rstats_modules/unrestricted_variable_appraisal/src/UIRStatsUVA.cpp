@@ -48,6 +48,10 @@ UIRStatsUVA::UIRStatsUVA(QWidget *parent) :
     m_tblPreview = new UIRStatsTablePreviewWidget;
     m_ui->dockWidgetContents->layout()->addWidget(m_tblPreview);
 
+    //Remove title-bar from dock windows
+    m_ui->m_dockOptions->setTitleBarWidget(new QWidget());
+    m_ui->m_dockSampleEditor->setTitleBarWidget(new QWidget);
+
     //Set icons that get reused (validation console)
     m_iconError = UIRStatsUtils::getIcon("img_error.png");
     m_iconWarning = UIRStatsUtils::getIcon("img_warning.png");
@@ -68,8 +72,7 @@ UIRStatsUVA::UIRStatsUVA(QWidget *parent) :
     UIRStatsUtils::initAction(m_ui->actionHelp,"img_help.png","Alt+H");
     UIRStatsUtils::initAction(m_ui->actionRecently_Used,"img_clock.png","Alt+S");
 
-    //Set init for startup options
-    m_ui->m_dockOptions->setTitleBarWidget(new QWidget());
+    //Set init for startup options    
     m_ui->m_frmOutput->hide();
     m_ui->m_cmbDataInputSheets->addItem("No Sheets Available");
     m_ui->m_cmbDataInputSheets->setEnabled(false);
@@ -83,6 +86,7 @@ UIRStatsUVA::UIRStatsUVA(QWidget *parent) :
     connect(m_ui->actionExit,SIGNAL(triggered()),this,SLOT(onExit()));
     connect(m_ui->actionExecute,SIGNAL(triggered(bool)),this,SLOT(onExecute()));
     connect(m_ui->actionAbout,SIGNAL(triggered(bool)),this,SLOT(onAbout()));
+    connect(m_ui->m_spnUniverseSize,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
     connect(m_ui->m_chkTextOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveTextFile()));
     connect(m_ui->m_chkCSVOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveCSVFile()));
     connect(m_ui->m_btnImportSampleInputData,SIGNAL(clicked(bool)),this,SLOT(onImportDataInput()));
@@ -95,14 +99,13 @@ UIRStatsUVA::UIRStatsUVA(QWidget *parent) :
     connect(m_ui->m_rdbDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
     connect(m_ui->m_rdbAuditedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
     connect(m_ui->m_rdbExaminedAndAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
-    connect(m_ui->m_rdbExaminedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+    connect(m_ui->m_rdbExaminedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));    
 
-    connect(&m_clock,SIGNAL(timeout()),this,SLOT(onUpdateClock()));
-
-    onUpdateClock();
-    m_clock.start(1000);
-
+    //Update tab order for widgets
     onSetTabOrder();
+
+    //Validate conditions
+    onValidate();
 }
 
 void UIRStatsUVA::onImportDataInput()
@@ -157,11 +160,6 @@ void UIRStatsUVA::importDataTable(const std::string& dataTableFilePath)
         UIRStatsErrorMessage(title,message).exec();
         return;
     }
-}
-
-void UIRStatsUVA::onUpdateClock()
-{
-    onValidate();
 }
 
 void UIRStatsUVA::onSetTabOrder()
@@ -273,7 +271,7 @@ void UIRStatsUVA::onUpdateRowColumnExtentsForDataTable()
 
 void UIRStatsUVA::onSampleDataInputSheetSelected(const RStatsWorksheet& sheet)
 {
-    UIRStatsUtils::bindSheetToUI(sheet,m_tblPreview,true,0,0);
+    UIRStatsUtils::bindSheetToUI(sheet,m_tblPreview,true,0,0,2);
     m_currentDataSheet = sheet;
     onUpdateRowColumnExtentsForDataTable();
     m_tblPreview->verticalHeader()->show();
@@ -332,10 +330,14 @@ void UIRStatsUVA::onAbout()
 
 void UIRStatsUVA::onExecute()
 {
+    if (!onValidate())
+    {
+        UIRStatsUtils::highlightErrorInValidationConsole(m_ui->m_lstValidationConsole);
+        return;
+    }
+
     try
     {
-        m_clock.start(1000);
-        onValidate();
         size_t universeSize = static_cast<size_t>(m_ui->m_spnUniverseSize->value());
         RStatsDataFormatTypeIndex dfIndex;
         if (m_ui->m_rdbAudited->isChecked())
@@ -468,26 +470,17 @@ bool UIRStatsUVA::onValidate()
      m_conditionLogger.addWarning(m_ui->m_txtAuditName->text().isEmpty(),
                                   "You have NOT set the name for this audit.  Using auto-generated name: '"+m_ui->m_txtAuditName->placeholderText().toStdString()+"'");
 
-     if (!m_conditionLogger.hasMessages())
-     {
-         if (!m_fullScreenToggle)
-         {
-            m_ui->m_dockValidationConsole->hide();
-            //m_ui->m_lblErrorConsole->setVisible(true);
-            m_ui->m_lstValidationConsole->setVisible(false);
-         }
-
-
-        m_ui->m_btnExecute->setEnabled(true);
+    if (!m_conditionLogger.hasMessages())
+    {
+        m_ui->m_dockValidationConsole->hide();
+        m_ui->m_lstValidationConsole->setVisible(false);
         m_ui->actionExecute->setEnabled(true);
          return true;
      }
-     if (!m_fullScreenToggle)
-     {
-        m_ui->m_dockValidationConsole->show();
-        //m_ui->m_lblErrorConsole->setVisible(false);
-        m_ui->m_lstValidationConsole->setVisible(true);
-     }
+
+    m_ui->m_dockValidationConsole->show();
+    m_ui->m_lstValidationConsole->setVisible(true);
+
      size_t index = 0;
      for(const std::string & message : m_conditionLogger.getMessages())
      {
@@ -507,18 +500,7 @@ bool UIRStatsUVA::onValidate()
          }
          ++index;
          m_ui->m_lstValidationConsole->addItem(item);
-     }
-
-     if (m_conditionLogger.hasError())
-     {
-         m_ui->m_btnExecute->setEnabled(false);         
-         m_ui->actionExecute->setEnabled(false);
-     }
-     else
-     {
-         m_ui->m_btnExecute->setEnabled(true);
-         m_ui->actionExecute->setEnabled(true);
-     }
+     }          
      return false;
 }
 
@@ -629,6 +611,7 @@ void UIRStatsUVA::onSaveTextFile()
         setTextFileOutput(m_currentTextFileOutput.toStdString());
     }
     else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
+    onValidate();
 
 }
 
@@ -644,6 +627,7 @@ void UIRStatsUVA::onSaveCSVFile()
         setCSVFileOutput(m_currentCSVFileOutput.toStdString());
     }
     else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
+    onValidate();
 }
 
 void UIRStatsUVA::onRecentSessionSelected(QAction* action)

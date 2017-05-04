@@ -1369,11 +1369,6 @@ inline void findAllThatContain(const std::vector<std::string> &items,
     }
 }
 
-
-
-
-
-
 /**
 * @brief Find and return all text between firstValue and lastValue (exclusive)
 * @param inputString The string to copy and operate upon
@@ -1802,4 +1797,102 @@ inline std::string getFormattedNumeric(const std::string& potentialNumber)
     }
     return potentialNumber;
 }
+
+
+/**
+ * @brief getNumberOfOccurences Gets the number of occurences of patterStr inside of srcStr
+ * @param srcStr The source string to check
+ * @param patternStr The string pattern to look for
+ * @param isCaseSensitive
+ * @return Return total number of times pattern occurs in string
+ */
+inline size_t getNumberOfOccurences(const std::string& srcStr,
+                             const std::string& patternStr,
+                             bool isCaseSensitive = c_DEFAULT_CASE_SENSITIVE)
+{
+    size_t count = 0;
+    if (srcStr.size() <= patternStr.size())
+    {
+        return 0;
+    }
+    for (size_t a1 = 0; a1 < srcStr.size() - patternStr.size(); ++a1)
+    {
+        std::string subStr = srcStr.substr(a1,patternStr.size());
+        if ((isCaseSensitive && subStr == patternStr) ||
+            (!isCaseSensitive && StringUtils::toUpper(subStr) == StringUtils::toUpper(patternStr)))
+        {
+            ++count;
+        }
+    }
+    return count;
+}
+
+
+/**
+ * @brief roundTrailing9 Removes trailing 9 values and rounds
+ * @param inputValue unformatted string with trailing 9's (e.g .19999999999)
+ * @return Return formatted string that rounds (e.g .2)
+ */
+inline std::string roundTrailing9(const std::string& inputValue)
+{
+    if (!StringUtils::isNumeric(inputValue))
+    {
+        return inputValue;
+    }
+    if (StringUtils::getNumberOfOccurences(inputValue,"999") > 0)
+    {
+        return inputValue;
+    }
+
+    return std::to_string(std::round(StringUtils::toFloat64(inputValue)));
+
+    std::string outputValue = inputValue;
+    bool nineFound = false;
+    if (inputValue.size() < 0 && inputValue.back() != '9')
+    {
+        return inputValue;
+    }
+
+    for (size_t a1 = 0; a1 < inputValue.size();++a1)
+    {
+        char number = inputValue[inputValue.size()-1-a1];
+        if (number == '9')
+        {
+            nineFound = true;
+            outputValue.pop_back();
+        }
+        else break;
+    }
+
+    if (outputValue.back() == '.' || std::isdigit(outputValue.back()) && nineFound)
+    {
+        int index = 0;
+        if (outputValue.back() == '.')
+        {
+            index = outputValue.size() - 2;
+            if (index < 0)
+            {
+               outputValue.insert(outputValue.begin()+0,'1');
+               index = 0;
+            }
+        }
+        else index = outputValue.size() - 1;
+        outputValue[index]++;
+        if (outputValue[index] == '9' && index > 0 && outputValue[index-1] != '.')
+        {
+            outputValue = roundTrailing9(outputValue);
+        }
+
+        if (StringUtils::endsWith(outputValue,"."))
+        {
+            outputValue.pop_back();
+        }
+    }
+    if (StringUtils::contains(outputValue,":"))
+    {
+        std::cerr << "Incorrectly Converted " << inputValue << " to " << outputValue<<std::endl;
+    }
+    return outputValue;
+}
+
 }}}} //namespace

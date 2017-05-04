@@ -140,9 +140,7 @@ bool UIRStatsUAA::onValidate()
      //Check if any conditions passed
     if (!m_conditionLogger.hasMessages())
     {
-        m_ui->m_dockValidationConsole->hide();
-        m_ui->m_btnExecute->setEnabled(true);
-        m_ui->actionExecute->setEnabled(true);
+        m_ui->m_dockValidationConsole->hide();        
         return true;
     }
     else
@@ -175,15 +173,11 @@ bool UIRStatsUAA::onValidate()
      }
 
      if (m_conditionLogger.hasError())
-     {
-         m_ui->m_btnExecute->setEnabled(false);
-         m_ui->actionExecute->setEnabled(false);
+     {         
          return false;
      }
      else
-     {
-         m_ui->m_btnExecute->setEnabled(true);
-         m_ui->actionExecute->setEnabled(true);
+     {         
          return true;
      }
 }
@@ -194,12 +188,12 @@ void UIRStatsUAA::onUpdateClock()
 }
 
 void UIRStatsUAA::onExecute()
-{
+{    
     if (!onValidate())
     {
+        UIRStatsUtils::highlightErrorInValidationConsole(m_ui->m_lstValidationConsole);
         return;
     }
-
     try
     {
 

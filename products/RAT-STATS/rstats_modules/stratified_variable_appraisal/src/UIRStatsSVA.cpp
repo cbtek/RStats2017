@@ -342,6 +342,7 @@ void UIRStatsSVA::onExecute()
     //Update validation console
     if (!onValidate())
     {
+        UIRStatsUtils::highlightErrorInValidationConsole(m_ui->m_lstErrorConsole);
         return;
     }
 

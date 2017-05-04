@@ -157,3 +157,65 @@ TEST_CASE("Testing StringUtils::toString","[utility::StringUtils")
     REQUIRE(StringUtils::toString(value6,2,false) == "-903172.01");
     REQUIRE(StringUtils::toString(value7,2,false) == "102234.00");
 }
+
+TEST_CASE("Testing StringUtils::roundTrailing9","[utility::StringUtils]")
+{
+
+    std::string value1 = "10.19999999999999999999999";
+    std::string value2 = "10.29999999999999999999999";
+    std::string value3 = "10.39999999999989999999999";
+    std::string value4 = "0.9999999999999999999999";
+    std::string value5 = "0.19999999999999999999999";
+    std::string value6 = "99.99999999999999999999999";
+    std::string value7 = "9.99999999999999999999999";
+    std::string value8 = "88.99999999999999999999999";
+    std::string value9 = "8.99999999999999999999999";
+    std::string value10 = "18.90";
+    std::string value11 = "18.899999999999999";
+    std::string value12 = "137.19999999999999";
+
+    std::string value13 = "109.9";
+    std::string value14 = "29.99";
+    std::string value15 = "399.9";
+    std::string value16 = "659.";
+    std::string value17 = "658.9";
+    std::string value18 = "49.99";
+    std::string value19 = "129.99";
+    std::string value20 = "149.";
+    std::string value21 = "148.99";
+    std::string value22 = "89.9";
+    std::string value23 = "39.99";
+    std::string value24 = "109.";
+    std::string value25 = "108.9";
+    std::string value26 = "129.9";
+    std::string value27 = "29.99";
+    std::string value28 = "329.99";
+    std::string value29 = "49.99";
+
+
+    REQUIRE(StringUtils::roundTrailing9(value1) == "10.2");
+    REQUIRE(StringUtils::roundTrailing9(value2) == "10.3");
+    REQUIRE(StringUtils::roundTrailing9(value3) == "10.4");
+    REQUIRE(StringUtils::roundTrailing9(value4) == "1");
+    REQUIRE(StringUtils::roundTrailing9(value5) == "0.2");
+    REQUIRE(StringUtils::roundTrailing9(value6) == "100");
+    REQUIRE(StringUtils::roundTrailing9(value7) == "10");
+    REQUIRE(StringUtils::roundTrailing9(value8) == "89");
+    REQUIRE(StringUtils::roundTrailing9(value9) == "9");
+    REQUIRE(StringUtils::roundTrailing9(value10) == "18.90");
+    REQUIRE(StringUtils::roundTrailing9(value11) == "18.9");
+    REQUIRE(StringUtils::roundTrailing9(value12) == "137.2");
+}
+
+TEST_CASE("Testing StringUtils::getNumberOfOccurences","[utility::StringUtils]")
+{
+
+    std::string value1 = "This is a test dude";
+    std::string value2 = "10.29999999999999999999999";
+    std::string value3 = "Super ferom terminal ermulator";
+
+    REQUIRE(StringUtils::getNumberOfOccurences(value1,"test") == 1);
+    REQUIRE(StringUtils::getNumberOfOccurences(value1,"Test",true) == 0);
+    REQUIRE(StringUtils::getNumberOfOccurences(value2,"999") == 19);
+    REQUIRE(StringUtils::getNumberOfOccurences(value3,"er") == 4);
+}

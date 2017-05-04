@@ -50,6 +50,7 @@ private:
     */
      Ui_UIRStatsMain *m_ui;
 
+     std::map<std::string, std::vector<oig::ratstats::utils::RStatsModuleProperties> > m_groupedModules;
      //Private data memebers
      QVector<QToolButton*> m_allLaunchButtons;
      QMap<size_t, QListWidget*> m_tableMap;
@@ -118,7 +119,7 @@ protected slots:
     void onRemoveModule(QAbstractButton* button);
     void onEditModuleShortcut(QShortcut* button);
     void onEditModule(QAbstractButton* button);    
-    void onItemChanged(QListWidgetItem* item);
+    void onCategoryChanged(int row);
     void onRepopulateModules(const std::vector<utils::RStatsModuleProperties> &propsIn);
 };
 

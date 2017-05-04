@@ -23,6 +23,7 @@
 #include <QUrl>
 #include <QDesktopServices>
 #include <QComboBox>
+#include <QListWidget>
 
 #include <map>
 
@@ -234,6 +235,23 @@ namespace UIRStatsUtils
 
 
     /**
+     * @brief highlightErrorInValidationConsole
+     * @param widget
+     */
+    inline void highlightErrorInValidationConsole(QListWidget * widget)
+    {
+        for (int a1 = 0; a1 < widget->count(); ++a1)
+        {
+            if (widget->item(a1)->text().startsWith("Error",Qt::CaseInsensitive))
+            {
+                widget->setCurrentItem(widget->item(a1));
+                widget->setFocus();
+                return;
+            }
+        }
+    }
+
+    /**
      * @brief bindUIToSheet
      * @param table
      * @param sheetOut
@@ -295,7 +313,13 @@ namespace UIRStatsUtils
      * @param padRows
      * @param padColumns
      */
-    inline void bindSheetToUI(const oig::ratstats::utils::RStatsWorksheet &sheetIn, QTableWidget *table, bool checkableHeader = false,int padRows=0,int padColumns=0)
+    inline void bindSheetToUI(const oig::ratstats::utils::RStatsWorksheet &sheetIn,
+                              QTableWidget *table,
+                              bool checkableHeader = false,
+                              int padRows=0,
+                              int padColumns=0,
+                              int numDecimalPlaces = -1
+                              )
     {
         utils::RStatsWorksheet sheet = sheetIn;
         sheet.setThousandsSeperatorEnabled(true);
@@ -320,7 +344,20 @@ namespace UIRStatsUtils
             std::pair<size_t,size_t> index = itNext.first;
             oig::ratstats::utils::RStatsCell cell = itNext.second;
             QTableWidgetItem * item = new QTableWidgetItem;           
+
+            if (numDecimalPlaces > -1 && cbtek::common::utility::StringUtils::isNumeric(cell.text) &&
+                                       !cbtek::common::utility::StringUtils::isSignedInteger(cell.text) &&
+                                       !cbtek::common::utility::StringUtils::isUnsignedInteger(cell.text) &&
+                                       cbtek::common::utility::StringUtils::isFloat(cell.text))
+            {
+                    double toFloat = cbtek::common::utility::StringUtils::toFloat64(cell.text);
+                    std::string toString = cbtek::common::utility::StringUtils::toString(toFloat,numDecimalPlaces);
+                    cell.text = toString;
+
+            }
+
             item->setText(QString::fromStdString(cell.text));
+
             table->setRowHeight(static_cast<int>(index.first),30);
             //set colors
             int r,g,b,a;

@@ -45,7 +45,7 @@ RStatsWorkbookStreamPtr RStatsWorkbookStreamFactory::create(const std::string &f
     {
         return RStatsWorkbookStreamPtr(new streams::RStatsDIFWorkbookStream(filePath));
     }
-    else if (ext == "TXT")
+    else if (ext == "TXT" || ext == "DAT")
     {
         return RStatsWorkbookStreamPtr(new streams::RStatsDelimitedWorkbookStream(filePath));
     }

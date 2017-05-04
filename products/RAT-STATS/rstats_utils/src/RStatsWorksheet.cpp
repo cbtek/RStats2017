@@ -350,7 +350,6 @@ void RStatsWorksheet::setColumnBorderColor(size_t column, const Color &color)
     }
 }
 
-
 void RStatsWorksheet::parseCellAddress(const std::string &address, size_t &r, size_t &c)
 {
     std::string colLabel;
@@ -503,6 +502,95 @@ std::string RStatsWorksheet::getCellCSSStyle(const RStatsCell &cell) const
     css += valign;
     return css;
 }
+
+void RStatsWorksheet::removeEmptyRows()
+{
+    for (int r = getNumRows() - 1; r >= 0; --r)
+    {
+        bool hasData = false;
+        for (int c = getNumColumns() - 1; c >= 0; --c)
+        {
+            if (StringUtils::trimmed(getCell(r,c).text).size() > 0)
+            {
+                hasData = true;
+                c = 0;
+            }
+        }
+
+        if (hasData == false)
+        {
+            removeRow(r);
+            removeEmptyRows();
+            return;
+        }
+    }
+}
+
+void RStatsWorksheet::removeEmptyColumns()
+{
+    for (int c = getNumColumns() - 1; c >= 0; --c)
+    {
+        bool hasData = false;
+        for (int r = getNumRows() - 1; r >= 0; --r)
+        {
+            if (StringUtils::trimmed(getCell(r,c).text).size() > 0)
+            {
+                hasData = true;
+                r = 0;
+            }
+        }
+
+        if (hasData == false)
+        {
+            removeColumn(c);
+        }
+    }
+}
+
+void RStatsWorksheet::removeRow(size_t row)
+{
+    size_t columns = getNumColumns();
+    size_t rows = getNumRows();
+    RStatsWorksheet newSheet;
+    size_t newR = 0,newC = 0;
+    for (size_t r = 0; r < rows; ++r)
+    {
+        if (r != row)
+        {
+            for (size_t c = 0; c < columns; ++c)
+            {
+                newSheet(newR,newC) = (*this)(r,c);
+                ++newC;
+            }
+            newC = 0;
+            ++newR;
+        }
+    }
+    (*this) = newSheet;
+}
+
+void RStatsWorksheet::removeColumn(size_t column)
+{
+    size_t columns = getNumColumns();
+    size_t rows = getNumRows();
+    RStatsWorksheet newSheet;
+    size_t newR = 0,newC = 0;
+    for (size_t c = 0; c < columns; ++c)
+    {
+        if (c != column)
+        {
+            for (size_t r = 0; r < rows; ++r)
+            {
+                newSheet(newR,newC) = (*this)(r,c);
+                ++newR;
+            }
+            newR = 0;
+            ++newC;
+        }
+    }
+    (*this) = newSheet;
+}
+
 
 void RStatsWorksheet::setWorksheetTitle(const std::string & value)
 {

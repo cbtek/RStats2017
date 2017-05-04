@@ -368,7 +368,7 @@ void RStatsUVA::createOutputData(const std::string &title, size_t index)
     outputData.pointEstimate = static_cast<RStatsInteger>(std::round(m_totalPointEstimates(index)));
     outputData.standardDeviation = m_standardDeviation(index);
     outputData.standardErrorMean = m_standardError(index);
-    outputData.standardErrorTotal = static_cast<RStatsInteger>(m_standardError(index)*static_cast<RStatsFloat>(m_universeSize));
+    outputData.standardErrorTotal = std::roundl((m_standardError(index) * static_cast<RStatsFloat>(m_universeSize)));
     outputData.skewness = m_skewAmount(index);
     outputData.mean = m_means(index);
     outputData.nonZeroSize = static_cast<RStatsInteger>(m_totalNonZeroCount(index));

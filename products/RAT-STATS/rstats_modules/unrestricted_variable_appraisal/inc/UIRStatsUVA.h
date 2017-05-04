@@ -115,8 +115,7 @@ private:
       void onAbout();
       void onExecute();
       void onExit();
-      bool onValidate();
-      void onUpdateClock();
+      bool onValidate();      
       void onSetTabOrder();
       void onUpdateDataFormatButtons();
 };

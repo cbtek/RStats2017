@@ -429,6 +429,9 @@
    <addaction name="menu_Help"/>
   </widget>
   <widget class="QDockWidget" name="m_dockSampleEditor">
+   <property name="features">
+    <set>QDockWidget::NoDockWidgetFeatures</set>
+   </property>
    <property name="allowedAreas">
     <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
    </property>

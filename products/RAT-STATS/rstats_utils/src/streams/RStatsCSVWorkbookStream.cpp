@@ -28,72 +28,42 @@ enum class RStatsCSVDataParseTypes
 
 RStatsCSVWorkbookStream::RStatsCSVWorkbookStream(const std::string &filePath)
 {
-    m_filePaths.push_back(filePath);
-}
-
-RStatsCSVWorkbookStream::RStatsCSVWorkbookStream(const std::vector<std::string> &filePaths)
-{
-    m_filePaths = filePaths;
+    m_filePath = filePath;
 }
 
 void RStatsCSVWorkbookStream::write(const RStatsWorkbook &workbook)
 {
-    const std::vector<RStatsWorksheet>& sheets = workbook.getWorksheets();
-    const std::vector<std::string> sheetNames = workbook.getWorksheetNames();
-
-    std::string rootFilePath;
-    size_t count = 0;
-    if (workbook.getNumWorksheets() > m_filePaths.size() && m_filePaths.size() > 0)
+    if (workbook.getNumWorksheets() > 0)
     {
-        rootFilePath = m_filePaths[0];
-        m_filePaths.clear();
-        for(const auto& sheetName : sheetNames)
+        FileUtils::writeFileContents(m_filePath,
+                                     workbook(0).toCommaDelimitedString());
+        if (workbook.getNumWorksheets() > 1)
         {
-            if (StringUtils::isEmpty(sheetName) )
-            {
-                m_filePaths.push_back(rootFilePath+"_sheet["+StringUtils::toString(count)+"].csv");
-            }
-            else
-            {
-                m_filePaths.push_back(rootFilePath+"_"+FileUtils::getSanitizedPathName(sheetName)+".csv");
-            }
-            ++count;
+            std::cout << "WARNING: CSV does not support saving multiple sheets. Only the first sheet \"" <<workbook(0).getWorksheetTitle() << "\" will be saved." << std::endl;
         }
-    }
-
-    count = 0;
-
-    for (const RStatsWorksheet& sheetIn : sheets)
-    {
-        std::string filePath = m_filePaths[count];
-        FileUtils::writeFileContents(filePath,sheetIn.toCommaDelimitedString());
-        ++count;
     }
 }
 
 RStatsWorkbook RStatsCSVWorkbookStream::read()
 {
-    RStatsWorkbook workbook;
-    for(const auto& filePath : m_filePaths)
+    RStatsWorkbook workbook;    
+    std::ifstream in(m_filePath.c_str(), std::ios::in);
+    size_t row = 0;
+    RStatsWorksheet sheet;
+    while (in)
     {
-        std::ifstream in(filePath.c_str(), std::ios::in);
-        size_t row = 0;
-        RStatsWorksheet sheet;
-        while (in)
+        std::string line;
+        std::getline(in,line);
+        StringUtils::trimmedInPlace(line);
+        if (!in)
         {
-            std::string line;
-            std::getline(in,line);
-            StringUtils::trimmedInPlace(line);
-            if (!in)
-            {
-                break;
-            }
-
-            readRow(line,sheet,row);
-            ++row;
+            break;
         }
-        workbook.addWorksheet(sheet);
+
+        readRow(line,sheet,row);
+        ++row;
     }
+    workbook.addWorksheet(sheet);
     return workbook;
 }
 
@@ -102,12 +72,6 @@ RStatsCSVWorkbookStream::~RStatsCSVWorkbookStream()
 
 }
 
-//x,y,z
-//,,,
-//1,2,3
-//"1","2","3"
-//"1",2,"3"
-//"1,2 and 3", "4, 5 and 6", ""Hello", "World""
 void RStatsCSVWorkbookStream::readRow(const std::string &line,
                                       RStatsWorksheet &sheetOut,
                                       size_t currentRow)

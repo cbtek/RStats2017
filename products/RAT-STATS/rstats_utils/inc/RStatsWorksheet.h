@@ -299,6 +299,27 @@ public:
      */
     void setColumnBorderColor(size_t column, const cbtek::common::utility::Color& color);
 
+    /**
+     * @brief removeRow
+     * @param row
+     */
+    void removeRow(size_t row);
+
+    /**
+     * @brief removeColumn
+     * @param column
+     */
+    void removeColumn(size_t column);
+
+    /**
+     * @brief removeEmptyRows Removes empty rows from worksheet
+     */
+    void removeEmptyRows();
+
+    /**
+     * @brief removeEmptyColumns Removes empty columns from worksheet
+     */
+    void removeEmptyColumns();
 private:
 
         std::set<std::pair<size_t,size_t> > m_thousandsSeperatorToggleSet;
@@ -311,6 +332,7 @@ private:
         void parseCellAddress(const std::string& address, size_t& r, size_t& c);
         std::string toString(const std::string& prefix,const std::string& seperator, const std::string& postfix) const;        
         std::string toEvenlySpacedString(const std::string& prefix,const std::string& seperator, const std::string& postfix) const;
+
 
         /**
          * @brief isCellInMergedCellRange

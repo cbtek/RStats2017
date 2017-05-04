@@ -68,9 +68,6 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     m_ui->m_spnSeed->setValue(static_cast<RStatsFloat>(TimeUtils::getSecondsNow()) /
                               static_cast<RStatsFloat>(m_rnd.next(10,1000)));
 
-    m_ui->m_btnExecute->setEnabled(false);
-    m_ui->actionExecute->setEnabled(false);
-
     m_currentCSVFileOutputLabel = nullptr;
     m_currentTextFileOutputLabel = nullptr;
     onValidate();
@@ -96,7 +93,7 @@ UIRStatsSSRN::~UIRStatsSSRN()
 }
 
 bool UIRStatsSSRN::onValidate()
-{
+{    
     m_logger.clear();
     m_ui->m_lstErrorConsole->clear();
     std::int64_t low  = m_ui->m_spnLowNumber->value();
@@ -126,9 +123,7 @@ bool UIRStatsSSRN::onValidate()
     size_t index = 0;
     if (m_logger.hasMessages() == false)
     {
-        m_ui->m_dockOutput->hide();
-        m_ui->m_btnExecute->setEnabled(true);
-        m_ui->actionExecute->setEnabled(true);
+        m_ui->m_dockOutput->hide();        
         return true;
     }
     m_ui->m_dockOptions->show();
@@ -153,15 +148,11 @@ bool UIRStatsSSRN::onValidate()
     }
 
     if (m_logger.hasError())
-    {
-        m_ui->m_btnExecute->setEnabled(false);
-        m_ui->actionExecute->setEnabled(false);
+    {        
         return false;
     }
     else
-    {
-        m_ui->m_btnExecute->setEnabled(true);
-        m_ui->actionExecute->setEnabled(true);
+    {        
         return true;
     }
 }
@@ -207,6 +198,7 @@ void UIRStatsSSRN::onExecute()
 {
     if (!onValidate())
     {
+        UIRStatsUtils::highlightErrorInValidationConsole(m_ui->m_lstErrorConsole);
         return;
     }
 
