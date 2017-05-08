@@ -4,8 +4,7 @@
 
 */
 
-#ifndef _OIG_RATSTATS_MAIN_UIRSTATSSCRIPTPROVIDERCONFIGDIALOG_H
-#define _OIG_RATSTATS_MAIN_UIRSTATSSCRIPTPROVIDERCONFIGDIALOG_H
+#pragma once
 #include <QDialog>
 
 #include "rstats_utils/inc/RStatsScriptProviderProperties.h"
@@ -16,7 +15,10 @@ namespace oig {
 namespace ratstats {
 namespace ui {
 
-
+/**
+ * @brief The UIRStatsScriptProviderConfigDialog class provides code-behind
+ * for editing RStatsScriptProviderProperties
+ */
 class UIRStatsScriptProviderConfigDialog : public QDialog
 {
     Q_OBJECT
@@ -38,16 +40,32 @@ private:
     * MOC generated ui class for this widget
     */
      Ui_UIRStatsScriptProviderConfigDialog *m_ui;
+
+     /**
+      * @brief m_props
+      */
      utils::RStatsScriptProviderProperties m_props;
 
 private slots:
+
+     /**
+      * @brief onInit
+      */
      void onInit();
+
+     /**
+      * @brief onOk
+      */
      void onOk();
+
+     /**
+      * @brief onBrowseProviderIcon
+      */
      void onBrowseProviderIcon();
+
+     /**
+      * @brief onBrowseProviderPath
+      */
      void onBrowseProviderPath();
 };
-
-
 }}}//end namespace
-
-#endif // _OIG_RATSTATS_MAIN_UIRSTATSSCRIPTPROVIDERCONFIGDIALOG_H

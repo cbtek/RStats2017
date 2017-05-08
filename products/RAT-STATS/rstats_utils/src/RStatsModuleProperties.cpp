@@ -177,7 +177,7 @@ const std::string &RStatsModuleProperties::getCategory() const
     return m_appCategory;
 }
 
-const std::string &RStatsModuleProperties::getDefinitionPath() const
+const std::string &RStatsModuleProperties::getConfigPath() const
 {
     return m_configPath;
 }
@@ -202,7 +202,7 @@ void RStatsModuleProperties::setArgs(const std::string &value)
     m_appArgs = value;
 }
 
-void RStatsModuleProperties::setDefinitionPath(const std::string &path)
+void RStatsModuleProperties::setConfigPath(const std::string &path)
 {
     m_configPath = path;
 }

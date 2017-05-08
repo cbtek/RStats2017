@@ -21,7 +21,7 @@ RStatsUVASessionData::RStatsUVASessionData():
     m_universeSize(0),
     m_dataRowStart(0),
     m_examineColumn("A"),
-    m_auditColumn("A"),
+    m_auditColumn("A"),    
     m_differenceColumn("A")
     {}
 RStatsUVASessionData::~RStatsUVASessionData()
@@ -129,6 +129,7 @@ void RStatsUVASessionData::load(const std::string& url)
         setExamineColumn(element->getChildElementData("examineColumn"));
         setAuditColumn(element->getChildElementData("auditColumn"));
         setUniverseSize(element->getChildElementDataAsType<RStatsInteger>("universeSize"));
+        setDataTableSheetName(element->getChildElementData("sheetName"));
         setDataTableFilePath(element->getChildElementData("dataTableFilePath"));
     }
 }
@@ -148,6 +149,7 @@ void RStatsUVASessionData::save(const std::string& url)
     xml.writeTextElement("differenceColumn",getDifferenceColumn());
     xml.writeTextElement("examineColumn",getExamineColumn());
     xml.writeTextElement("universeSize",StringUtils::toString(getUniverseSize()));
+    xml.writeTextElement("sheetName",getDataTableSheetName());
     xml.writeEndElement("session");
     FileUtils::writeFileContents(url,out.str());
 }

@@ -52,6 +52,7 @@ void UIRStatsErrorMessage::onInit(const QString & title, const QString & message
     connect(m_ui->m_btnOk,SIGNAL(clicked(bool)),this,SLOT(onOk()));
     connect(m_ui->m_btnCopy,SIGNAL(clicked(bool)),this,SLOT(onCopy()));
     connect(m_ui->m_btnSave,SIGNAL(clicked(bool)),this,SLOT(onSave()));
+    this->m_ui->m_txtErrorMessage->setFocus();
 }
 
 UIRStatsErrorMessage::~UIRStatsErrorMessage()

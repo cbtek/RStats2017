@@ -84,7 +84,11 @@ struct RStatsSSRNInputData
     oig::ratstats::utils::RStatsInteger stepValue;
 };
 
-
+/**
+ * @brief The RStatsSSRN class represents the Single Stage Random Numbers
+ * function. In the model-view-controller paradigm, this class represents the
+ * controller.
+ */
 class RStatsSSRN
 {
 
@@ -116,9 +120,8 @@ public:
       void saveToCSVFile(const std::string& filePath);
 
       /**
-       * @brief saveToWorksheet
-       * @param sheet
-       * @param data
+       * @brief saveToWorksheet Saves output results to worksheet reference
+       * @param worksheetOut Reference to worksheet to be returned
        */
       void saveToWorksheet(oig::ratstats::utils::RStatsWorksheet& worksheetOut);
 

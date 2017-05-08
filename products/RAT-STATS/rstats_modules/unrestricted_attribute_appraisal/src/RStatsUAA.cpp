@@ -15,18 +15,11 @@
 
 using namespace oig::ratstats::utils;
 using namespace cbtek::common::utility;
+
 namespace oig {
 namespace ratstats {
 namespace modules {
 namespace uaa {
-
-RStatsUAA RStatsUAA::m_instance = RStatsUAA();
-
-
-RStatsUAA & RStatsUAA::inst()
-{
-    return m_instance;
-}
 
 void RStatsUAA::saveToCSVFile(const std::string &filePath)
 {
@@ -58,48 +51,49 @@ RStatsUAAOutputData RStatsUAA::execute(const std::string& auditName,
                                        RStatsInteger coiSize,
                                        RStatsUAAConfidenceIntervalType type)
 {
-    m_outputData.auditName = auditName;
-    m_confidenceIntervalType = type;
-    //std::cout << "start:\n";
-    m_isFinished = false;
     reset();
+    //Set the input parameters
+    m_outputData.auditName = auditName;
+    m_confidenceIntervalType = type;    
+    m_isFinished = false;            
     m_sampleSize = sampleSize;
     m_universeSize = universeSize;
     m_numItems = coiSize;
     m_numItemsInSample = coiSize;
+
+    //Define inital data
     m_max = 1000000000000.;
     m_min = 1 / m_max;
     m_ratio = RStatsUtils::divideValues(m_numItems,m_sampleSize);    
     m_conditionLevel = 1;
+
+    //start the unrestricted attribute appraisal function
     start();
+
+    //Populate output data structure from results of start()
     m_outputData.createDate = DateUtils::getCurrentDate();
     m_outputData.createTime = TimeUtils::getCurrentTime();
-
     RStatsFloat sampleSizeFloat = static_cast<RStatsFloat>(m_sampleSize);
     m_outputData.sampleSize = m_sampleSize;
     m_outputData.universeSize = m_universeSize;
     m_outputData.coiSize = coiSize;
     m_outputData.projectedTotal = m_ratio * static_cast<RStatsFloat>(m_universeSize);
-    m_outputData.projectedTotalPercent = 100. * m_ratio;
+    m_outputData.projectedTotalPercent = 100. * m_ratio;        
     RStatsFloat fractional = sampleSizeFloat / static_cast<RStatsFloat>(m_universeSize);
     m_outputData.variance = sampleSizeFloat * m_ratio * (1. - m_ratio) * (1. - fractional);
     m_outputData.standardError = std::sqrt(m_outputData.variance);
     RStatsFloat stdErr = m_outputData.standardError;
     m_outputData.standardError = std::round((stdErr * (std::sqrt(sampleSizeFloat / static_cast<RStatsFloat>(m_sampleSize  - 1 ))) / fractional));
     m_outputData.standardErrorPercent = 100. * (stdErr / (std::sqrt(sampleSizeFloat * (sampleSizeFloat - 1))));
-
     m_outputData.lowerLimitQuantityList(0) = m_lower80;
     m_outputData.lowerLimitQuantityList(1) = m_lower90;
     m_outputData.lowerLimitQuantityList(2) = m_lower95;
-
     m_outputData.upperLimitQuantityList(0) = m_upper80;
     m_outputData.upperLimitQuantityList(1) = m_upper90;
     m_outputData.upperLimitQuantityList(2) = m_upper95;
-
     m_outputData.lowerLimitPercentList(0) = 100. * (static_cast<RStatsFloat>(m_lower80) / static_cast<RStatsFloat>(m_universeSize));
     m_outputData.lowerLimitPercentList(1) = 100. * (static_cast<RStatsFloat>(m_lower90) / static_cast<RStatsFloat>(m_universeSize));
     m_outputData.lowerLimitPercentList(2) = 100. * (static_cast<RStatsFloat>(m_lower95) / static_cast<RStatsFloat>(m_universeSize));
-
     m_outputData.upperLimitPercentList(0) = 100. * (static_cast<RStatsFloat>(m_upper80) / static_cast<RStatsFloat>(m_universeSize));
     m_outputData.upperLimitPercentList(1) = 100. * (static_cast<RStatsFloat>(m_upper90) / static_cast<RStatsFloat>(m_universeSize));
     m_outputData.upperLimitPercentList(2) = 100. * (static_cast<RStatsFloat>(m_upper95) / static_cast<RStatsFloat>(m_universeSize));
@@ -220,9 +214,11 @@ void RStatsUAA::saveToWorksheet(RStatsWorksheet &worksheetOut)
 
 void RStatsUAA::start()
 {
+    //Loop over while condition level is less than or equal to 3
     while(m_conditionLevel <= 3)
     {
         m_numItems = m_numItemsInSample;
+        //Set the zValue/tail value based on condition level
         if (m_conditionLevel == 1)
         {
             m_zValue = 1.28155;
@@ -239,11 +235,16 @@ void RStatsUAA::start()
             m_tail = (m_confidenceIntervalType == RStatsUAAConfidenceIntervalType::TwoSided) ? .025 : .05;
         }
 
+        //set initial start data for this iteration
         m_phat = (static_cast<RStatsFloat>(m_numItems) / static_cast<RStatsFloat>(m_sampleSize));
         m_term = m_phat * (1 - m_phat) * m_universeSize * (m_universeSize - m_sampleSize) / (m_sampleSize - 1);
         m_kOld = 0;
         m_iter = 1;
+
+        //start the process of finding upper/lower values
         processFindUpper();
+
+        //Return back if uaa function has finished
         if (m_isFinished)
         {
             return;

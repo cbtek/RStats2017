@@ -49,7 +49,9 @@ void UIRStatsWorkbook::setWorkbook(const RStatsWorkbook &workbook)
 
 void UIRStatsWorkbook::clear()
 {
-    for(int a1 = 0; a1 < m_ui->m_tabWorkbook->count();++a1)
+    //Loop from back and remove all tabs
+    int count = m_ui->m_tabWorkbook->count();
+    for (int a1 = count - 1; a1 >= 0; --a1)
     {
         QWidget * widget = m_ui->m_tabWorkbook->widget(a1);
         if (widget)
@@ -57,9 +59,7 @@ void UIRStatsWorkbook::clear()
             delete widget;
         }
         m_ui->m_tabWorkbook->removeTab(a1);
-    }
-
-    int x = m_ui->m_tabWorkbook->count();
+    }   
 }
 
 UIRStatsWorkbook::~UIRStatsWorkbook()

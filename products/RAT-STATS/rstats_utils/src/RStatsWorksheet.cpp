@@ -9,8 +9,9 @@
 #include "RStatsWorksheet.h"
 
 #include "utility/inc/StringUtils.hpp"
-
 #include "utility/inc/XMLUtils.h"
+
+#include "RStatsUtils.hpp"
 
 using namespace cbtek::common::utility;
 
@@ -154,7 +155,7 @@ std::string RStatsWorksheet::toHTMLTableString(bool includeRowLabels,
     xml.writeEndElement("head");
     xml.writeStartElementNoAttributes("body");
     xml.writeStartElement("table");
-    xml.writeLastAttribute("style","border-collapse:collapse;border: 1px solid black; padding 5px;");
+    xml.writeLastAttribute("style","border-collapse:collapse;border: 4px solid gray; border-radius:5px; padding 5px;");
 
     size_t cols = getNumColumns();
     size_t rows = getNumRows();
@@ -479,7 +480,8 @@ std::string RStatsWorksheet::getCellCSSStyle(const RStatsCell &cell) const
         css += "background: " + cell.bgColor.toString(ColorStringStyle::RGB_HTML_HEX) + ";";
         css += "color: " + cell.fgColor.toString(ColorStringStyle::RGB_HTML_HEX) + ";";
     }
-    css += "border: 1px solid black;";
+    css += "padding: 2px;";
+    css += "border: 1px solid gray;";
     css += "font-size: " + StringUtils::toString(cell.font.getPointSize()+2)+"px;";
     css += "font-weight: " + std::string(cell.font.isBold() ? "bold;" : "normal;");
     css += "font-family: " + cell.font.getFontFamily()+";";
@@ -545,6 +547,25 @@ void RStatsWorksheet::removeEmptyColumns()
             removeColumn(c);
         }
     }
+}
+
+bool RStatsWorksheet::validateWorksheet(size_t rowOffset,
+                                        oig::ratstats::utils::RStatsConditionLogger &logger,
+                                        const std::string &context)
+{
+    bool valid = true;
+    for (size_t r = rowOffset; r < getNumRows();++r)
+    {
+        for(size_t c = 0; c < getNumColumns();++c)
+        {
+            if (!StringUtils::isNumeric((*this)(r,c).text))
+            {
+                logger.addError(!StringUtils::isNumeric((*this)(r,c).text),"The cell at "+RStatsUtils::getCellLabel(r,c)+" in the "+context+" preview table appears to contain non-numeric data: "+(*this)(r,c).text);
+                valid = false;
+            }
+        }
+    }
+    return valid;
 }
 
 void RStatsWorksheet::removeRow(size_t row)

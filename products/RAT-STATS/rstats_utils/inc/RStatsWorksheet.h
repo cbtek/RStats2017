@@ -12,12 +12,17 @@
 #include "utility/inc/StringUtils.hpp"
 #include "utility/inc/ColorUtils.h"
 #include "utility/inc/FontUtils.h"
-#include "RStatsUtils.hpp"
+
+#include "rstats_utils/inc/RStatsConditionLogger.h"
+#include "rstats_utils/inc/RStatsTypes.hpp"
 
 namespace oig {
 namespace ratstats {
 namespace utils {
 
+/**
+ * @brief The RStatsTextAlignment enum
+ */
 enum class RStatsTextAlignment
 {
     AlignLeft,
@@ -25,12 +30,20 @@ enum class RStatsTextAlignment
     AlignRight
 };
 
+/**
+ * @brief The RStatsCellFormat enum
+ */
 enum class RStatsCellFormat
 {
     ThousandsSeperator
 };
 
 class RStatsWorksheet;
+
+/**
+ * @brief The RStatsCell struct represents a single cell object for
+ * a worksheet
+ */
 struct RStatsCell
 {
     static RStatsTextAlignment ms_DefaultAlignment;
@@ -70,6 +83,9 @@ struct RStatsCell
     }
 };
 
+/**
+ * @brief The RStatsMergeCellRange struct
+ */
 struct RStatsMergeCellRange
 {
     size_t startRow,startColumn;
@@ -86,16 +102,20 @@ struct RStatsMergeCellRange
 };
 
 typedef std::map<std::pair<size_t, size_t>, RStatsCell> RStatsCellMap;
-
 typedef std::map<RStatsMergeCellRange, RStatsCell> RStatsMergedCellMap;
 
+/**
+ * @brief The RStatsWorksheet class attempts to emulate a simple
+ * spreadsheet object basic formatting of cells.
+ */
 class RStatsWorksheet 
 {
 public:
-	//! Constructor for RStatsWorksheet
-	/*!
-		Detailed description for RStatsWorksheet
-	*/
+
+    /**
+     * @brief RStatsWorksheet (Constructor)
+     * @param name The name of the worksheet
+     */
     RStatsWorksheet(const std::string& name="NewSheet");
 
    /**
@@ -113,36 +133,45 @@ public:
 
 
     /**
-     * @brief operator ()
-     * @param row
-     * @param column
-     * @return
+     * @brief operator () Allows ease of accessing cells using row/column
+     * indices.  If row/column is out of range a new cell is created and
+     * returned for the index pair.
+     * @param row The row to access
+     * @param column The column to access
+     * @return Return reference to RStatsCell
      */
    RStatsCell& operator()(size_t row, size_t column);
 
 
    /**
-    * @brief operator ()
-    * @param row
-    * @param column
-    * @return
+    * @brief operator () Allows ease of accessing cells using row/column
+    * indices.  This function provides read only access and therefore
+    * if a row/column is out of range an exception is thrown.
+    * @param row The row to access
+    * @param column The column to access
+    * @return Return const reference to RStatsCell
+    * @throws GenericException if row/column do not exist.
     */
   const RStatsCell& operator()(size_t row, size_t column) const;
-
-   /**
-    * @brief getCell
-    * @param row
-    * @param column
-    * @return
-    */
+  /**
+   * @brief getCell Returns const reference to cell via row/column
+   * indices.  This function provides read only access and therefore
+   * if a row/column is out of range an exception is thrown.
+   * @param row The row to access
+   * @param column The column to access
+   * @return Return const reference to RStatsCell
+   * @throws GenericException if row/column do not exist.
+   */
    const RStatsCell& getCell(size_t row, size_t column) const;
 
 
-    /**
-     * @brief operator ()
-     * @param address
-     * @return
-     */
+   /**
+    * @brief operator () Allows ease of accessing cells using string
+    * address (e.g A1, B15, Z24, etc).  If row/column is out of range
+    * a new cell is created and returned for the index pair.
+    * @param address The cell address to return
+    * @return Return reference to RStatsCell
+    */
     RStatsCell& operator()(const std::string& address);
 
 
@@ -225,7 +254,8 @@ public:
     std::string toHTMLTableString(bool includeRowLabels=false, bool includeColumnLabels=false) const;
 
     /**
-     * @brief toCommaDelimitedString
+     * @brief toEvenlySpacedString Converts worksheet to evenly
+     * spaced human readable string output.
      * @return
      */
     std::string toEvenlySpacedString() const;
@@ -320,6 +350,18 @@ public:
      * @brief removeEmptyColumns Removes empty columns from worksheet
      */
     void removeEmptyColumns();
+
+    /**
+     * @brief validateWorksheet Adds errors to logger if data appears to be invalid in the input sheet
+     * @param sheet The input sheet to check
+     * @param rowOffset Offset into to sheet. Used to skip header rows
+     * @param logger Conditional logger from modules
+     * @param context Name of object related to error
+     * @return Return true if sheet was valid, false otherwise
+     */
+     bool validateWorksheet(size_t rowOffset,
+                            oig::ratstats::utils::RStatsConditionLogger& logger,
+                            const std::string& context="data");
 private:
 
         std::set<std::pair<size_t,size_t> > m_thousandsSeperatorToggleSet;

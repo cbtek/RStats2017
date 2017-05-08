@@ -9,6 +9,8 @@
 #include "RStatsXLSWorkbookStream.h"
 #include "contrib/basic_excel/inc/BasicExcel.hpp"
 
+#include "utility/inc/FileUtils.hpp"
+
 using namespace cbtek::common::utility;
 
 namespace oig {
@@ -23,21 +25,30 @@ RStatsXLSWorkbookStream::RStatsXLSWorkbookStream(const std::string &filePath)
 
 void RStatsXLSWorkbookStream::write(const RStatsWorkbook &workbook)
 {
-    YExcel::BasicExcel writer;
-    for (size_t a1 = 0; a1 < workbook.getNumWorksheets();++a1)
+    try
     {
-        const RStatsWorksheet& sheetIn = workbook(a1);
-        YExcel::BasicExcelWorksheet * sheetOut = writer.AddWorksheet(static_cast<int>(a1));
-        size_t rowCount = sheetIn.getNumRows();
-        size_t columnCount = sheetIn.getNumColumns();
-        for (size_t r = 0; r < rowCount; ++r)
+        YExcel::BasicExcel writer;
+        for (size_t a1 = 0; a1 < workbook.getNumWorksheets();++a1)
         {
-            for (size_t c = 0; c < columnCount; ++c)
+            const RStatsWorksheet& sheetIn = workbook(a1);
+            YExcel::BasicExcelWorksheet * sheetOut = writer.AddWorksheet(static_cast<int>(a1));
+            sheetOut->Rename(sheetIn.getWorksheetTitle().c_str());
+            size_t rowCount = sheetIn.getNumRows();
+            size_t columnCount = sheetIn.getNumColumns();
+            for (size_t r = 0; r < rowCount; ++r)
             {
-                YExcel::BasicExcelCell * cell = sheetOut->Cell(r,c);
-                cell->SetString(sheetIn(r,c).text.c_str());
+                for (size_t c = 0; c < columnCount; ++c)
+                {
+                    YExcel::BasicExcelCell * cell = sheetOut->Cell(r,c);
+                    cell->SetString(sheetIn(r,c).text.c_str());
+                }
             }
         }
+        writer.SaveAs(m_filePath.c_str());
+    }
+    catch(std::exception& e)
+    {
+        THROW_GENERIC_EXCEPTION("There was an issue creating the XLS file at: "+m_filePath+"\nSee error below:\n"+std::string(e.what()));
     }
 }
 
@@ -45,6 +56,7 @@ RStatsWorkbook RStatsXLSWorkbookStream::read()
 {
     RStatsWorkbook workbook;
     YExcel::BasicExcel reader;
+
     if (reader.Load(m_filePath.c_str()))
     {
         size_t numSheets = reader.GetTotalWorkSheets();
@@ -72,6 +84,13 @@ RStatsWorkbook RStatsXLSWorkbookStream::read()
                 }
             }
             workbook.addWorksheet(sheetOut);
+        }
+    }
+    else
+    {
+        if (FileUtils::fileExists(m_filePath))
+        {
+            THROW_GENERIC_EXCEPTION("Could not load existing XLS at "+m_filePath+".  Please ensure the path is correct and the XLS is not currently open in a different program.")
         }
     }
     return workbook;

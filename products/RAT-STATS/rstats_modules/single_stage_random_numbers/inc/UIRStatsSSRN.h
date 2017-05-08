@@ -9,6 +9,8 @@
 #include <QActionGroup>
 #include <QLabel>
 
+#include <unordered_map>
+
 #include "rstats_utils/inc/RStatsConditionLogger.h"
 #include "rstats_utils/inc/RStatsUtils.hpp"
 #include "rstats_utils/inc/RStatsModuleSessionData.hpp"
@@ -22,6 +24,11 @@ namespace ratstats {
 namespace modules {
 namespace ssrn {
 
+/**
+ * @brief The UIRStatsSSRN class represents the code-behind for the
+ * single stage random number user interface.  In the model-view-controller
+ * pardigm this class represents the view.
+ */
 class UIRStatsSSRN : public QMainWindow
 {
     Q_OBJECT
@@ -50,23 +57,53 @@ private:
 
 
     /**
-     * @brief m_logger Simple logger for console validation window
+     * @brief m_conditionLogger Simple logger for console validation window
      */
-    oig::ratstats::utils::RStatsConditionLogger m_logger;
+    oig::ratstats::utils::RStatsConditionLogger m_conditionLogger;
 
     /**
-     * @brief Labels/Strings for the output locations
+     * @brief m_currentTextFileOutput Path to text file output
      */
-    QString m_currentCSVFileOutput;
     QString m_currentTextFileOutput;
-    QLabel * m_currentCSVFileOutputLabel;
+
+    /**
+    * @brief m_currentCSVFileOutput Path to CSV file output
+    */
+    QString m_currentCSVFileOutput;
+
+    /**
+    * @brief m_currentXLSFileOutput Path to XLS file output
+    */
+    QString m_currentXLSFileOutput;
+
+    /**
+    * @brief m_currentTextFileOutputLabel UI label for text output
+    */
     QLabel * m_currentTextFileOutputLabel;
+
+    /**
+    * @brief m_currentCSVFileOutputLabel UI label for CSV output
+    */
+    QLabel * m_currentCSVFileOutputLabel;
+
+    /**
+    * @brief m_currentXLSFileOutputLabel UI label for XLS output
+    */
+    QLabel * m_currentXLSFileOutputLabel;
 
     /**
      * @brief Icons used for the validation console
      */
     QIcon m_iconError;
+
+    /**
+     * @brief m_iconWarning
+     */
     QIcon m_iconWarning;
+
+    /**
+     * @brief m_iconOK
+     */
     QIcon m_iconOK;
 
     /**
@@ -103,6 +140,12 @@ private:
     void setTextFileOutput(const std::string& textFile);
 
     /**
+    * @brief setXLSFileOutput Set output for the XLS file
+    * @param xlsFile The path to the xls file
+    */
+    void setXLSFileOutput(const std::string& xlsFile);
+
+    /**
      * @brief getSessionData Binds the view data to the model
      * @return Object containing fields relevant for SSRN
      */
@@ -119,6 +162,11 @@ private:
      */
     void updateRecentSessions();
 
+    /**
+     * @brief onValidate Occurs prior to onExecute completing.  Ensures that all fields are valid and
+     * updates the validation console with any new messages.
+     */
+    bool onValidate();
 
 private slots:                    
     /**
@@ -151,13 +199,7 @@ private slots:
      /**
       * @brief onHelp Event occurs when user clicks the Help button.  Should display pdf for this module.
       */
-     void onHelp();
-
-     /**
-      * @brief onValidate Occurs prior to onExecute completing.  Ensures that all fields are valid and
-      * updates the validation console with any new messages.
-      */
-     bool onValidate();
+     void onHelp();    
 
      /**
       * @brief onSaveCSVFile Event occurs when user clicks the checkbox to save csv file.  This will
@@ -172,15 +214,32 @@ private slots:
      void onSaveTextFile();
 
      /**
-      * @brief onUpdateClock This function is updated every second prior to the onExecute function being called.
-      * It updates the seed with a random value every second.
+      * @brief onSaveXLSFile Event occurs when user clicks the checkbox to save xls file. This will
+      * bring up the browse file dialog
       */
-     void onUpdateClock();
+     void onSaveXLSFile();
 
      /**
-      * @brief onAbout
+      * @brief onUpdateSeed This function updates the seed with a random value
       */
-     void onAbout();     
+     void onUpdateSeed();
+
+     /**
+      * @brief onAbout Event occurs when user clicks the about menu item under Help.  This will
+      * bring up the "About RAT-STATS" dialog
+      */
+     void onAbout();
+
+     /**
+      * @brief onLaunchNewWindow Event occurs when user clicks the "New Window" File menu item.
+      * Will launch new instance of the RStatsSSRN window
+      */
+     void onLaunchNewWindow();
+
+     /**
+      * @brief onUpdateValidation This function calls the onValidate call
+      */
+     void onUpdateValidation();
 
 };
 

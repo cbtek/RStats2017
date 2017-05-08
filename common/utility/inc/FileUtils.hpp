@@ -716,24 +716,27 @@ inline std::string getRandomFileName(int length, int extensionLength)
     rnd.reseed((std::uint64_t)TimeUtils::getMillisecondsNow() + TimeUtils::getSecondsNow());
 
     std::string file = getRandomFolderName(length);
-    file.push_back('.');
-    for (size_t a1 = 0;a1<extensionLength;++a1)
+    if (extensionLength > 0)
     {
-        if (rnd.next(100) > 75)
+        file.push_back('.');
+        for (size_t a1 = 0;a1<extensionLength;++a1)
         {
-            file.push_back(rnd.next('a','z'));
-        }
-        else if (rnd.next(100) > 50)
-        {
-            file.push_back(rnd.next('A','Z'));
-        }
-        else if (rnd.next(100) > 25)
-        {
-            file.push_back(rnd.next('0','9'));
-        }
-        else
-        {
-            file.push_back(rnd.next('F','Z'));
+            if (rnd.next(100) > 75)
+            {
+                file.push_back(rnd.next('a','z'));
+            }
+            else if (rnd.next(100) > 50)
+            {
+                file.push_back(rnd.next('A','Z'));
+            }
+            else if (rnd.next(100) > 25)
+            {
+                file.push_back(rnd.next('0','9'));
+            }
+            else
+            {
+                file.push_back(rnd.next('F','Z'));
+            }
         }
     }
     return file;

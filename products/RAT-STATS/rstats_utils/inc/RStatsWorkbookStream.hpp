@@ -35,18 +35,24 @@ namespace oig {
 namespace ratstats {
 namespace utils {
 
+/**
+ * @brief The RStatsWorkbookStream interface represents a simple
+ * read/write stream for various workbook file formats.
+ */
 class RStatsWorkbookStream
 {
 public:
 
     /**
-     * @brief write
-     * @param input
+     * @brief write This function will be inherited by implementing
+     * classes to provide support for writing a workbook to file
+     * @param workbook The workbook to write
      */    
     virtual void write(const RStatsWorkbook& workbook) = 0;
 
     /**
-     * @brief read
+     * @brief read This function will be inherited by implementing
+     * classes to provide support for reading a workbook from file
      * @return
      */
     virtual RStatsWorkbook read() = 0;
@@ -54,7 +60,10 @@ public:
     //! Virtual Destructor
     virtual ~RStatsWorkbookStream(){}
 };
-
+/**
+ * @brief RStatsWorkbookStreamPtr Typedef of shared pointer for this
+ * interface
+ */
 typedef std::shared_ptr<RStatsWorkbookStream> RStatsWorkbookStreamPtr;
 
 }}}//end namespace

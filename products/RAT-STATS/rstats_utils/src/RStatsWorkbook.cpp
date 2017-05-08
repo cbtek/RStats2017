@@ -16,8 +16,6 @@ namespace oig {
 namespace ratstats {
 namespace utils {
 
-CREATE_EXCEPTION_NO_MSG(RStatsWorkbookException)
-
 RStatsWorkbook::RStatsWorkbook()
 {
 
@@ -76,7 +74,7 @@ RStatsWorksheet& RStatsWorkbook::operator()(size_t index)
     {
         return m_worksheets[index];
     }
-    throw RStatsWorkbookException(EXCEPTION_TAG_LINE+"Index at "+std::to_string(index)+" is out of range!");
+    THROW_GENERIC_EXCEPTION("Index at "+std::to_string(index)+" is out of range!");
 }
 
 const RStatsWorksheet &RStatsWorkbook::operator()(size_t index) const
@@ -85,7 +83,7 @@ const RStatsWorksheet &RStatsWorkbook::operator()(size_t index) const
     {
         return m_worksheets[index];
     }
-    throw RStatsWorkbookException(EXCEPTION_TAG_LINE+"Index at "+std::to_string(index)+" is out of range!");
+    THROW_GENERIC_EXCEPTION("Index at "+std::to_string(index)+" is out of range!");
 }
 
 std::vector<std::string> RStatsWorkbook::getWorksheetNames() const

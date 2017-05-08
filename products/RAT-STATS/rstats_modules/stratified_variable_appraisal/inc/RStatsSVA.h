@@ -18,7 +18,8 @@ namespace sva {
 
 
 /**
- * @brief The RStatsSVAInputData struct
+ * @brief The RStatsSVAInputData struct represents the input data
+ * to the SVA function
  */
 struct RStatsSVAInputData
 {
@@ -31,6 +32,10 @@ struct RStatsSVAInputData
     oig::ratstats::utils::RStatsInteger offset;
 };
 
+/**
+ * @brief The RStatsSVAOutputData struct represents the output data
+ * for the SVA function
+ */
 struct RStatsSVAOutputData
 {
     std::string typeName;
@@ -72,6 +77,9 @@ struct RStatsSVAOutputData
     }
 };
 
+/**
+ * @brief The RStatsSVAOutputDataTriplet struct
+ */
 struct RStatsSVAOutputDataTriplet
 {
     RStatsSVAOutputData audit,examine,difference;
@@ -82,7 +90,9 @@ typedef std::vector<RStatsSVAInputData> RStatsSVAInputDataList;
 typedef oig::ratstats::utils::RStatsObjectList<int> RStatsSVAFlagList;
 
 /**
- * @brief The RStatsSVA class
+ * @brief The RStatsSVA class represents the stratified variable appraisal
+ * function. In the model-view-controller paradigm, this class represents the
+ * controller.
  */
 class RStatsSVA 
 {

@@ -116,6 +116,14 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>m_rdbDefault</tabstop>
+  <tabstop>m_rdbDark</tabstop>
+  <tabstop>m_rdbFusion</tabstop>
+  <tabstop>m_tblScriptProviders</tabstop>
+  <tabstop>m_btnNewScriptProvider</tabstop>
+  <tabstop>m_btnClose</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

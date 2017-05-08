@@ -23,7 +23,6 @@ SOFTWARE.
 
 */
 
-
 #pragma once
 
 #include "utility/inc/Exception.hpp"
@@ -31,15 +30,15 @@ SOFTWARE.
 #include "utility/inc/Random.h"
 #include "utility/inc/DateTimeUtils.hpp"
 
-#include <string>
-#include <vector>
-#include <list>
-#include <sstream>
-#include <map>
 #include <algorithm>
+#include <bitset>
 #include <iostream>
 #include <iomanip>
-
+#include <list>
+#include <map>
+#include <sstream>
+#include <string>
+#include <vector>
 
 namespace cbtek {
 namespace common {
@@ -377,16 +376,17 @@ inline std::string toString(T value,
 * @brief Converts floating point values to "x.xxxx" form
 * @param floatValue Floating point value
 * @param digitsAfterDecimal Number of digits to include after decimal
+* @param addThousandsSeparator
 * @return string of converted floating point value
 */
 inline std::string toString(double floatValue,
-                            int digitsAfterDecimal = 6,
-                            bool addThousandsSeperator = false)
+                            int digitsAfterDecimal = 12,
+                            bool addThousandsSeparator = false)
 {
     std::ostringstream stream;
     stream << std::fixed << std::setprecision(digitsAfterDecimal) << floatValue;
     std::string numberStr = stream.str();
-    if (addThousandsSeperator)
+    if (addThousandsSeparator)
     {
        numberStr = formatWithThousandsLabel(numberStr);
     }
@@ -683,7 +683,50 @@ inline void split(const std::string &str,
     splitItems.push_back(s);
 }
 
+/**
+ * @brief splitByTokens Splits string into items by list of char delims
+ * @param s The source string
+ * @param d Array of delimiters
+ * @param ret The return structure
+ */
+template<typename C>
+void splitByTokens(std::string const& s, char const* d, C& ret)
+{
+  C output;
 
+  std::bitset<255> delims;
+  while( *d )
+  {
+    unsigned char code = *d++;
+    delims[code] = true;
+  }
+  typedef std::string::const_iterator iter;
+  iter beg;
+  bool in_token = false;
+  for( std::string::const_iterator it = s.begin(), end = s.end();
+    it != end; ++it )
+  {
+    if( delims[*it] )
+    {
+      if( in_token )
+      {
+        output.push_back(typename C::value_type(beg, it));
+        in_token = false;
+      }
+    }
+    else if( !in_token )
+    {
+      beg = it;
+      in_token = true;
+    }
+  }
+
+  if( in_token )
+  {
+    output.push_back(typename C::value_type(beg, s.end()));
+  }
+  output.swap(ret);
+}
 /**
 * @brief Splits a string based on the delimeter
 * @param inputString The string to split
@@ -708,6 +751,20 @@ inline std::vector<std::string> split(const std::string &str,
 {
     std::vector<std::string> outItems;
     split(str,delimiter,outItems);
+    return outItems;
+}
+
+/**
+ * @brief splitByTokens Splits str by list of tokens
+ * @param str The source string
+ * @param tokenList List of tokens to split by
+ * @return vector containing elements that were split out of str
+ */
+inline std::vector<std::string> splitByTokens(const std::string &str,
+                                      const std::string &tokenList)
+{
+    std::vector<std::string> outItems;
+    splitByTokens(str,tokenList.c_str(),outItems);
     return outItems;
 }
 
@@ -1839,7 +1896,7 @@ inline std::string roundTrailing9(const std::string& inputValue)
     {
         return inputValue;
     }
-    if (StringUtils::getNumberOfOccurences(inputValue,"999") > 0)
+    if (!StringUtils::getNumberOfOccurences(inputValue,"999") > 0)
     {
         return inputValue;
     }
@@ -1888,11 +1945,27 @@ inline std::string roundTrailing9(const std::string& inputValue)
             outputValue.pop_back();
         }
     }
-    if (StringUtils::contains(outputValue,":"))
-    {
-        std::cerr << "Incorrectly Converted " << inputValue << " to " << outputValue<<std::endl;
-    }
     return outputValue;
 }
+
+/**
+ * @brief removeTrailingZeroes
+ * @param src
+ * @return
+ */
+inline std::string removeTrailingZeroes(const std::string& src)
+{
+    std::string valueOut = src;
+    for (int a1 = valueOut.size() - 1 ; a1 >=0 ; --a1 )
+    {
+        if (valueOut[a1] == '0' || valueOut[a1] == '.')
+        {
+            valueOut.pop_back();
+        }
+        else break;
+    }
+    return valueOut;
+}
+
 
 }}}} //namespace

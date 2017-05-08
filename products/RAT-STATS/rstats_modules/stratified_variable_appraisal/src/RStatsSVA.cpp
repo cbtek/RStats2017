@@ -527,8 +527,18 @@ RStatsSVAInputDataList RStatsSVA::buildInputDataList(const RStatsWorksheet &data
         //For each stratum lets grab the data samples
         for (RStatsInteger a1 = 0; a1 < stratum.sampleSize;++a1)
         {
-            std::string value1 = dataSheet(static_cast<size_t>(a1+stratum.offset),
-                                           stratum.typeIndex.primaryDatasetColumnIndex).text;
+            std::string value1;
+            try
+            {
+                value1 = dataSheet(static_cast<size_t>(a1+stratum.offset),
+                                   stratum.typeIndex.primaryDatasetColumnIndex).text;
+            }
+            catch(...)
+            {
+                stratum.sampleSize--;
+                stratum.samples.resize(stratum.sampleSize);
+                continue;
+            }
             StringUtils::removeInPlace(value1, "$");
             StringUtils::removeInPlace(value1, "(");
             StringUtils::removeInPlace(value1, ")");
@@ -542,8 +552,16 @@ RStatsSVAInputDataList RStatsSVA::buildInputDataList(const RStatsWorksheet &data
             std::string value2;
             if (isMultiDataFormat)
             {
-                value2 = dataSheet(static_cast<size_t>(a1+stratum.offset),
-                                   stratum.typeIndex.secondaryDatasetColumnIndex).text;
+                try
+                {
+                    value2 = dataSheet(static_cast<size_t>(a1+stratum.offset),
+                                       stratum.typeIndex.secondaryDatasetColumnIndex).text;
+                }
+                catch(...)
+                {
+                    continue;
+                }
+
                 StringUtils::removeInPlace(value2, "$");
                 StringUtils::removeInPlace(value2, "(");
                 StringUtils::removeInPlace(value2, ")");

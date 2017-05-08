@@ -4,8 +4,8 @@
 
 */
 
-#ifndef _OIG_RATSTATS_MAIN_UIRSTATSLAUNCHCONFIGDIALOG_H
-#define _OIG_RATSTATS_MAIN_UIRSTATSLAUNCHCONFIGDIALOG_H
+#pragma once
+
 #include <QDialog>
 
 #include "rstats_utils/inc/RStatsModuleProperties.h"
@@ -16,7 +16,10 @@ namespace oig {
 namespace ratstats {
 namespace ui {
 
-
+/**
+ * @brief The UIRStatsLaunchConfigDialog class represents the code-behind
+ * for editing RStatsModuleProperties.
+ */
 class UIRStatsLaunchConfigDialog : public QDialog
 {
     Q_OBJECT
@@ -47,24 +50,58 @@ private:
      Ui_UIRStatsLaunchConfigDialog *m_ui;
      utils::RStatsModuleProperties m_props;
 
+     /**
+      * @brief m_isModified Flag holds whether or not this instance of
+      * the config dialog has been edited
+      */
      bool m_isModified;
 
 
 private slots:
+
+     /**
+      * @brief onInit
+      */
      void onInit();
+
+     /**
+      * @brief onSave
+      */
      void onSave();
+
+     /**
+      * @brief onSave
+      * @param out
+      */
      void onSave(utils::RStatsModuleProperties& out);
+
+     /**
+      * @brief onCancel Close this dialog
+      */
      void onCancel();
+
+     /**
+      * @brief onLaunch Executes/Tests the newly defined module
+      */
      void onLaunch();
+
+     /**
+      * @brief onBrowseModulePath Locates the module path from disk
+      */
      void onBrowseModulePath();
+
+     /**
+      * @brief onBrowseModuleWorkingDir Sets the working directory for module property
+      */
      void onBrowseModuleWorkingDir();
+
+     /**
+      * @brief onBrowseModuleIcon Locates the module icon from disk
+      */
      void onBrowseModuleIcon();
 
 signals:
     void propertiesSaved(const utils::RStatsModuleProperties& props);
 
 };
-
 }}}//end namespace
-
-#endif // _OIG_RATSTATS_MAIN_UIRSTATSLAUNCHCONFIGDIALOG_H

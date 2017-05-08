@@ -9,6 +9,7 @@
 #include "RStatsCSVWorkbookStream.h"
 
 #include "utility/inc/StringUtils.hpp"
+#include "utility/inc/FileUtils.hpp"
 
 #include <stack>
 using namespace cbtek::common::utility;

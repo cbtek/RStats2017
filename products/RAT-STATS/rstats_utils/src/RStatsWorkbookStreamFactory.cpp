@@ -12,12 +12,11 @@
 #include "utility/inc/FileUtils.hpp"
 #include "utility/inc/Exception.hpp"
 
-#include "streams/RStatsDelimitedWorkbookStream.h"
+#include "streams/RStatsSpaceOrTabDelimitedWorkbookStream.h"
 #include "streams/RStatsDIFWorkbookStream.h"
 #include "streams/RStatsXLSXWorkbookStream.h"
 #include "streams/RStatsXLSWorkbookStream.h"
 #include "streams/RStatsCSVWorkbookStream.h"
-#include "streams/RStatsAccessWorkbookStream.h"
 
 using namespace cbtek::common::utility;
 
@@ -29,7 +28,7 @@ RStatsWorkbookStreamPtr RStatsWorkbookStreamFactory::create(const std::string &f
 {
     std::string ext = StringUtils::toUpperTrimmed(FileUtils::getFileExtension(filePath));
 
-    if ((ext == "XLSX") || (ext == "XLSM"))
+    if (ext == "XLSX")
     {
         return RStatsWorkbookStreamPtr(new streams::RStatsXLSXWorkbookStream(filePath));
     }
@@ -45,23 +44,12 @@ RStatsWorkbookStreamPtr RStatsWorkbookStreamFactory::create(const std::string &f
     {
         return RStatsWorkbookStreamPtr(new streams::RStatsDIFWorkbookStream(filePath));
     }
-    else if (ext == "TXT" || ext == "DAT")
+    else if (ext == "TXT" || ext == "DAT" || ext == "SSV")
     {
-        return RStatsWorkbookStreamPtr(new streams::RStatsDelimitedWorkbookStream(filePath));
-    }
-    else if (ext == "MDB")
-    {
-        THROW_GENERIC_EXCEPTION("MDB not supported yet")
-    }
-    else if (ext == "AACDB")
-    {
-        THROW_GENERIC_EXCEPTION("AACDB not supported yet")
-    }
-    THROW_GENERIC_EXCEPTION("Invalid type type detected at \""+filePath+"\"")
+        return RStatsWorkbookStreamPtr(new streams::RStatsSpaceOrTabDelimitedWorkbookStream(filePath));
+    }  
+    THROW_GENERIC_EXCEPTION("Invalid type type detected at \""+filePath+"\".\nThis type is not supported by the Workbook Stream Factory!")
 }
-
-
-
 }}}//end namespace
 
 

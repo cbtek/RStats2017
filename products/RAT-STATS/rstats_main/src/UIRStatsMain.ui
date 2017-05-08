@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>572</width>
-    <height>451</height>
+    <width>900</width>
+    <height>650</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,7 +16,7 @@
   <widget class="QWidget" name="m_main">
    <layout class="QVBoxLayout" name="verticalLayout_5">
     <item>
-     <widget class="QSplitter" name="splitter">
+     <widget class="QSplitter" name="m_splMain">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
@@ -42,9 +42,10 @@
           <property name="styleSheet">
            <string notr="true">QLabel
 {
-color:black;
 padding:4px;
-background-color: qlineargradient(spread:pad, x1:1, y1:1, x2:1, y2:0, stop:0 rgba(105, 105, 127, 255), stop:1 rgba(255, 255, 255, 255));
+	background:white;
+	color:black;
+	border:1px solid gray;
 }</string>
           </property>
           <property name="text">
@@ -61,7 +62,7 @@ background-color: qlineargradient(spread:pad, x1:1, y1:1, x2:1, y2:0, stop:0 rgb
        </layout>
       </widget>
       <widget class="QWidget" name="verticalLayoutWidget_2">
-       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <layout class="QVBoxLayout" name="m_lytModules">
         <property name="spacing">
          <number>0</number>
         </property>
@@ -82,9 +83,10 @@ background-color: qlineargradient(spread:pad, x1:1, y1:1, x2:1, y2:0, stop:0 rgb
           <property name="styleSheet">
            <string notr="true">QLabel
 {
-color:black;
 padding:4px;
-background-color: qlineargradient(spread:pad, x1:1, y1:1, x2:1, y2:0, stop:0 rgba(105, 105, 127, 255), stop:1 rgba(255, 255, 255, 255));
+	background:white;
+	color:black;
+	border:1px solid gray;
 }</string>
           </property>
           <property name="text">
@@ -95,9 +97,6 @@ background-color: qlineargradient(spread:pad, x1:1, y1:1, x2:1, y2:0, stop:0 rgb
           </property>
          </widget>
         </item>
-        <item>
-         <widget class="QListWidget" name="m_lstModules"/>
-        </item>
        </layout>
       </widget>
      </widget>
@@ -107,6 +106,9 @@ background-color: qlineargradient(spread:pad, x1:1, y1:1, x2:1, y2:0, stop:0 rgb
   <widget class="QToolBar" name="m_tlbCommands">
    <property name="windowTitle">
     <string>toolBar</string>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextUnderIcon</enum>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -124,7 +126,7 @@ background-color: qlineargradient(spread:pad, x1:1, y1:1, x2:1, y2:0, stop:0 rgb
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>572</width>
+     <width>900</width>
      <height>20</height>
     </rect>
    </property>

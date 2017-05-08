@@ -26,6 +26,11 @@ namespace ratstats {
 namespace modules {
 namespace sva {
 
+/**
+ * @brief The UIRStatsSVA class represents the code-behind for the
+ * stratified variable appraisal user interface.  In the model-view-controller
+ * pardigm this class represents the view.
+ */
 class UIRStatsSVA : public QMainWindow
 {
     Q_OBJECT
@@ -49,23 +54,55 @@ private:
      Ui_UIRStatsSVA *m_ui;
 
      /**
-      * @brief m_clock
-      */
-     QTimer m_clock;
-
-     /**
-      * @brief Labels/Strings for output
+      * @brief m_currentTextFileOutput Path to text file output
       */
      QString m_currentTextFileOutput;
-     QString m_currentCSVFileOutput;     
+
+     /**
+     * @brief m_currentCSVFileOutput Path to CSV file output
+     */
+     QString m_currentCSVFileOutput;
+
+     /**
+     * @brief m_currentXLSFileOutput Path to XLS file output
+     */
+     QString m_currentXLSFileOutput;
+
+     /**
+      * @brief m_currentSizeSheetName
+      */
+     QString m_currentSizeSheetName;
+
+     /**
+      * @brief m_currentDataSheetName
+      */
+     QString m_currentDataSheetName;
+
+     /**
+     * @brief m_dataTableImportFilePath Path to data input table
+     */
+     QString m_dataTableImportFilePath;
+
+     /**
+     * @brief m_dataTableImportFilePath Path to data input table
+     */
+     QString m_sizeTableImportFilePath;
+
+     /**
+     * @brief m_currentTextFileOutputLabel UI label for text output
+     */
      QLabel * m_currentTextFileOutputLabel;
+
+     /**
+     * @brief m_currentCSVFileOutputLabel UI label for CSV output
+     */
      QLabel * m_currentCSVFileOutputLabel;
 
      /**
-      * @brief Paths for importing the data and size sheet
-      */
-     QString m_sizeTableImportFilePath;
-     QString m_dataTableImportFilePath;
+     * @brief m_currentXLSFileOutputLabel UI label for XLS output
+     */
+     QLabel * m_currentXLSFileOutputLabel;
+
 
      /**
       * @brief Icons used by the validation console
@@ -78,8 +115,20 @@ private:
       * @brief Current data sheets/workbooks for data/size tables
       */
      oig::ratstats::utils::RStatsWorksheet m_currentDataSheet;
+
+     /**
+      * @brief m_currentSizeSheet
+      */
      oig::ratstats::utils::RStatsWorksheet m_currentSizeSheet;
+
+     /**
+      * @brief m_currentDataWorkbook
+      */
      oig::ratstats::utils::RStatsWorkbook m_currentDataWorkbook;
+
+     /**
+      * @brief m_currentSizeWorkbook
+      */
      oig::ratstats::utils::RStatsWorkbook m_currentSizeWorkbook;
 
 
@@ -149,6 +198,12 @@ private:
      void importSizeTable(const std::string& sizeTableFilePath);
 
      /**
+      * @brief setXLSFileOutput
+      * @param xlsFile
+      */
+     void setXLSFileOutput(const std::string& xlsFile);
+
+     /**
       * @brief setCSVFileOutput
       * @param csvFile
       */
@@ -175,26 +230,36 @@ private:
      /**
       * @brief updateRecentSessions Updates the recently used sessions
       */
-     void updateRecentSessions();     
+     void updateRecentSessions();         
 
      /**
-      * @brief populateWithColumns Populates combobox with spreadsheet column labels
-      * @param columns set of column integers
-      * @param comboBox The view control to populate
+      * @brief onValidate
+      * @return
       */
-     void populateWithColumns(const std::set<size_t> &columns, QComboBox* comboBox);
+     bool onValidate();
 
      /**
-      * @brief populateWithRows Populates combobox with spreadsheet row labels
-      * @param rows set of row integers
-      * @param comboBox The view control to populate
+      * @brief onValidateSizeSheet
+      * @param logger
+      * @return
       */
-     void populateWithRows(const std::set<size_t> &rows, QComboBox* comboBox);
+     bool onValidateSizeSheet(utils::RStatsConditionLogger& logger);
 
 protected:
      void resizeEvent(QResizeEvent*);
 
 protected slots:
+
+     /**
+      * @brief onSampleDataInputSheetReload
+      */
+     void onSampleDataInputSheetReload();
+
+     /**
+      * @brief onSampleSizeInputSheetReload
+      */
+     void onSampleSizeInputSheetReload();
+
      /**
       * @brief onClearRecentSessions
       */
@@ -215,17 +280,6 @@ protected slots:
       * @brief onUpdateRowColumnExtentsForSizeTable
       */
      void onUpdateRowColumnExtentsForSizeTable();
-
-     /**
-      * @brief onValidate
-      * @return
-      */
-     bool onValidate();
-
-     /**
-      * @brief onUpdateClock
-      */
-     void onUpdateClock();
 
      /**
       * @brief onExecute
@@ -279,7 +333,7 @@ protected slots:
      /**
       * @brief onSaveCSVFile
       */
-     void onSaveCSVFile();
+     void onSaveCSVFile();          
 
      /**
       * @brief onSaveTextFile
@@ -305,6 +359,22 @@ protected slots:
       * @brief onSetTabOrder
       */
      void onSetTabOrder();
+
+     /**
+      * @brief onSaveXLSFile
+      */
+     void onSaveXLSFile();
+
+     /**
+      * @brief onUpdateValidation Calls the onValidate function
+      */
+     void onUpdateValidation();
+
+     /**
+      * @brief onLaunchNewWindow Event occurs when user clicks the "New Window" File menu item.
+      * Will launch new instance of the RStatsSVA window
+      */
+     void onLaunchNewWindow();
 };
 
 }}}}//end namespace

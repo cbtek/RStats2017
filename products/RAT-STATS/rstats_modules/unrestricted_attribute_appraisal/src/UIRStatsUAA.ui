@@ -65,7 +65,7 @@
 }</string>
       </property>
       <property name="text">
-       <string>No Data to Display</string>
+       <string>No Output Available</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -218,16 +218,16 @@
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QVBoxLayout" name="verticalLayout_8">
      <property name="leftMargin">
-      <number>2</number>
+      <number>6</number>
      </property>
      <property name="topMargin">
-      <number>2</number>
+      <number>6</number>
      </property>
      <property name="rightMargin">
-      <number>2</number>
+      <number>6</number>
      </property>
      <property name="bottomMargin">
-      <number>2</number>
+      <number>6</number>
      </property>
      <item>
       <widget class="QFrame" name="m_frmOptions">
@@ -412,7 +412,7 @@
           <property name="title">
            <string>Output Options:</string>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout_4">
+          <layout class="QGridLayout" name="gridLayout_3">
            <property name="leftMargin">
             <number>11</number>
            </property>
@@ -425,37 +425,32 @@
            <property name="bottomMargin">
             <number>11</number>
            </property>
-           <item>
-            <widget class="QFrame" name="frame">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
+           <item row="0" column="1">
+            <widget class="QCheckBox" name="m_chkXLSOutput">
+             <property name="text">
+              <string>XLS File</string>
              </property>
-             <layout class="QVBoxLayout" name="verticalLayout_3">
-              <item>
-               <widget class="QCheckBox" name="m_chkTextOutput">
-                <property name="text">
-                 <string>Text File</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="m_chkCSVOutput">
-                <property name="text">
-                 <string>Excel / Access File</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="m_chkViewInBrowser">
-                <property name="text">
-                 <string>View in Web Browser</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QCheckBox" name="m_chkTextOutput">
+             <property name="text">
+              <string>Text File</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QCheckBox" name="m_chkCSVOutput">
+             <property name="text">
+              <string>CSV File</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QCheckBox" name="m_chkViewInBrowser">
+             <property name="text">
+              <string>View in Web Browser</string>
+             </property>
             </widget>
            </item>
           </layout>
@@ -481,7 +476,9 @@
      <string>File</string>
     </property>
     <addaction name="separator"/>
+    <addaction name="actionNew_Window"/>
     <addaction name="actionRecentlyUsed"/>
+    <addaction name="separator"/>
     <addaction name="actionExecute"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
@@ -530,17 +527,22 @@
   </action>
   <action name="actionHelp">
    <property name="text">
-    <string>Help Topics</string>
+    <string>Help Topics...</string>
    </property>
   </action>
   <action name="actionAbout">
    <property name="text">
-    <string>About</string>
+    <string>About...</string>
    </property>
   </action>
   <action name="actionExecute">
    <property name="text">
     <string>Execute...</string>
+   </property>
+  </action>
+  <action name="actionNew_Window">
+   <property name="text">
+    <string>New Window...</string>
    </property>
   </action>
  </widget>
@@ -549,8 +551,9 @@
   <tabstop>m_spnUniverseSize</tabstop>
   <tabstop>m_spnSampleSize</tabstop>
   <tabstop>m_spnCOI</tabstop>
-  <tabstop>m_chkTextOutput</tabstop>
+  <tabstop>m_chkXLSOutput</tabstop>
   <tabstop>m_chkCSVOutput</tabstop>
+  <tabstop>m_chkTextOutput</tabstop>
   <tabstop>m_chkViewInBrowser</tabstop>
   <tabstop>m_txtOutput</tabstop>
   <tabstop>m_btnHelp</tabstop>

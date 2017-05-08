@@ -20,68 +20,73 @@ enum class ConditionType
     Error
 };
 
+/**
+ * @brief The RStatsConditionLogger class provides support for creating
+ * warning, informative and error messages based on boolean conditions.
+ * This object is used by the modules for realtime error/exception monitoring.
+ */
 class RStatsConditionLogger 
 {
 public:
-	//! Constructor for RStatsConditionLogger
-	/*!
-		Detailed description for RStatsConditionLogger
-	*/
+
+    /**
+     * @brief RStatsConditionLogger (Constructor)
+     */
 	RStatsConditionLogger();
 
     /**
-     * @brief addWarning
-     * @param condition
-     * @param message
+     * @brief addWarning Adds warning condition to logger
+     * @param condition Condition that shows warning if true
+     * @param message The actual warning message
      */
     void addWarning(bool condition, const std::string& message);
 
     /**
-     * @brief addInformation
-     * @param condition
-     * @param message
+     * @brief addInformation Adds information condition to logger
+     * @param condition Condition that shows information if true
+     * @param message The acutal information message
      */
     void addInformation(bool condition, const std::string& message);
 
     /**
-     * @brief addError
-     * @param condition
-     * @param message
+     * @brief addError Add error condition to logger
+     * @param condition COndition that shows error if true
+     * @param message The actual error message
      */
     void addError(bool condition, const std::string& message);
 
     /**
-     * @brief getMessages
-     * @return
+     * @brief getMessages Get all the messages in logger
+     * @return Returns vector of string containing all messages
      */
     const std::vector<std::string>& getMessages() const;
 
     /**
-     * @brief hasMessages
-     * @return
+     * @brief hasMessages Determine if there are any messages
+     * @return Returns true if messages exist, false otherwise
      */
     bool hasMessages() const;
 
     /**
-     * @brief hasError
-     * @return
+     * @brief hasError Determine if there are any error messages
+     * @return Returns true if error messages exist, false otherwise
      */
     bool hasError() const;
 
     /**
-     * @brief hasWarning
-     * @return
+     * @brief hasWarning Determine if there are any warning messages
+     * @return Returns true if warning messages exist, false otherwise
      */
     bool hasWarning() const;
 
     /**
-     * @brief hasInformation
-     * @return
+     * @brief hasInformation Determine if there are any information messages
+     * @return Returns true if info messages exist, false otherwise
      */
     bool hasInformation() const;
 
     /**
-     * @brief clear
+     * @brief clear Clears all messages from logger
      */
     void clear();
 
@@ -132,9 +137,7 @@ private:
     std::vector<ConditionType> m_conditionSet;
     std::string m_warningQSS;
     std::string m_errorQSS;
-    std::string m_informationQSS;
-
-    
+    std::string m_informationQSS;   
 };
 }}}//end namespace
 

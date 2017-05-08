@@ -263,9 +263,9 @@
  </widget>
  <tabstops>
   <tabstop>m_txtName</tabstop>
-  <tabstop>m_txtLocation</tabstop>
   <tabstop>m_cmbCategories</tabstop>
   <tabstop>m_cmbTypes</tabstop>
+  <tabstop>m_txtLocation</tabstop>
   <tabstop>m_btnBrowseLocation</tabstop>
   <tabstop>m_txtArgs</tabstop>
   <tabstop>m_btnSetIcon</tabstop>

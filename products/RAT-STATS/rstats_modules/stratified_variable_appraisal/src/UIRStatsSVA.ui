@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Stratified Variable Appraisal</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_7">
     <item>
@@ -32,7 +35,7 @@
 }</string>
       </property>
       <property name="text">
-       <string>No Data Available</string>
+       <string>No Output Available</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -113,12 +116,6 @@
          </property>
          <property name="text">
           <string>Execute</string>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>32</width>
-           <height>32</height>
-          </size>
          </property>
         </widget>
        </item>
@@ -377,7 +374,7 @@
              <property name="title">
               <string>Output Options:</string>
              </property>
-             <layout class="QVBoxLayout" name="verticalLayout">
+             <layout class="QGridLayout" name="gridLayout_2">
               <property name="leftMargin">
                <number>11</number>
               </property>
@@ -390,21 +387,28 @@
               <property name="bottomMargin">
                <number>11</number>
               </property>
-              <item>
-               <widget class="QCheckBox" name="m_chkCSVOutput">
-                <property name="text">
-                 <string>Excel / Access File</string>
-                </property>
-               </widget>
-              </item>
-              <item>
+              <item row="2" column="0">
                <widget class="QCheckBox" name="m_chkTextOutput">
                 <property name="text">
                  <string>Text File</string>
                 </property>
                </widget>
               </item>
-              <item>
+              <item row="0" column="0">
+               <widget class="QCheckBox" name="m_chkXLSOutput">
+                <property name="text">
+                 <string>XLS File</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QCheckBox" name="m_chkCSVOutput">
+                <property name="text">
+                 <string>CSV File</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
                <widget class="QCheckBox" name="m_chkViewInBrowser">
                 <property name="text">
                  <string>View In Web Browser</string>
@@ -430,6 +434,9 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
    <property name="floating">
     <bool>false</bool>
    </property>
@@ -447,92 +454,174 @@
    </attribute>
    <widget class="QWidget" name="m_dockSampleSizeInputContainer">
     <layout class="QGridLayout" name="gridLayout_5">
-     <item row="2" column="0">
-      <layout class="QGridLayout" name="gridLayout_6">
-       <property name="leftMargin">
-        <number>4</number>
-       </property>
-       <property name="topMargin">
-        <number>4</number>
-       </property>
-       <property name="rightMargin">
-        <number>4</number>
-       </property>
-       <property name="bottomMargin">
-        <number>4</number>
-       </property>
-       <item row="2" column="1">
-        <widget class="QLabel" name="m_lblAuditedSizeTable">
-         <property name="text">
-          <string>Universe#</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QComboBox" name="m_cmbUniverseCountSizeTable"/>
-       </item>
-       <item row="2" column="2">
-        <widget class="QLabel" name="m_lblDifferenceSizeTable">
-         <property name="text">
-          <string>Sample#</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="2">
-        <widget class="QComboBox" name="m_cmbSampleCountSizeTable"/>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="m_lblDataRowStartSizeTable">
-         <property name="text">
-          <string>Row Start</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QComboBox" name="m_cmbDataRowStartSizeTable"/>
-       </item>
-      </layout>
-     </item>
-     <item row="0" column="0">
-      <layout class="QGridLayout" name="gridLayout_7">
-       <property name="leftMargin">
-        <number>4</number>
-       </property>
-       <property name="topMargin">
-        <number>4</number>
-       </property>
-       <property name="rightMargin">
-        <number>4</number>
-       </property>
-       <property name="bottomMargin">
-        <number>4</number>
-       </property>
-       <item row="1" column="0">
-        <widget class="QComboBox" name="m_cmbSizeInputSheets"/>
-       </item>
-       <item row="1" column="2">
-        <widget class="QPushButton" name="m_btnImportSampleSizeData">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-      </layout>
+     <item row="1" column="0">
+      <widget class="QFrame" name="m_dockFrame">
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item>
+         <widget class="QGroupBox" name="m_grpSizeInputPreviewTable">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="title">
+           <string>Size Table:</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_14"/>
+         </widget>
+        </item>
+        <item>
+         <layout class="QGridLayout" name="gridLayout_6">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item row="2" column="0">
+           <widget class="QGroupBox" name="m_grpSizeInputRowStart">
+            <property name="title">
+             <string>Set Input Row Start:</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout">
+             <item>
+              <widget class="QComboBox" name="m_cmbDataRowStartSizeTable"/>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QGroupBox" name="m_grpSizeInputSampleColumn">
+            <property name="title">
+             <string>Set Sample Column:</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_8">
+             <item>
+              <widget class="QComboBox" name="m_cmbSampleCountSizeTable"/>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QGroupBox" name="m_grpSizeInputUniverseColumn">
+            <property name="title">
+             <string>Set Universe Column:</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+             <item>
+              <widget class="QComboBox" name="m_cmbUniverseCountSizeTable"/>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="1" column="0">
+           <widget class="QGroupBox" name="m_grpSizeInputSheetSelection">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="title">
+             <string>Select Sheet:</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_7">
+             <property name="leftMargin">
+              <number>9</number>
+             </property>
+             <property name="topMargin">
+              <number>9</number>
+             </property>
+             <property name="rightMargin">
+              <number>9</number>
+             </property>
+             <property name="bottomMargin">
+              <number>9</number>
+             </property>
+             <item row="1" column="0">
+              <widget class="QComboBox" name="m_cmbSizeInputSheets">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QGroupBox" name="verticalGroupBox">
+            <property name="title">
+             <string>Open Size Input:</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_16">
+             <property name="leftMargin">
+              <number>9</number>
+             </property>
+             <property name="topMargin">
+              <number>9</number>
+             </property>
+             <property name="rightMargin">
+              <number>9</number>
+             </property>
+             <property name="bottomMargin">
+              <number>9</number>
+             </property>
+             <item>
+              <widget class="QPushButton" name="m_btnImportSampleSizeData">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Browse</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="m_btnImportSampleSizeDataReload">
+               <property name="text">
+                <string>Reload</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
      </item>
     </layout>
    </widget>
@@ -550,7 +639,7 @@
    <widget class="QWidget" name="m_dockSampleDataInputContainer">
     <layout class="QVBoxLayout" name="verticalLayout_6">
      <item>
-      <layout class="QGridLayout" name="gridLayout_8">
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
        <property name="leftMargin">
         <number>4</number>
        </property>
@@ -563,89 +652,180 @@
        <property name="bottomMargin">
         <number>4</number>
        </property>
-       <item row="0" column="1">
-        <widget class="QComboBox" name="m_cmbDataInputSheets"/>
+       <item>
+        <layout class="QGridLayout" name="gridLayout_9">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item row="4" column="0">
+          <widget class="QGroupBox" name="verticalGroupBox_3">
+           <property name="title">
+            <string>Set Audit Column:</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_12">
+            <item>
+             <widget class="QComboBox" name="m_cmbAuditedDataTable"/>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QGroupBox" name="verticalGroupBox_2">
+           <property name="title">
+            <string>Set Examine Column:</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_11">
+            <item>
+             <widget class="QComboBox" name="m_cmbExaminedDataTable"/>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QGroupBox" name="verticalGroupBox">
+           <property name="title">
+            <string>Set Data Row Start:</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_10">
+            <item>
+             <widget class="QComboBox" name="m_cmbDataRowStartDataTable"/>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QGroupBox" name="verticalGroupBox_4">
+           <property name="title">
+            <string>Set Difference Column:</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_13">
+            <item>
+             <widget class="QComboBox" name="m_cmbDifferenceDataTable"/>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="6" column="0">
+          <spacer name="verticalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="1" column="0">
+          <widget class="QGroupBox" name="groupBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="title">
+            <string>Select Data Sheet:</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_8">
+            <property name="leftMargin">
+             <number>9</number>
+            </property>
+            <property name="topMargin">
+             <number>9</number>
+            </property>
+            <property name="rightMargin">
+             <number>9</number>
+            </property>
+            <property name="bottomMargin">
+             <number>9</number>
+            </property>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="m_cmbDataInputSheets">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QGroupBox" name="verticalGroupBox">
+           <property name="title">
+            <string>Open Data Input:</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_17">
+            <property name="leftMargin">
+             <number>9</number>
+            </property>
+            <property name="topMargin">
+             <number>9</number>
+            </property>
+            <property name="rightMargin">
+             <number>9</number>
+            </property>
+            <property name="bottomMargin">
+             <number>9</number>
+            </property>
+            <item>
+             <widget class="QPushButton" name="m_btnImportSampleInputData">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>80</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Browse</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="m_btnImportSampleInputDataReload">
+              <property name="text">
+               <string>Reload</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
        </item>
-       <item row="0" column="2">
-        <widget class="QPushButton" name="m_btnImportSampleInputData">
+       <item>
+        <widget class="QGroupBox" name="m_grpDataInputPreviewTable">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="text">
-          <string/>
+         <property name="title">
+          <string>Data Table:</string>
          </property>
+         <layout class="QVBoxLayout" name="verticalLayout_15"/>
         </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QGridLayout" name="gridLayout_9">
-       <property name="leftMargin">
-        <number>4</number>
-       </property>
-       <property name="topMargin">
-        <number>4</number>
-       </property>
-       <property name="rightMargin">
-        <number>4</number>
-       </property>
-       <property name="bottomMargin">
-        <number>4</number>
-       </property>
-       <item row="1" column="0">
-        <widget class="QComboBox" name="m_cmbDataRowStartDataTable"/>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="m_lblDataRowStartDataTable">
-         <property name="text">
-          <string>Row Start</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QComboBox" name="m_cmbExaminedDataTable"/>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="m_lblAuditedDataTable">
-         <property name="text">
-          <string>Audit Col.</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLabel" name="m_lblExaminedDataTable">
-         <property name="text">
-          <string>Examine Col.</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QComboBox" name="m_cmbAuditedDataTable"/>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLabel" name="m_lblDifferenceDataTable">
-         <property name="text">
-          <string>Difference Col.</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QComboBox" name="m_cmbDifferenceDataTable"/>
        </item>
       </layout>
      </item>
@@ -699,7 +879,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QListWidget" name="m_lstErrorConsole">
+      <widget class="QListWidget" name="m_lstValidationConsole">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -735,8 +915,14 @@
      <string>File</string>
     </property>
     <addaction name="separator"/>
-    <addaction name="actionExecute"/>
+    <addaction name="actionNew_Window"/>
+    <addaction name="separator"/>
+    <addaction name="separator"/>
     <addaction name="actionRecently_Used"/>
+    <addaction name="actionImport_Input_Data_Sheet"/>
+    <addaction name="actionImport_Input_Size_Sheet"/>
+    <addaction name="separator"/>
+    <addaction name="actionExecute"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -744,8 +930,8 @@
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="actionAbout"/>
     <addaction name="actionHelp"/>
+    <addaction name="actionAbout"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuHelp"/>
@@ -762,17 +948,32 @@
   </action>
   <action name="actionAbout">
    <property name="text">
-    <string>About</string>
+    <string>About...</string>
    </property>
   </action>
   <action name="actionHelp">
    <property name="text">
-    <string>Help</string>
+    <string>Help Topics...</string>
    </property>
   </action>
   <action name="actionExecute">
    <property name="text">
     <string>Execute...</string>
+   </property>
+  </action>
+  <action name="actionImport_Input_Size_Sheet">
+   <property name="text">
+    <string>Import Input Size Sheet...</string>
+   </property>
+  </action>
+  <action name="actionImport_Input_Data_Sheet">
+   <property name="text">
+    <string>Import Input Data Sheet...</string>
+   </property>
+  </action>
+  <action name="actionNew_Window">
+   <property name="text">
+    <string>New Window...</string>
    </property>
   </action>
  </widget>
@@ -784,20 +985,11 @@
   <tabstop>m_rdbExaminedAndAudited</tabstop>
   <tabstop>m_rdbAuditedAndDifference</tabstop>
   <tabstop>m_rdbExaminedAndDifference</tabstop>
-  <tabstop>m_chkCSVOutput</tabstop>
+  <tabstop>m_chkXLSOutput</tabstop>
   <tabstop>m_chkTextOutput</tabstop>
   <tabstop>m_cmbSizeInputSheets</tabstop>
-  <tabstop>m_btnImportSampleSizeData</tabstop>
-  <tabstop>m_cmbUniverseCountSizeTable</tabstop>
-  <tabstop>m_cmbSampleCountSizeTable</tabstop>
   <tabstop>m_cmbDataInputSheets</tabstop>
-  <tabstop>m_btnImportSampleInputData</tabstop>
-  <tabstop>m_cmbDataRowStartDataTable</tabstop>
-  <tabstop>m_cmbExaminedDataTable</tabstop>
-  <tabstop>m_cmbAuditedDataTable</tabstop>
-  <tabstop>m_cmbDifferenceDataTable</tabstop>
   <tabstop>m_btnHelp</tabstop>
-  <tabstop>m_btnExecute</tabstop>
   <tabstop>m_btnExit</tabstop>
  </tabstops>
  <resources/>

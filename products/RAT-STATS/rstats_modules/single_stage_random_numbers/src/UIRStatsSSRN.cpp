@@ -8,8 +8,6 @@
 
 #include "RStatsSSRN.h"
 
-#include "rstats_utils/inc/RStatsSettingsManager.h"
-
 #include "rstats_ui/inc/UIRStatsAbout.h"
 #include "rstats_ui/inc/UIRStatsUtils.hpp"
 #include "rstats_ui/inc/UIRStatsErrorMessage.h"
@@ -37,55 +35,161 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     m_ui(new Ui_UIRStatsSSRN)
 {
     m_ui->setupUi(this);
+
+    //Remove title bar from options dock
     m_ui->m_dockOptions->setTitleBarWidget(new QWidget());    
 
+    //Set icons used by validation console
     m_iconError = UIRStatsUtils::getIcon("img_error.png");
     m_iconOK = UIRStatsUtils::getIcon("img_ok.png");
     m_iconWarning = UIRStatsUtils::getIcon("img_warning.png");
 
+    //Initialize all menu actions with icons and shortcuts
+    UIRStatsUtils::initButton(m_ui->m_btnExecute, "img_run.png");
+    UIRStatsUtils::initButton(m_ui->m_btnExit, "img_exit.png");
+    UIRStatsUtils::initButton(m_ui->m_btnHelp, "img_help.png");
+    UIRStatsUtils::initAction(m_ui->actionAbout,"img_about.png","Alt+A");
+    UIRStatsUtils::initAction(m_ui->actionNew_Window,"img_add.png","Alt+N");
+    UIRStatsUtils::initAction(m_ui->actionExecute,"img_run.png","Alt+E");
+    UIRStatsUtils::initAction(m_ui->actionExit,"img_exit.png","Alt+Q");
+    UIRStatsUtils::initAction(m_ui->actionHelp,"img_help.png","Alt+H");
+    UIRStatsUtils::initAction(m_ui->actionRecent,"img_clock.png","Alt+R");
+    m_ui->menuFile->setTitle("&File");
+    m_ui->menuHelp->setTitle("&Help");
+
+    //Connect all buttons/actions to event functions
     connect(m_ui->actionExecute,SIGNAL(triggered(bool)),this,SLOT(onExecute()));
     connect(m_ui->actionExit,SIGNAL(triggered(bool)),this,SLOT(onExit()));
     connect(m_ui->actionHelp,SIGNAL(triggered(bool)),this,SLOT(onHelp()));
     connect(m_ui->actionAbout,SIGNAL(triggered(bool)),this,SLOT(onAbout()));
+    connect(m_ui->actionNew_Window,SIGNAL(triggered(bool)),this,SLOT(onLaunchNewWindow()));
     connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));
     connect(m_ui->m_btnExecute,SIGNAL(clicked(bool)),this,SLOT(onExecute()));    
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
-    connect(m_ui->m_spnHighNumber,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
-    connect(m_ui->m_spnLowNumber,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
-    connect(m_ui->m_spnSpares,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
-    connect(m_ui->m_spnOrder,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
+    connect(m_ui->m_txtAuditName,SIGNAL(textEdited(QString)),SLOT(onUpdateValidation()));
+    connect(m_ui->m_spnHighNumber,SIGNAL(valueChanged(int)),this,SLOT(onUpdateValidation()));
+    connect(m_ui->m_spnLowNumber,SIGNAL(valueChanged(int)),this,SLOT(onUpdateValidation()));
+    connect(m_ui->m_spnSpares,SIGNAL(valueChanged(int)),this,SLOT(onUpdateValidation()));
+    connect(m_ui->m_spnOrder,SIGNAL(valueChanged(int)),this,SLOT(onUpdateValidation()));
     connect(m_ui->m_chkCSVOutput,SIGNAL(clicked(bool)),this,SLOT(onSaveCSVFile()));
+    connect(m_ui->m_chkXLSOutput,SIGNAL(clicked(bool)),this,SLOT(onSaveXLSFile()));
     connect(m_ui->m_chkTextOutput,SIGNAL(clicked(bool)),this,SLOT(onSaveTextFile()));    
     connect(m_ui->m_grpCustomSeed,SIGNAL(toggled(bool)),this,SLOT(onSeedBoxToggled(bool)));
-    onUpdateClock();    
     m_autoSetFileOutput = false;
-    QString defaultAuditName = QString::fromStdString(RStatsUtils::getAuditName());
 
+    //Create default audit name
+    QString defaultAuditName = QString::fromStdString(RStatsUtils::getAuditName());
     m_ui->m_txtAuditName->setPlaceholderText(defaultAuditName);
-    m_ui->m_grpOutput->hide();    
+
+    //Generate random seed
     m_ui->m_spnSeed->setMaximum(std::numeric_limits<double>::max());
     m_ui->m_spnSeed->setMinimum(std::numeric_limits<double>::min());    
     m_ui->m_spnSeed->setValue(static_cast<RStatsFloat>(TimeUtils::getSecondsNow()) /
                               static_cast<RStatsFloat>(m_rnd.next(10,1000)));
 
+    //Set output labels to null
     m_currentCSVFileOutputLabel = nullptr;
     m_currentTextFileOutputLabel = nullptr;
-    onValidate();
+    m_currentXLSFileOutputLabel = nullptr;
 
-    UIRStatsUtils::initButton(m_ui->m_btnExecute, "img_run.png");
-    UIRStatsUtils::initButton(m_ui->m_btnExit, "img_exit.png");
-    UIRStatsUtils::initButton(m_ui->m_btnHelp, "img_help.png");    
-    UIRStatsUtils::initAction(m_ui->actionAbout,"img_about.png","Alt+A");
-    UIRStatsUtils::initAction(m_ui->actionExecute,"img_run.png","Alt+R");
-    UIRStatsUtils::initAction(m_ui->actionExit,"img_exit.png","Alt+Q");
-    UIRStatsUtils::initAction(m_ui->actionHelp,"img_help.png","Alt+H");
-    UIRStatsUtils::initAction(m_ui->actionRecent,"img_clock.png","Alt+S");    
-    m_ui->menuFile->setTitle("&File");
-    m_ui->menuHelp->setTitle("&Help");
+    //Hide the main output groupbox
+    m_ui->m_grpOutput->hide();
+
+    //Update recently used sessions
     updateRecentSessions();
+
+    //Toggle the custom seed checkbox to false
     onSeedBoxToggled(false);
 
+    //Call the validator
+    onValidate();
 }
+
+void UIRStatsSSRN::onExecute()
+{
+    //Update validation console and first error if validation fails
+    if (!onValidate())
+    {
+        UIRStatsUtils::highlightErrorInValidationConsole(m_ui->m_lstValidationConsole);
+        return;
+    }
+
+    try
+    {
+        onUpdateSeed();
+
+        //Make sure the audit name is correct
+        std::string name = m_ui->m_txtAuditName->text().toStdString();
+        if (StringUtils::isEmpty(name))
+        {
+            name = m_ui->m_txtAuditName->placeholderText().toStdString();
+        }
+
+        //Execute primary function for single stage random numbers
+        RStatsSSRN ssrn;
+        ssrn.execute(name,
+                     m_ui->m_spnSeed->value(),
+                     m_ui->m_spnOrder->value(),
+                     m_ui->m_spnSpares->value(),
+                     m_ui->m_spnLowNumber->value(),
+                     m_ui->m_spnHighNumber->value());
+
+        //Save results to a worksheet
+        RStatsWorksheet worksheet;
+        ssrn.saveToWorksheet(worksheet);
+
+        //Save output to view
+        std::string htmlContent = worksheet.toHTMLTableString();
+        m_ui->m_txtOutput->setHtml(QString::fromStdString(htmlContent));
+
+        //Save CSV file, if applicable
+        if (m_ui->m_chkCSVOutput->isChecked())
+        {
+            FileUtils::writeFileContents(m_currentCSVFileOutput.toStdString(),worksheet.toCommaDelimitedString());
+        }
+
+        //Save Text file, if applicable
+        if (m_ui->m_chkTextOutput->isChecked())
+        {
+            FileUtils::writeFileContents(m_currentTextFileOutput.toStdString(),worksheet.toEvenlySpacedString());
+        }
+
+        //Save XLS file (for Excel/Access), if applicable
+        if (m_ui->m_chkXLSOutput->isChecked())
+        {
+            RStatsWorkbook workbook;
+            workbook.addWorksheet(worksheet);
+            workbook.save(m_currentXLSFileOutput.toStdString());
+        }
+
+        //Show results in browser if selected
+        if (m_ui->m_chkViewInBrowser->isChecked())
+        {
+            UIRStatsUtils::launchHtml(htmlContent);
+        }
+
+        //Show the output group box
+        m_ui->m_grpOutput->show();
+
+        //Hide the "No Data" label
+        m_ui->m_lblNoData->hide();
+
+        //Save the user session data for this run
+        RStatsSSRNSessionData sessionData = getSessionData();
+        sessionData.setCreationDate(DateUtils::getCurrentDate().toDateInteger());
+        sessionData.setCreationTime(TimeUtils::getCurrentTime().toTimeInteger());
+        m_recentSessionsMap[sessionData.getSessionId()]=RStatsModuleSessionDataPtr(new RStatsSSRNSessionData(sessionData));
+        RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getSessionId()]);
+        updateRecentSessions();
+    }
+    catch (std::exception& e)
+    {
+        UIRStatsErrorMessage("Error occured while executing \""+this->windowTitle().toStdString()+"\"",
+                             std::string(e.what()),false,this).exec();
+        return;
+    }
+}
+
 
 UIRStatsSSRN::~UIRStatsSSRN()
 {
@@ -93,49 +197,60 @@ UIRStatsSSRN::~UIRStatsSSRN()
 }
 
 bool UIRStatsSSRN::onValidate()
-{    
-    m_logger.clear();
-    m_ui->m_lstErrorConsole->clear();
+{
+    //Clear the validation console and logger
+    m_conditionLogger.clear();
+    m_ui->m_lstValidationConsole->clear();
+
+
+    //Get the high/low/order/spare values
     std::int64_t low  = m_ui->m_spnLowNumber->value();
     std::int64_t high = m_ui->m_spnHighNumber->value();
     std::int64_t order= m_ui->m_spnOrder->value();
     std::int64_t spare= m_ui->m_spnSpares->value();
 
-    m_logger.addWarning(m_ui->m_txtAuditName->text().isEmpty(),
+    //Add validation warnings
+    m_conditionLogger.addWarning(m_ui->m_txtAuditName->text().isEmpty(),
                         "You did not specify an audit name.  Using default: ("+m_ui->m_txtAuditName->placeholderText().toStdString()+")");
 
-    m_logger.addError(((order + spare) == 0 ),
-                      "The number of generated values must be greater than zero!");
-
-    m_logger.addError(low > high,
-                      "The low number is greater than or equal to the high number!");
-
-    m_logger.addWarning(low == high,
+    m_conditionLogger.addWarning(low == high,
                         "The low number is equal to the high number!");
 
-    m_logger.addWarning((order + spare > 10000),
+    m_conditionLogger.addWarning((order + spare > 10000),
                         "Total number of values to be generated exceed 10,000.  RAT-STATS 2017 will still work but this value exceeds data limits of previous versions.");
 
+    //Add validation errors
+    m_conditionLogger.addError(((order + spare) == 0 ),
+                      "The number of generated values must be greater than zero!");
 
-    m_logger.addError((high - low)  < (order + spare),
+    m_conditionLogger.addError(low > high,
+                      "The low number is greater than or equal to the high number!");
+
+    m_conditionLogger.addError((high - low)  < (order + spare),
                         "The sampling frame is less than the total number of values to be generated!");
 
+    //If condition logger has no messages then hide the dock and
+    //return true
     size_t index = 0;
-    if (m_logger.hasMessages() == false)
+    if (m_conditionLogger.hasMessages() == false)
     {
-        m_ui->m_dockOutput->hide();        
+        m_ui->m_dockValidationConsole->hide();
         return true;
     }
-    m_ui->m_dockOptions->show();
-    for(const std::string & message : m_logger.getMessages())
+
+    //If messages exist then show the validation console
+    m_ui->m_dockValidationConsole->show();
+
+    //Add messages to validation console
+    for(const std::string & message : m_conditionLogger.getMessages())
     {
         QListWidgetItem * item = new QListWidgetItem;
         item->setText(QString::fromStdString(message));
-        if (m_logger.isError(index))
+        if (m_conditionLogger.isError(index))
         {
             item->setIcon(m_iconError);
         }
-        else if (m_logger.isWarning(index))
+        else if (m_conditionLogger.isWarning(index))
         {
             item->setIcon(m_iconWarning);
         }
@@ -144,10 +259,11 @@ bool UIRStatsSSRN::onValidate()
             item->setIcon(m_iconOK);
         }
         ++index;
-        m_ui->m_lstErrorConsole->addItem(item);
+        m_ui->m_lstValidationConsole->addItem(item);
     }
 
-    if (m_logger.hasError())
+    //Return true if there are warnings but no errors
+    if (m_conditionLogger.hasError())
     {        
         return false;
     }
@@ -185,86 +301,27 @@ void UIRStatsSSRN::onSaveTextFile()
     else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
 }
 
-void UIRStatsSSRN::onUpdateClock()
+void UIRStatsSSRN::onSaveXLSFile()
+{
+    if (m_autoSetFileOutput) return;
+    if (m_ui->m_chkXLSOutput->isChecked())
+    {
+        m_currentXLSFileOutput = UIRStatsUtils::setOutputFile(
+                                                              m_ui->m_chkXLSOutput,
+                                                              "Save to XLS file...",
+                                                              "*.xls");
+        setXLSFileOutput(m_currentXLSFileOutput.toStdString());
+    }
+    else m_ui->m_statusBar->removeWidget(m_currentXLSFileOutputLabel);
+    onValidate();
+}
+
+void UIRStatsSSRN::onUpdateSeed()
 {
     if (!m_ui->m_grpCustomSeed->isChecked() && !m_ui->m_spnSeed->isEnabled())
     {        
         m_ui->m_spnSeed->setValue(static_cast<RStatsFloat>(TimeUtils::getSecondsNow()) /
                                   static_cast<RStatsFloat>(m_rnd.next(10,1000)));
-    }
-}
-
-void UIRStatsSSRN::onExecute()
-{
-    if (!onValidate())
-    {
-        UIRStatsUtils::highlightErrorInValidationConsole(m_ui->m_lstErrorConsole);
-        return;
-    }
-
-    try
-    {
-        onUpdateClock();
-
-        //Make sure the audit name is correct
-        std::string name = m_ui->m_txtAuditName->text().toStdString();
-        if (StringUtils::isEmpty(name))
-        {
-            name = m_ui->m_txtAuditName->placeholderText().toStdString();
-        }
-
-        //Execute primary function for single stage random numbers
-        RStatsSSRN ssrn;
-        RStatsSSRNOutputData outputData = ssrn.execute(name,
-                                                       m_ui->m_spnSeed->value(),
-                                                       m_ui->m_spnOrder->value(),
-                                                       m_ui->m_spnSpares->value(),
-                                                       m_ui->m_spnLowNumber->value(),
-                                                       m_ui->m_spnHighNumber->value());
-
-        //Save results to a worksheet
-        RStatsWorksheet worksheet;
-        ssrn.saveToWorksheet(worksheet);                
-
-        //Save output to view
-        m_ui->m_txtOutput->setHtml(QString::fromStdString(worksheet.toHTMLTableString()));
-
-        //Write output files if they are selected
-        if (!StringUtils::isEmpty(m_currentTextFileOutput.toStdString()))
-        {
-            FileUtils::writeFileContents(m_currentTextFileOutput.toStdString(),
-                                         worksheet.toEvenlySpacedString());
-        }
-
-        if (!StringUtils::isEmpty(m_currentCSVFileOutput.toStdString()))
-        {
-            FileUtils::writeFileContents(m_currentCSVFileOutput.toStdString(),
-                                         worksheet.toCommaDelimitedString());
-        }       
-        m_ui->m_grpOutput->show();                
-        m_ui->m_lblNoData->hide();
-
-        //Save the user session data for this run
-        RStatsSSRNSessionData sessionData = getSessionData();
-        sessionData.setCreationDate(DateUtils::getCurrentDate().toDateInteger());
-        sessionData.setCreationTime(TimeUtils::getCurrentTime().toTimeInteger());
-        m_recentSessionsMap[sessionData.getAuditName()]=RStatsModuleSessionDataPtr(new RStatsSSRNSessionData(sessionData));
-        RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getAuditName()]);
-        updateRecentSessions();
-
-        //Show results in browser if selected
-        if (m_ui->m_chkViewInBrowser->isChecked())
-        {
-            std::string htmlPath = FileUtils::buildFilePath(SystemUtils::getUserTempDirectory(), FileUtils::getRandomFileName(10,0)+".html");
-            FileUtils::writeFileContents(htmlPath,worksheet.toHTMLTableString());
-            QDesktopServices::openUrl(QString::fromStdString(htmlPath));
-        }
-    }
-    catch (std::exception& e)
-    {
-        UIRStatsErrorMessage("Error occured while executing \""+this->windowTitle().toStdString()+"\"",
-                             std::string(e.what()),false,this).exec();
-        return;
     }
 }
 
@@ -295,6 +352,7 @@ RStatsSSRNSessionData UIRStatsSSRN::getSessionData() const
     RStatsSSRNSessionData data;
     data.setAuditName(text.toStdString());
     data.setCSVOutputFile(m_currentCSVFileOutput.toStdString());
+    data.setXLSOutputFile(m_currentXLSFileOutput.toStdString());
     data.setTextOutputFile(m_currentTextFileOutput.toStdString());
     data.setSeed(m_ui->m_spnSeed->value());
     data.setOrder(m_ui->m_spnOrder->value());
@@ -308,7 +366,7 @@ RStatsSSRNSessionData UIRStatsSSRN::getSessionData() const
 void UIRStatsSSRN::setSessionData(const RStatsSSRNSessionData &data)
 {
     m_ui->m_chkViewInBrowser->setChecked(data.isViewableInBrowser());
-    m_ui->m_grpCustomSeed->setEnabled(true);
+    m_ui->m_grpCustomSeed->setChecked(true);
     m_ui->m_txtAuditName->setText(QString::fromStdString(data.getAuditName()));
     m_ui->m_spnSeed->setValue(data.getSeed());
     m_ui->m_spnSeed->setEnabled(true);
@@ -321,9 +379,17 @@ void UIRStatsSSRN::setSessionData(const RStatsSSRNSessionData &data)
     if (!data.getCSVOutputFile().empty())
     {
         m_ui->m_chkCSVOutput->setChecked(true);
-        setCSVFileOutput(data.getTextOutputFile());
+        setCSVFileOutput(data.getCSVOutputFile());
         m_ui->m_chkCSVOutput->setToolTip(QString::fromStdString(data.getCSVOutputFile()));
     }
+
+    if (!data.getXLSOutputFile().empty())
+    {
+        m_ui->m_chkXLSOutput->setChecked(true);
+        setXLSFileOutput(data.getXLSOutputFile());
+        m_ui->m_chkXLSOutput->setToolTip(QString::fromStdString(data.getXLSOutputFile()));
+    }
+
     if (!data.getTextOutputFile().empty())
     {
         m_ui->m_chkTextOutput->setChecked(true);
@@ -340,10 +406,10 @@ void UIRStatsSSRN::onClearRecentSessions()
 
 void UIRStatsSSRN::onRecentSessionSelected(QAction *action)
 {
-    std::string name = action->property("name").toString().toStdString();
-    if (m_recentSessionsMap.count(name))
+    std::string id = action->property("id").toString().toStdString();
+    if (m_recentSessionsMap.count(id))
     {
-        RStatsSSRNSessionData * data = dynamic_cast<RStatsSSRNSessionData*>(m_recentSessionsMap[name].get());
+        RStatsSSRNSessionData * data = dynamic_cast<RStatsSSRNSessionData*>(m_recentSessionsMap[id].get());
         if (data)
         {
             setSessionData(*data);
@@ -378,9 +444,9 @@ void UIRStatsSSRN::onSeedBoxToggled(bool toggle)
         m_ui->m_spnSeed->setFocus();        
     }
     else
-    {
+    {     
         m_ui->m_spnSeed->setEnabled(false);
-        onUpdateClock();
+        onUpdateSeed();
     }
 
 }
@@ -393,10 +459,10 @@ void UIRStatsSSRN::setTextFileOutput(const std::string& textFile)
         if (m_currentTextFileOutputLabel == nullptr)
         {
             m_currentTextFileOutputLabel = new QLabel;
-            m_currentTextFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+            m_currentTextFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#FFAAFF;color:#000000;border:1px solid grey;}");
 
         }
-        m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
+        else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
 
         m_currentTextFileOutputLabel->setToolTip(m_currentTextFileOutput);
         QString text = "<b>Text File:</b> "+m_currentTextFileOutput;
@@ -410,6 +476,16 @@ void UIRStatsSSRN::setTextFileOutput(const std::string& textFile)
     else m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
 }
 
+void UIRStatsSSRN::onLaunchNewWindow()
+{
+    (new UIRStatsSSRN(nullptr))->show();
+}
+
+void UIRStatsSSRN::onUpdateValidation()
+{
+    onValidate();
+}
+
 void UIRStatsSSRN::setCSVFileOutput(const std::string& csvFile)
 {
     m_currentCSVFileOutput = QString::fromStdString(csvFile);
@@ -420,7 +496,7 @@ void UIRStatsSSRN::setCSVFileOutput(const std::string& csvFile)
             m_currentCSVFileOutputLabel = new QLabel;
             m_currentCSVFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAFFFF;color:#000000;border:1px solid grey;}");
         }
-        m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
+        else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
         m_currentCSVFileOutputLabel->setToolTip(m_currentCSVFileOutput);
         QString text = "<b>CSV File:</b> "+m_currentCSVFileOutput;
         QFontMetrics metrics(this->font());
@@ -433,6 +509,28 @@ void UIRStatsSSRN::setCSVFileOutput(const std::string& csvFile)
     else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
 }
 
+void UIRStatsSSRN::setXLSFileOutput(const std::string& xlsFile)
+{
+    m_currentXLSFileOutput = QString::fromStdString(xlsFile);
+    if (!m_currentXLSFileOutput.isEmpty())
+    {
+        if (m_currentXLSFileOutputLabel == nullptr)
+        {
+            m_currentXLSFileOutputLabel = new QLabel;
+            m_currentXLSFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+        }
+        else m_ui->m_statusBar->removeWidget(m_currentXLSFileOutputLabel);
+        m_currentXLSFileOutputLabel->setToolTip(m_currentXLSFileOutput);
+        QString text = "<b>XLS File:</b> "+m_currentXLSFileOutput;
+        QFontMetrics metrics(this->font());
+        QString elidedText = metrics.elidedText(text, Qt::ElideMiddle, this->width() / 2);
+        m_currentXLSFileOutputLabel->setText(elidedText);
+
+        m_ui->m_statusBar->addPermanentWidget(m_currentXLSFileOutputLabel);
+        m_currentXLSFileOutputLabel->show();
+    }
+    else m_ui->m_statusBar->removeWidget(m_currentXLSFileOutputLabel);
+}
 
 void UIRStatsSSRN::resizeEvent(QResizeEvent *)
 {
@@ -445,6 +543,5 @@ void UIRStatsSSRN::resizeEvent(QResizeEvent *)
         setTextFileOutput(m_currentTextFileOutput.toStdString());
     }
 }
-
 }}}}//end namespace
 

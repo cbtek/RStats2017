@@ -14,6 +14,9 @@ namespace ratstats {
 namespace modules {
 namespace uaa {
 
+/**
+ * @brief The RStatsUAAConfidenceIntervalType enum
+ */
 enum class RStatsUAAConfidenceIntervalType
 {
     OneSidedUpper,
@@ -21,6 +24,10 @@ enum class RStatsUAAConfidenceIntervalType
     TwoSided
 };
 
+/**
+ * @brief The RStatsUAAOutputData struct represents the output produced
+ * by the unrestricted attribute appraisal function
+ */
 struct RStatsUAAOutputData
 {
     RStatsUAAOutputData()
@@ -56,6 +63,11 @@ struct RStatsUAAOutputData
     oig::ratstats::utils::RStatsFloatList lowerLimitPercentList;
 };
 
+/**
+ * @brief The RStatsUAA class represents the unrestricted attribute appraisal
+ * function. In the model-view-controller paradigm, this class represents the
+ * controller.
+ */
 class RStatsUAA 
 {
 public:
@@ -64,16 +76,15 @@ public:
 		Detailed description for RStatsUAA
 	*/
 	RStatsUAA();
-      
-	//! Static instance method for this singleton
-    static RStatsUAA & inst();
-
+      	
     /**
-     * @brief execute
-     * @param sampleSize
-     * @param universeSize
-     * @param coiSize
-     * @param computeOneSided
+     * @brief execute This function executes the main unrestricted
+     * attribute appraisal function
+     * @param auditName The name of the audit
+     * @param sampleSize The input sample size
+     * @param universeSize The input universe size
+     * @param coiSize The characteristic of interest count
+     * @param type The data format type
      * @return
      */
     RStatsUAAOutputData execute(const std::string& auditName,
@@ -83,26 +94,62 @@ public:
                                 RStatsUAAConfidenceIntervalType type=RStatsUAAConfidenceIntervalType::TwoSided);
 
     /**
-     * @brief saveToCSVWorksheetFile
+     * @brief saveToCSVWorksheetFile Saves output result to CSV file
      * @param filePath
      */
     void saveToCSVFile(const std::string& filePath);
 
     /**
-     * @brief saveToWorksheet
-     * @param sheet
-     * @param data
+     * @brief saveToWorksheet Saves output results to worksheet object
+     * @param worksheetOut The worksheet to save to
      */
     void saveToWorksheet(oig::ratstats::utils::RStatsWorksheet& worksheetOut);
+
     /**
-     * @brief saveToTextFile
+     * @brief saveToTextFile Saves output result to text file
      * @param filePath
      */
     void saveToTextFile(const std::string& filePath);
+
 	//! Destructor
 	~RStatsUAA();	
 
 private:
+
+    /**
+     * @brief processResults Processes the results per iteration
+     */
+    void processResults();
+
+    /**
+     * @brief processSumHypergeometric Finds the hypergeometric sum
+     */
+    void processSumHypergeometric();
+
+
+    /**
+     * The following functions are used for finding
+     * the upper and lower limits
+     */
+    void processFindLower();
+    void processFindUpper();
+    void processFindBottomUpper();
+    void processFindBottomLower();
+    void processCloseInUpper();
+    void processCloseInLower();
+    void processFinalUpper();
+    void processFinalLower();
+
+    /**
+     * @brief reset Resets the data structures used
+     */
+    void reset();
+
+    /**
+     * @brief start
+     */
+    void start();
+
     RStatsUAAConfidenceIntervalType m_confidenceIntervalType;
     oig::ratstats::utils::RStatsInteger m_numCompare;
     oig::ratstats::utils::RStatsInteger m_coiSize;
@@ -147,25 +194,9 @@ private:
     oig::ratstats::utils::RStatsFloat m_sumNew;
     oig::ratstats::utils::RStatsFloat m_z;
 
-
     bool m_isFinished;
     RStatsUAAOutputData m_outputData;
 
-    void processResults();
-    void processSumHypergeometric();
-    void processFindLower();
-    void processFindUpper();
-    void processFindBottomUpper();
-    void processFindBottomLower();
-    void processCloseInUpper();
-    void processCloseInLower();    
-    void processFinalUpper();
-    void processFinalLower();    
-    void reset();
-    void start();
-
-    static RStatsUAA m_instance;
-    
 };
 }}}}//end namespace
 

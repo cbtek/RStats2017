@@ -4,8 +4,7 @@
 
 */
 
-#ifndef _OIG_RATSTATS_MAIN_UIRSTATSABOUT_H
-#define _OIG_RATSTATS_MAIN_UIRSTATSABOUT_H
+#pragma once
 #include <QDialog>
 
 
@@ -15,7 +14,10 @@ namespace oig {
 namespace ratstats {
 namespace ui {
 
-
+/**
+ * @brief The UIRStatsAbout class represents the code-behind for the
+ * "About" dialog used in RAT-STATS.
+ */
 class UIRStatsAbout : public QDialog
 {
     Q_OBJECT
@@ -37,9 +39,10 @@ private:
     */
      Ui_UIRStatsAbout *m_ui;
 private slots:
+     /**
+      * @brief onOK Event is executed whenever user clicks the Ok button.
+      * This event just closes the window
+      */
      void onOK();
 };
-
 }}}//end namespace
-
-#endif // _OIG_RATSTATS_MAIN_UIRSTATSABOUT_H

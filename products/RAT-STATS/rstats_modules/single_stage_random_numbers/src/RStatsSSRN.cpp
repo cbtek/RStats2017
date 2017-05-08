@@ -74,7 +74,8 @@ void RStatsSSRN::saveToWorksheet(RStatsWorksheet &worksheetOut)
     worksheetOut.setDefaultFont(Font("arial",10,true));
     worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignLeft);
     worksheetOut("B1") = m_outputData.auditName;
-    worksheetOut("B2") = StringUtils::toString(m_outputData.seed,12);
+    double seed = m_outputData.seed;
+    worksheetOut("B2") = StringUtils::removeTrailingZeroes(StringUtils::toString(seed));
     worksheetOut("B3") = StringUtils::toString(m_outputData.frameSize);
     worksheetOut("B4") = DateUtils::toLongDateString(m_outputData.createDate);
     worksheetOut("B5") = TimeUtils::to12HourTimeString(m_outputData.createTime);
@@ -139,8 +140,6 @@ RStatsSSRNOutputData RStatsSSRN::execute(const std::string &auditName,
     double seedC = std::floor(vbRandOutputC.ratStatValue);    
     m_sequentialCount = sequentialOrder;
     m_sparesCount = sparesInRandomOrder;
-    RStatsIntegerList sequentialOrderList(sequentialOrder);
-    RStatsIntegerList sparesInRandomOrderList(sparesInRandomOrder);
     RStatsInteger sampleSize = sequentialOrder + sparesInRandomOrder;
     RStatsIntegerList randomNumbers(sampleSize);
     RStatsInteger upperBound = highNumber;

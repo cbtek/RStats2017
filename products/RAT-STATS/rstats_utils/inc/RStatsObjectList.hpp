@@ -45,56 +45,64 @@ typedef float float32_t;
 typedef double float64_t;
 typedef long double float128_t;
 
+/**
+ * @brief The RStatsObjectList class is used to represent a simple N-dimensional
+ * array with similar add/remove syntax with VB/VBA
+ */
 template <typename T>
 class RStatsObjectList
 {
 public:
-    //! Constructor for RStatsObjectList
-	/*!
-        Detailed description for RStatsObjectList
-	*/
+    /**
+     * @brief RStatsObjectList (Constructor)
+     */
     RStatsObjectList();
 
     /**
-     * @brief RStatsObjectList
-     * @param size
-     * @param dimensionCount
+     * @brief RStatsObjectList (Constructor)
+     * @param size The total size of the array
+     * @param dimensionCount The number of dimensions to create
      */
     RStatsObjectList(size_t size, size_t dimensionCount = 1);
 
     /**
      * @brief initialize
-     * @param size
-     * @param dimensionCount
+     * @param size The total size of the array
+     * @param dimensionCount The number of dimensions to create
      */
     void initialize(size_t size, size_t dimensionCount = 1);
 
     /**
-     * @brief size
-     * @return
+     * @brief size Returns the size of the vector at specified dimension
+     * @return Return size_t size of vector at specified dimension
      */
     size_t size(size_t dimension = 0) const;
 
     /**
-     * @brief operator ()
-     * @param index
-     * @param dimension
-     * @return
+     * @brief resize Resizes all dimensions to newSize
+     * @param newSize New size for all dimensions
+     */
+    void resize(size_t newSize);
+
+    /**
+     * @brief operator () Used to access the data by reference
+     * @param index Index of the element to access
+     * @param dimension The dimension to access
+     * @return Return reference to type T
      */
     T & operator()(size_t index, size_t dimension = 0);
 
     /**
-     * @brief operator ()
-     * @param index
-     * @param dimension
-     * @return
+     * @brief operator () Used to access the data by const reference
+     * @param index Index of the element to access
+     * @param dimension The dimension to access
+     * @return Return const reference to type T
      */
     const T & operator()(size_t index, size_t dimension = 0) const;
 
-
     /**
-     * @brief toString
-     * @return
+     * @brief toString Converts all elements into a string and returns it
+     * @return Return string containing all elements
      */
     std::string toString() const;
 
@@ -196,6 +204,15 @@ size_t RStatsObjectList<T>::size(size_t dimension) const
         return m_values[dimension].size();
     }
     throw cbtek::common::utility::IndexOutOfRangeException(EXCEPTION_TAG_LINE+"Dimension is out of range!");
+}
+
+template<typename T>
+void RStatsObjectList<T>::resize(size_t newSize)
+{
+    for (auto& values : m_values)
+    {
+        values.resize(newSize);
+    }
 }
 
 template <typename T>

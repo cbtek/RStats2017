@@ -26,14 +26,12 @@ namespace ratstats {
 namespace utils {
 namespace streams {
 
-static int s_SHEET_COUNT = 1;
-
 RStatsXLSXWorkbookStream::RStatsXLSXWorkbookStream(const std::string &filePath)
 {
     m_filePath = filePath;
 }
 
-void RStatsXLSXWorkbookStream::write(const RStatsWorkbook &workbook)
+void RStatsXLSXWorkbookStream::write(const RStatsWorkbook &)
 {
     THROW_GENERIC_EXCEPTION("The XLSX writing feature has not been added")            
 }
@@ -44,12 +42,11 @@ RStatsWorkbook RStatsXLSXWorkbookStream::read()
     MiniExcelReader::ExcelFile reader;
     if (!reader.open(m_filePath.c_str()))
     {
-        THROW_GENERIC_EXCEPTION("Unable to open excel document at "+m_filePath)
+        THROW_GENERIC_EXCEPTION("Unable to open xlsx document at "+m_filePath)
     }
     for (MiniExcelReader::Sheet& sheetIn : reader.sheets())
     {
-        RStatsWorksheet sheetOut;
-        sheetOut.setWorksheetTitle(sheetIn.getName());
+        RStatsWorksheet sheetOut;              
         MiniExcelReader::Range range = sheetIn.getDimension();
         for (int r = 0; r < range.lastRow; r++)
           {
@@ -61,6 +58,7 @@ RStatsWorkbook RStatsXLSXWorkbookStream::read()
           }
         sheetOut.removeEmptyRows();
         sheetOut.removeEmptyColumns();
+        sheetOut.setWorksheetTitle(sheetIn.getName());
         workbook.addWorksheet(sheetOut);
     }
     return workbook;
@@ -69,96 +67,6 @@ RStatsWorkbook RStatsXLSXWorkbookStream::read()
 RStatsXLSXWorkbookStream::~RStatsXLSXWorkbookStream()
 {
 
-}
-
-std::map<std::string, RStatsXLSXWorkbookStream::XLSXWorksheetDefinition> RStatsXLSXWorkbookStream::getWorksheetDefinitions(const std::string& workbookFilePath,
-                                                                                                                           const std::string& workbookRelationshipFilePath) const
-{
-    std::map<std::string, RStatsXLSXWorkbookStream::XLSXWorksheetDefinition> defintionMap;
-    std::map<std::string,std::string> ridSheetNameMap;
-    if (FileUtils::fileExists(workbookRelationshipFilePath))
-    {
-        XMLReader reader;
-        reader.load(workbookRelationshipFilePath);
-        XMLDataElement* workbookRelationshipXML = reader.getElement("Relationships");
-        if (workbookRelationshipXML)
-        {
-            for (size_t a1 = 0; a1 <  workbookRelationshipXML->getNumChildren();++a1)
-            {
-                XMLDataElement* sheetDefXML = workbookRelationshipXML->getChildAt(a1);
-                if (sheetDefXML)
-                {
-                    std::string type = sheetDefXML->getAttributeValue("Type");
-                    if (StringUtils::contains(type,"worksheet",false))
-                    {
-                        XLSXWorksheetDefinition def;
-
-                        def.sheetFile = sheetDefXML->getAttributeValue("Target");
-                        def.sheetFile = FileUtils::getFileName(def.sheetFile);
-                        def.id = StringUtils::toUpperTrimmed(sheetDefXML->getAttributeValue("id"));
-                        ridSheetNameMap[def.id]=def.sheetFile;
-                        defintionMap[StringUtils::toUpperTrimmed(def.sheetFile)] = def;
-                    }
-                }
-            }
-        }
-    }
-
-    if (FileUtils::fileExists(workbookFilePath))
-    {
-        XMLReader reader;
-        reader.load(workbookFilePath);
-        XMLDataElement* workbookXML = reader.getElement("workbook");
-        if (workbookXML)
-        {
-            XMLDataElement* sheetsXML = workbookXML->getChild("sheets");
-            if (sheetsXML)
-            {
-                for (size_t a1 = 0; a1 < sheetsXML->getNumChildren();++a1)
-                {
-                    XMLDataElement* sheetXML = sheetsXML->getChildAt(a1);
-                    if (sheetXML)
-                    {
-                        std::string name = sheetXML->getAttributeValue("name");
-                        std::string rid = sheetXML->getAttributeValue("r:id");
-                        std::string sheetFile = StringUtils::toUpperTrimmed(ridSheetNameMap[StringUtils::toUpperTrimmed(rid)]);
-                        if (defintionMap.count(sheetFile))
-                        {
-                           defintionMap[sheetFile].sheetName = name;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return defintionMap;
-}
-
-std::map<size_t, std::string> RStatsXLSXWorkbookStream::getSharedStrings(const std::string &sharedStringsFilePath) const
-{
-    std::map<size_t, std::string> sharedStringsMap;
-    if (FileUtils::fileExists(sharedStringsFilePath))
-    {
-        XMLReader reader;
-        reader.load(sharedStringsFilePath);
-        XMLDataElement* sstXML = reader.getElement("sst");
-        if (sstXML)
-        {
-            for (size_t a1 = 0; a1 <  sstXML->getNumChildren();++a1)
-            {
-                XMLDataElement* siXML = sstXML->getChildAt(a1);
-                if (siXML)
-                {
-                    XMLDataElement* tXML = siXML->getChild("t");
-                    if (tXML)
-                    {
-                        sharedStringsMap[a1] = tXML->getElementData();
-                    }
-                }
-            }
-        }
-    }
-    return sharedStringsMap;
 }
 }}}}//end namespace
 

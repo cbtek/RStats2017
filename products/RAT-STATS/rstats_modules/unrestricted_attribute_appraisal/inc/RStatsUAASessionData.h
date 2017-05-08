@@ -17,6 +17,10 @@ namespace uaa {
 
 static const std::string c_RECENT_SESSION_EXTENSION = "modules_uaa";
 
+/**
+ * @brief The RStatsUAASessionData class represents the custom session
+ * data for unrestricted attribute appraisal (UAA)
+ */
 class RStatsUAASessionData : public utils::RStatsModuleSessionDataImpl
 {
 public:
@@ -27,25 +31,25 @@ public:
 	RStatsUAASessionData();
         /**
     * @brief Setter for m_dataFormat
-    * @param Value to replace m_dataFormat
+    * @param value to replace m_dataFormat
     */
     void setDataFormat(const utils::RStatsDataFormatType & value);
 
     /**
     * @brief Setter for m_universeSize
-    * @param Value to replace m_universeSize
+    * @param value to replace m_universeSize
     */
     void setUniverseSize(const utils::RStatsInteger & value);
 
     /**
     * @brief Setter for m_sampleSize
-    * @param Value to replace m_sampleSize
+    * @param value to replace m_sampleSize
     */
     void setSampleSize(const utils::RStatsInteger & value);
 
     /**
     * @brief Setter for m_coiSize
-    * @param Value to replace m_coiSize
+    * @param value to replace m_coiSize
     */
     void setCoiSize(const utils::RStatsInteger & value);
 

@@ -50,30 +50,33 @@ UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
     UIRStatsUtils::initButton(m_ui->m_btnExit, "img_exit.png");
     UIRStatsUtils::initButton(m_ui->m_btnHelp, "img_help.png");
     UIRStatsUtils::initAction(m_ui->actionAbout,"img_about.png","Alt+A");
-    UIRStatsUtils::initAction(m_ui->actionExecute,"img_run.png","Alt+R");
+    UIRStatsUtils::initAction(m_ui->actionNew_Window,"img_add.png","Alt+N");
+    UIRStatsUtils::initAction(m_ui->actionExecute,"img_run.png","Alt+E");
     UIRStatsUtils::initAction(m_ui->actionExit,"img_exit.png","Alt+Q");
     UIRStatsUtils::initAction(m_ui->actionHelp,"img_help.png","Alt+H");
-    UIRStatsUtils::initAction(m_ui->actionRecentlyUsed,"img_clock.png","Alt+S");
+    UIRStatsUtils::initAction(m_ui->actionRecentlyUsed,"img_clock.png","Alt+R");
 
     //bind all UI events to the functions that handle them
     connect(m_ui->actionExecute,SIGNAL(triggered(bool)),this,SLOT(onExecute()));
     connect(m_ui->actionExit,SIGNAL(triggered(bool)),this,SLOT(onExit()));
     connect(m_ui->actionHelp,SIGNAL(triggered(bool)),this,SLOT(onHelp()));
     connect(m_ui->actionAbout,SIGNAL(triggered(bool)),this,SLOT(onAbout()));
+    connect(m_ui->actionNew_Window,SIGNAL(triggered(bool)),this,SLOT(onLaunchNewWindow()));
     connect(m_ui->m_btnExecute,SIGNAL(clicked()),this,SLOT(onExecute()));
     connect(m_ui->m_btnExit,SIGNAL(clicked()),this,SLOT(onExit()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked()),this,SLOT(onHelp()));
     connect(m_ui->m_chkCSVOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveCSVFile()));
-    connect(m_ui->m_chkTextOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveTextFile()));
-    connect(&m_clock,SIGNAL(timeout()),this,SLOT(onUpdateClock()));
-    connect(m_ui->m_spnSampleSize,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
-    connect(m_ui->m_spnUniverseSize,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
-    connect(m_ui->m_spnCOI,SIGNAL(valueChanged(int)),this,SLOT(onValidate()));
+    connect(m_ui->m_chkTextOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveTextFile()));    
+    connect(m_ui->m_spnSampleSize,SIGNAL(valueChanged(int)),this,SLOT(onUpdateValidation()));
+    connect(m_ui->m_spnUniverseSize,SIGNAL(valueChanged(int)),this,SLOT(onUpdateValidation()));
+    connect(m_ui->m_spnCOI,SIGNAL(valueChanged(int)),this,SLOT(onUpdateValidation()));
+    connect(m_ui->m_txtAuditName,SIGNAL(textChanged(QString)),this,SLOT(onUpdateValidation()));
 
 
     //Set the status bar output labels to null
     m_currentCSVFileOutputLabel = nullptr;
     m_currentTextFileOutputLabel = nullptr;
+    m_currentXLSFileOutputLabel = nullptr;
 
     //Set auto save flag to false
     m_autoSetFileOutput = false;
@@ -86,9 +89,6 @@ UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
 
     //Update the recently used items
     updateRecentSessions();
-
-    //Start the clock that checks validation
-    m_clock.start(1000);
 
     //Start initial validation
     onValidate();
@@ -182,9 +182,14 @@ bool UIRStatsUAA::onValidate()
      }
 }
 
-void UIRStatsUAA::onUpdateClock()
+void UIRStatsUAA::onUpdateValidation()
 {
     onValidate();
+}
+
+void UIRStatsUAA::onLaunchNewWindow()
+{
+    (new UIRStatsUAA(nullptr))->show();
 }
 
 void UIRStatsUAA::onExecute()
@@ -220,46 +225,56 @@ void UIRStatsUAA::onExecute()
             }
         }
 
-        //Execute the unrestricted attribute appraisal function
-        RStatsUAA::inst().execute(name,sampleSize,universeSize,coiSize,type);
+        //Execute the unrestricted attribute appraisal function        
+        RStatsUAA uaaFunction;
+        uaaFunction.execute(name,sampleSize,universeSize,coiSize,type);
 
         //Save output to a worksheet
-        RStatsWorksheet output;
-        RStatsUAA::inst().saveToWorksheet(output);        
+        RStatsWorksheet worksheet;
+        uaaFunction.saveToWorksheet(worksheet);
+
+        //Set output
+        std::string htmlContent = worksheet.toHTMLTableString();
+        m_ui->m_txtOutput->setHtml(QString::fromStdString(htmlContent));
 
         //Save CSV file (for Excel/Access) if applicable
         if (m_ui->m_chkCSVOutput->isChecked())
         {
             FileUtils::writeFileContents(m_currentCSVFileOutput.toStdString(),
-                                         output.toCommaDelimitedString());
+                                         worksheet.toCommaDelimitedString());
         }
 
         //Save Text file, if applicable
         if (m_ui->m_chkTextOutput->isChecked())
         {
             FileUtils::writeFileContents(m_currentTextFileOutput.toStdString(),
-                                         output.toEvenlySpacedString());
+                                         worksheet.toEvenlySpacedString());
+        }
+
+        //Save XLS file (for Excel/Access), if applicable
+        if (m_ui->m_chkXLSOutput->isChecked())
+        {
+            RStatsWorkbook workbook;
+            workbook.addWorksheet(worksheet);
+            workbook.save(m_currentXLSFileOutput.toStdString());
+        }
+
+        //Show results in browser if selected
+        if (m_ui->m_chkViewInBrowser->isChecked())
+        {
+            UIRStatsUtils::launchHtml(htmlContent);
         }
 
         m_ui->m_frmOutput->show();
-        m_ui->m_lblNoData->hide();
-        m_ui->m_txtOutput->setHtml(QString::fromStdString(output.toHTMLTableString()));
+        m_ui->m_lblNoData->hide();        
 
         //Save the session data
         RStatsUAASessionData sessionData = getSessionData();
         sessionData.setCreationDate(DateUtils::getCurrentDate());
         sessionData.setCreationTime(TimeUtils::getCurrentTime());
-        m_recentSessionsMap[sessionData.getAuditName()] = RStatsModuleSessionDataPtr(new RStatsUAASessionData(sessionData));
-        RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getAuditName()]);
+        m_recentSessionsMap[sessionData.getSessionId()] = RStatsModuleSessionDataPtr(new RStatsUAASessionData(sessionData));
+        RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getSessionId()]);
         updateRecentSessions();
-
-        //Show results in browser if selected
-        if (m_ui->m_chkViewInBrowser->isChecked())
-        {
-            std::string htmlPath = FileUtils::buildFilePath(SystemUtils::getUserTempDirectory(), FileUtils::getRandomFileName(10,0)+".html");
-            FileUtils::writeFileContents(htmlPath,output.toHTMLTableString());
-            QDesktopServices::openUrl(QString::fromStdString(htmlPath));
-        }
     }
     catch (std::exception& e)
     {
@@ -288,6 +303,7 @@ RStatsUAASessionData UIRStatsUAA::getSessionData() const
     data.setCoiSize(m_ui->m_spnCOI->value());
     data.setUniverseSize(m_ui->m_spnUniverseSize->value());
     data.setCSVOutputFile(m_currentCSVFileOutput.toStdString());
+    data.setXLSOutputFile(m_currentXLSFileOutput.toStdString());
     data.setTextOutputFile(m_currentTextFileOutput.toStdString());
     data.setViewInBrowserFlag(m_ui->m_chkViewInBrowser->isChecked());
     return data;
@@ -304,8 +320,14 @@ void UIRStatsUAA::setSessionData(const RStatsUAASessionData &data)
     if (!data.getCSVOutputFile().empty())
     {        
         m_ui->m_chkCSVOutput->setChecked(true);
-        setCSVFileOutput(data.getTextOutputFile());
+        setCSVFileOutput(data.getCSVOutputFile());
         m_ui->m_chkCSVOutput->setToolTip(QString::fromStdString(data.getCSVOutputFile()));
+    }
+    if (!data.getXLSOutputFile().empty())
+    {
+        m_ui->m_chkXLSOutput->setChecked(true);
+        setXLSFileOutput(data.getXLSOutputFile());
+        m_ui->m_chkXLSOutput->setToolTip(QString::fromStdString(data.getXLSOutputFile()));
     }
     if (!data.getTextOutputFile().empty())
     {
@@ -351,12 +373,28 @@ void UIRStatsUAA::onSaveCSVFile()
     else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
 }
 
+void UIRStatsUAA::onSaveXLSFile()
+{
+    if (m_autoSetFileOutput) return;
+    if (m_ui->m_chkXLSOutput->isChecked())
+    {
+        m_currentXLSFileOutput = UIRStatsUtils::setOutputFile(
+                                                              m_ui->m_chkXLSOutput,
+                                                              "Save to XLS file...",
+                                                              "*.xls");
+        setXLSFileOutput(m_currentXLSFileOutput.toStdString());
+    }
+    else m_ui->m_statusBar->removeWidget(m_currentXLSFileOutputLabel);
+    onValidate();
+}
+
+
 void UIRStatsUAA::onRecentSessionSelected(QAction* action)
 {
-    std::string name = action->property("name").toString().toStdString();
-    if (m_recentSessionsMap.count(name))
+    std::string id = action->property("id").toString().toStdString();
+    if (m_recentSessionsMap.count(id))
     {
-        RStatsUAASessionData * data = dynamic_cast<RStatsUAASessionData*>(m_recentSessionsMap[name].get());
+        RStatsUAASessionData * data = dynamic_cast<RStatsUAASessionData*>(m_recentSessionsMap[id].get());
         setSessionData(*data);
     }
     onValidate();
@@ -378,6 +416,7 @@ void UIRStatsUAA::updateRecentSessions()
     }
 
 }
+
 void UIRStatsUAA::setTextFileOutput(const std::string& textFile)
 {
     m_currentTextFileOutput = QString::fromStdString(textFile);
@@ -426,6 +465,28 @@ void UIRStatsUAA::setCSVFileOutput(const std::string& csvFile)
     else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
 }
 
+void UIRStatsUAA::setXLSFileOutput(const std::string& xlsFile)
+{
+    m_currentXLSFileOutput = QString::fromStdString(xlsFile);
+    if (!m_currentXLSFileOutput.isEmpty())
+    {
+        if (m_currentXLSFileOutputLabel == nullptr)
+        {
+            m_currentXLSFileOutputLabel = new QLabel;
+            m_currentXLSFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+        }
+        m_ui->m_statusBar->removeWidget(m_currentXLSFileOutputLabel);
+        m_currentXLSFileOutputLabel->setToolTip(m_currentXLSFileOutput);
+        QString text = "<b>XLS File:</b> "+m_currentXLSFileOutput;
+        QFontMetrics metrics(this->font());
+        QString elidedText = metrics.elidedText(text, Qt::ElideMiddle, this->width() / 2);
+        m_currentXLSFileOutputLabel->setText(elidedText);
+
+        m_ui->m_statusBar->addPermanentWidget(m_currentXLSFileOutputLabel);
+        m_currentXLSFileOutputLabel->show();
+    }
+    else m_ui->m_statusBar->removeWidget(m_currentXLSFileOutputLabel);
+}
 
 void UIRStatsUAA::resizeEvent(QResizeEvent *)
 {
@@ -438,7 +499,5 @@ void UIRStatsUAA::resizeEvent(QResizeEvent *)
         setTextFileOutput(m_currentTextFileOutput.toStdString());
     }
 }
-
-
 }}}}//end namespace
 

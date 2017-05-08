@@ -13,7 +13,10 @@ namespace ratstats {
 namespace utils {
 namespace streams {
 
-
+/**
+ * @brief The RStatsCSVWorkbookStream class provides support for reading/writing
+ * to a CSV file. 
+ */
 class RStatsCSVWorkbookStream :public RStatsWorkbookStream
 {
 public:

@@ -17,7 +17,7 @@
    <item>
     <widget class="QTextBrowser" name="m_txtErrorMessage">
      <property name="lineWrapMode">
-      <enum>QTextEdit::NoWrap</enum>
+      <enum>QTextEdit::WidgetWidth</enum>
      </property>
     </widget>
    </item>

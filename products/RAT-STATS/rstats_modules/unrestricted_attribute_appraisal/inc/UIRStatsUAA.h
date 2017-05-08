@@ -24,6 +24,11 @@ namespace ratstats {
 namespace modules {
 namespace uaa {
 
+/**
+ * @brief The UIRStatsUAA class represents the code-behind for the
+ * unrestricted attribute appraisal user interface.  In the model-view-controller
+ * pardigm this class represents the view.
+ */
 class UIRStatsUAA : public QMainWindow
 {
     Q_OBJECT
@@ -58,11 +63,12 @@ private:
      */
     QString m_currentTextFileOutput;
     QString m_currentCSVFileOutput;
+    QString m_currentXLSFileOutput;
     QLabel * m_currentTextFileOutputLabel;
     QLabel * m_currentCSVFileOutputLabel;
+    QLabel * m_currentXLSFileOutputLabel;
     bool m_autoSetFileOutput;
-    oig::ratstats::utils::RStatsConditionLogger m_conditionLogger;
-    QTimer m_clock;
+    oig::ratstats::utils::RStatsConditionLogger m_conditionLogger;   
 
     /** 
     * MOC generated ui class for this widget
@@ -70,16 +76,22 @@ private:
      Ui_UIRStatsUAA *m_ui;
 
      /**
-      * @brief setTextFileOutput
-      * @param textFile
-      */
+     * @brief setTextFileOutput Set output for text file
+     * @param textFile The path to the text file
+     */
      void setTextFileOutput(const std::string& textFile);
 
      /**
-      * @brief setCSVFileOutput
-      * @param csvFile
-      */
+     * @brief setCSVFileOutput Set output for CSV file
+     * @param csvFile The path to the CSV file
+     */
      void setCSVFileOutput(const std::string& csvFile);
+
+     /**
+     * @brief setXLSFileOutput Set output for the XLS file
+     * @param xlsFile The path to the xls file
+     */
+     void setXLSFileOutput(const std::string& xlsFile);
 
      /**
       * @brief getSessionData binds fields from the user interface into
@@ -99,6 +111,13 @@ private:
       * @brief updateRecentSessions Reinitializes the sessions for this module and populates the menu
       */
      void updateRecentSessions();
+
+     /**
+      * @brief onValidate Ensures all input fields are valid before executing function
+      * @return
+      */
+     bool onValidate();
+
 
 private slots:
 
@@ -134,6 +153,11 @@ private slots:
      void onSaveCSVFile();
 
      /**
+      * @brief onSaveXLSFile
+      */
+     void onSaveXLSFile();
+
+     /**
       * @brief onHelp Launches PDF containing help for unrestricted attribute appraisal
       */
      void onHelp();
@@ -154,15 +178,15 @@ private slots:
      void onAbout();
 
      /**
-      * @brief onValidate Ensures all input fields are valid before executing function
-      * @return
+      * @brief onUpdateValidation Used for calling on validate
       */
-     bool onValidate();
+     void onUpdateValidation();
 
      /**
-      * @brief onUpdateClock Called every second and is primarly used for calling validation function
+      * @brief onLaunchNewWindow Event occurs when user clicks the "New Window" File menu item.
+      * Will launch new instance of the RStatsUAA window
       */
-     void onUpdateClock();
+     void onLaunchNewWindow();
 };
 
 }}}}//end namespace

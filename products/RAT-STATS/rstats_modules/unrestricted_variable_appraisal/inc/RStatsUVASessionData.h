@@ -17,6 +17,10 @@ namespace uva {
 
 const static std::string c_RECENT_SESSION_EXTENSION = "modules_uva";
 
+/**
+ * @brief The RStatsUVASessionData class represents the custom session
+ * data for unrestricted variable appraisal (UVA)
+ */
 class RStatsUVASessionData : public utils::RStatsModuleSessionDataImpl
 {
 public:
@@ -27,49 +31,49 @@ public:
 	RStatsUVASessionData();
         /**
     * @brief Setter for m_dataFormat
-    * @param Value to replace m_dataFormat
+    * @param value to replace m_dataFormat
     */
     void setDataFormat(const utils::RStatsDataFormatType& value);
 
     /**
     * @brief Setter for m_universeSize
-    * @param Value to replace m_universeSize
+    * @param value to replace m_universeSize
     */
     void setUniverseSize(const utils::RStatsInteger& value);
 
     /**
     * @brief Setter for m_dataRowStart
-    * @param Value to replace m_dataRowStart
+    * @param value to replace m_dataRowStart
     */
     void setDataRowStart(const utils::RStatsInteger& value);
 
     /**
     * @brief Setter for m_dataTable
-    * @param Value to replace m_dataTable
+    * @param value to replace m_dataTable
     */
     void setDataTableFilePath(const std::string& value);
 
     /**
     * @brief Setter for m_dataTable
-    * @param Value to replace m_dataTable
+    * @param value to replace m_dataTable
     */
     void setDataTableSheetName(const std::string& value);
 
     /**
     * @brief Setter for m_examineColumn
-    * @param Value to replace m_examineColumn
+    * @param value to replace m_examineColumn
     */
     void setExamineColumn(const std::string& value);
 
     /**
     * @brief Setter for m_auditColumn
-    * @param Value to replace m_auditColumn
+    * @param value to replace m_auditColumn
     */
     void setAuditColumn(const std::string& value);
 
     /**
     * @brief Setter for m_differenceColumn
-    * @param Value to replace m_differenceColumn
+    * @param value to replace m_differenceColumn
     */
     void setDifferenceColumn(const std::string& value);
 

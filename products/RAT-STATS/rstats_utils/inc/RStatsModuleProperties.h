@@ -4,8 +4,7 @@
 
 */
 
-#ifndef _OIG_RATSTATS_UTILS_RSTATSMODULEPROPERTIES_H
-#define _OIG_RATSTATS_UTILS_RSTATSMODULEPROPERTIES_H
+#pragma once
 
 #include <vector>
 #include <string>
@@ -15,60 +14,62 @@ namespace oig {
 namespace ratstats {
 namespace utils {
 
-enum class RStatsModuleType
-{
-    Binary,
-    Python,
-    R
-};
-
+/**
+ * @brief The RStatsModuleProperties class represents a individual
+ * module object in RAT-STATS. It provides a method of loading, saving
+ * and removing the module to/from disk.
+ *
+ */
 class RStatsModuleProperties 
 {
 public:
-	//! Constructor for RStatsModuleProperties
-	/*!
-		Detailed description for RStatsModuleProperties
-	*/
+
+    /**
+     * @brief RStatsModuleProperties (Constructor)
+     */
 	RStatsModuleProperties();
-        /**
+
+   /**
     * @brief Setter for m_type
-    * @param Value to replace m_type
+    * @param value to replace m_type
     */
     void setType(const std::string & value);
 
     /**
     * @brief Setter for m_name
-    * @param Value to replace m_name
+    * @param value to replace m_name
     */
     void setName(const std::string & value);
 
     /**
     * @brief Setter for m_workingDir
-    * @param Value to replace m_workingDir
+    * @param value to replace m_workingDir
     */
     void setWorkingDir(const std::string & value);
 
     /**
     * @brief Setter for m_location
-    * @param Value to replace m_location
+    * @param value to replace m_location
     */
     void setPath(const std::string & value);
 
     /**
     * @brief Setter for m_group
-    * @param Value to replace m_group
+    * @param value to replace m_group
     */
     void setCategory(const std::string & value);
 
     /**
     * @brief Setter for m_args
-    * @param Value to replace m_args
+    * @param value to replace m_args
     */
     void setArgs(const std::vector<std::pair<std::string,std::string> > & value);
 
     /**
-     * @brief getGeneratedApplicationCommand
-     * @return
+     * @brief getGeneratedApplicationCommand This fuction constructs a
+     * command string which includes module path, script (if applicable)
+     * and command line arguments
+     * @return Returns string of full command thats ready to be launched
      */
     std::string getGeneratedApplicationCommand() const;
 
@@ -118,10 +119,10 @@ public:
     const std::string & getCategory() const;
 
     /**
-     * @brief getDefinitionPath
+     * @brief getConfigPath
      * @return
      */
-    const std::string & getDefinitionPath() const;
+    const std::string & getConfigPath() const;
 
 
     /**
@@ -150,29 +151,29 @@ public:
 
 
     /**
-     * @brief setDefinitionPath
-     * @param path
+     * @brief setConfigPath Sets the XML config file path
+     * @param path The path to the XML config file
      */
-    void setDefinitionPath(const std::string & path);   
+    void setConfigPath(const std::string & path);
 
     /**
-     * @brief load
-     * @param filePath
+     * @brief loadConfig
+     * @param filePath Reads XML config from filePath
      */
     void loadConfig(const std::string& filePath);
 
     /**
-     * @brief save
+     * @brief saveConfig Saves XML config to filePath
      */
     void saveConfig(const std::string& filePath);
 
     /**
-     * @brief saveConfig
+     * @brief saveConfig Saves XML config to default filePath
      */
     void saveConfig();
 
     /**
-     * @brief removeConfig
+     * @brief removeConfig Deletes XML config from default filePath
      */
     void removeConfig();
 
@@ -183,20 +184,23 @@ public:
     void setIcon(const std::string& appIcon);
 
     /**
-     * @brief getIcon
+     * @brief getIcon Returns string relative URL to icon resource
      * @return
      */
     std::string getIcon() const;
 
     /**
-     * @brief isApplicationConsoleShown
-     * @return
+     * @brief isConsoleShown Determines if command console should
+     * be shown.
+     * @return Returns true if console should be shown, false otherwise
      */
     bool isConsoleShown() const;
 
     /**
-     * @brief setConsoleShown
-     * @param flag
+     * @brief setConsoleShown Sets boolean flag for condition
+     * where the command console should be shown when launching
+     * a module.
+     * @param flag The boolean flag to set
      */
     void setConsoleShown(bool flag);
 
@@ -218,6 +222,4 @@ private:
 
 };
 }}}//end namespace
-
-#endif // _OIG_RATSTATS_UTILS_RSTATSMODULEPROPERTIES_H
 

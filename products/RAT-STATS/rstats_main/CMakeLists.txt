@@ -67,18 +67,25 @@ target_link_libraries(${CURR_TARGET}
 # Copy templates folder to build directory
 # so that the exe can see them
 
+# Copy the resx folder to build folder
 add_custom_command(TARGET ${CURR_TARGET} POST_BUILD
                COMMAND ${CMAKE_COMMAND} -E copy_directory
                ${PROJECT_SOURCE_DIR}/rstats_resx $<TARGET_FILE_DIR:${CURR_TARGET}>/resx)
 
-
+# Copy the config folder to build folder
 add_custom_command(TARGET ${CURR_TARGET} POST_BUILD
               COMMAND ${CMAKE_COMMAND} -E copy_directory
               ${PROJECT_SOURCE_DIR}/rstats_config $<TARGET_FILE_DIR:${CURR_TARGET}>/config)
 
+# Copy the contrib folder to build folder
 add_custom_command(TARGET ${CURR_TARGET} POST_BUILD
               COMMAND ${CMAKE_COMMAND} -E copy_directory
               ${PROJECT_SOURCE_DIR}/rstats_contrib $<TARGET_FILE_DIR:${CURR_TARGET}>/contrib)
+
+# Copy the help folder to build folder
+add_custom_command(TARGET ${CURR_TARGET} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${PROJECT_SOURCE_DIR}/rstats_help/help $<TARGET_FILE_DIR:${CURR_TARGET}>/help)
 
 
 

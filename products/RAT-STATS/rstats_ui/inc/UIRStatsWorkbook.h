@@ -19,19 +19,26 @@ namespace oig {
 namespace ratstats {
 namespace ui {
 
-
+/**
+ * @brief The UIRStatsWorkbook class is used by the SVA class to provide
+ * support for displaying multiple worksheets in the output results
+ */
 class UIRStatsWorkbook : public QWidget
 {
     Q_OBJECT
 
 public:
-	//! Constructor for UIRStatsWorkbook
-	/*!
-		Detailed description for UIRStatsWorkbook
-        @param      parent points to embedding super widget. Defaults to null.
-	*/
+    /**
+     * @brief UIRStatsWorkbook (Constructor)
+     * @param parent
+     */
     explicit UIRStatsWorkbook(QWidget *parent = 0);
 
+    /**
+     * @brief UIRStatsWorkbook (Constructor)
+     * @param workbook The workbook to populate the ui with
+     * @param parent
+     */
     explicit UIRStatsWorkbook(const utils::RStatsWorkbook& workbook, QWidget *parent = 0);
     
     /**

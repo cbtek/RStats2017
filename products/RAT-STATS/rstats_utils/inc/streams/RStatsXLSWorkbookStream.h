@@ -11,29 +11,33 @@ namespace ratstats {
 namespace utils {
 namespace streams {
 
-class RStatsXLSWorkbookStream :public oig::ratstats::utils::RStatsWorkbookStream
+/**
+ * @brief The RStatsXLSWorkbookStream class Provides read/write support for XLS files 
+ */
+class RStatsXLSWorkbookStream :public RStatsWorkbookStream
 {
 public:
    /*
-    * @brief RStatsXLSWorkbookStream
-    *
+    * @brief RStatsXLSWorkbookStream (Constructor)
+    * @param filePath The path to read/write to/from
 	*/
     RStatsXLSWorkbookStream(const std::string& filePath);
     
     /**
-     * @brief write
-     * @param input
+     * @brief write Saves workbook object to XLS file
+     * @param workbook The workbook to save
      */
     virtual void write(const RStatsWorkbook& workbook);
 
     /**
-     * @brief read
-     * @return
+     * @brief read Parses XLS file and returns workbook
+     * @return Return fully constructed workbook object from
+     * XLS file
      */
     virtual RStatsWorkbook read();
 
 	/*
-	 * @brief RStatsXLSWorkbookStream (Descructor)
+     * @brief RStatsXLSWorkbookStream (Destructor)
      *
 	 */
 	~RStatsXLSWorkbookStream();	

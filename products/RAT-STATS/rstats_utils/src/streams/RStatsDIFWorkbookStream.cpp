@@ -9,6 +9,7 @@
 #include "RStatsDIFWorkbookStream.h"
 
 #include "utility/inc/StringUtils.hpp"
+#include "utility/inc/FileUtils.hpp"
 
 using namespace oig::ratstats::utils;
 using namespace cbtek::common::utility;
@@ -18,64 +19,21 @@ namespace ratstats {
 namespace utils {
 namespace streams {
 
-
-enum class RStatsDIFParseStates
-{
-    Start,
-    ReadColumnCount,
-    ReadRowCount,
-    ReadDummyData,
-    ReadRowData,
-    ReadStringData,
-    End
-};
-
 RStatsDIFWorkbookStream::RStatsDIFWorkbookStream(const std::string &filePath)
 {
-    m_filePaths.push_back(filePath);
-}
-
-RStatsDIFWorkbookStream::RStatsDIFWorkbookStream(const std::vector<std::string> &filePaths)
-{
-    m_filePaths = filePaths;
+    m_filePath = filePath;
 }
 
 void RStatsDIFWorkbookStream::write(const RStatsWorkbook &workbook)
-{
-    const std::vector<RStatsWorksheet>& sheets = workbook.getWorksheets();
-    const std::vector<std::string> sheetNames = workbook.getWorksheetNames();
-
-    std::string rootFilePath;
-    size_t count = 0;
-    if (workbook.getNumWorksheets() > m_filePaths.size() && m_filePaths.size() > 0)
+{    
+    if (workbook.getNumWorksheets() > 0)
     {
-        rootFilePath = m_filePaths[0];
-        m_filePaths.clear();
-        for(const auto& sheetName : sheetNames)
-        {
-            if (StringUtils::isEmpty(sheetName) )
-            {
-                m_filePaths.push_back(rootFilePath+"_sheet["+StringUtils::toString(count)+"].dif");
-            }
-            else
-            {
-                m_filePaths.push_back(rootFilePath+"_"+FileUtils::getSanitizedPathName(sheetName)+".dif");
-            }
-            ++count;
-        }
-    }
-
-    count = 0;
-
-    for (const RStatsWorksheet& sheetIn : sheets)
-    {
-        RStatsWorksheet sheet = sheetIn;
+        RStatsWorksheet sheet = workbook(0);
         sheet.setThousandsSeperatorEnabled(false);
-        std::string filePath = m_filePaths[count];
-        std::ofstream out(filePath.c_str(),std::ios::out);
+        std::ofstream out(m_filePath.c_str(),std::ios::out);
         if (!out)
         {
-            continue;
+            THROW_GENERIC_EXCEPTION("Could not open file for writing: "+m_filePath)
         }
         size_t rowCount = sheet.getNumRows();
         size_t columnCount = sheet.getNumColumns();
@@ -88,7 +46,7 @@ void RStatsDIFWorkbookStream::write(const RStatsWorkbook &workbook)
             {
                 writeCell(sheet(r,c),out);
             }
-        }        
+        }
         out << "-1,0" << std::endl;
         out <<"EOD" << std::endl;
         out.close();
@@ -98,99 +56,96 @@ void RStatsDIFWorkbookStream::write(const RStatsWorkbook &workbook)
 RStatsWorkbook RStatsDIFWorkbookStream::read()
 {
     RStatsWorkbook workbook;
-    RStatsDIFParseStates currentState = RStatsDIFParseStates::Start;
-    for (const auto& filePath : m_filePaths)
+    RStatsDIFParseStates currentState = RStatsDIFParseStates::Start;    
+    RStatsWorksheet sheet;
+    size_t row = 0;
+    size_t column = 0;
+    std::ifstream in(m_filePath.c_str(), std::ios::in);
+    if (!in)
     {
-        RStatsWorksheet sheet;
-        size_t row = 0;
-        size_t column = 0;
-        std::ifstream in(filePath.c_str(), std::ios::in);
+        THROW_GENERIC_EXCEPTION("Could not open file for reading: "+m_filePath)
+    }
+
+    while(in)
+    {
+        std::string line;
+        std::getline(in,line);
         if (!in)
         {
-            continue;
+            break;
         }
 
-        while(in)
+        if (StringUtils::startsWith(line,"BOT"))
         {
-            std::string line;
-            std::getline(in,line);
-            if (!in)
+            currentState = RStatsDIFParseStates::ReadRowData;
+            ++row;
+            column = 0;
+        }
+        else if (StringUtils::startsWith(line,"EOD"))
+        {
+            currentState = RStatsDIFParseStates::End;
+            in.close();
+        }
+        else
+        {
+            if(currentState == RStatsDIFParseStates::ReadRowData)
             {
-                break;
-            }
-
-            if (StringUtils::startsWith(line,"BOT"))
-            {
-                currentState = RStatsDIFParseStates::ReadRowData;
-                ++row;
-                column = 0;
-            }
-            else if (StringUtils::startsWith(line,"EOD"))
-            {
-                currentState = RStatsDIFParseStates::End;
-                in.close();
-            }
-            else
-            {
-                if(currentState == RStatsDIFParseStates::ReadRowData)
+                std::vector<std::string> items;
+                std::string dataLine = StringUtils::trimmed(line);
+                if (dataLine.size() > 2)
                 {
-                    std::vector<std::string> items;
-                    std::string dataLine = StringUtils::trimmed(line);
-                    if (dataLine.size() > 2)
+                    //Grab type from line beginning
+                    std::string type;
+                    type.push_back(dataLine[0]);
+                    if(dataLine[0] == '-' && dataLine.size() > 3)
                     {
-                        //Grab type from line beginning
-                        std::string type;
-                        type.push_back(dataLine[0]);
-                        if(dataLine[0] == '-' && dataLine.size() > 3)
-                        {
-                            type.push_back(dataLine[1]);
-                            dataLine.erase(dataLine.begin());
-                        }
-
-                        //Remove type
+                        type.push_back(dataLine[1]);
                         dataLine.erase(dataLine.begin());
-
-                        //Remove comma
-                        dataLine = StringUtils::trimmed(dataLine);
-                        dataLine.erase(dataLine.begin());
-                        dataLine = StringUtils::trimmed(dataLine);
-                        items.push_back(type);
-                        items.push_back(dataLine);
                     }
 
-                    if (items.size() > 1)
+                    //Remove type
+                    dataLine.erase(dataLine.begin());
+
+                    //Remove comma
+                    dataLine = StringUtils::trimmed(dataLine);
+                    dataLine.erase(dataLine.begin());
+                    dataLine = StringUtils::trimmed(dataLine);
+                    items.push_back(type);
+                    items.push_back(dataLine);
+                }
+
+                if (items.size() > 1)
+                {
+
+                    std::int64_t type = StringUtils::toInt(items[0]);
+                    if (type == 0)
                     {
-
-                        std::int64_t type = StringUtils::toInt(items[0]);
-                        if (type == 0)
+                        ++column;
+                        std::string value = StringUtils::trimmed(StringUtils::remove(items[1],"$"));
+                        value = StringUtils::remove(value,"%");
+                        value = StringUtils::remove(value,",");
+                        if (value.size() == 1 && !StringUtils::isNumeric(value))
                         {
-                            ++column;
-                            std::string value = StringUtils::trimmed(StringUtils::remove(items[1],"$"));
-                            value = StringUtils::remove(value,"%");
-                            value = StringUtils::remove(value,",");
-                            if (value.size() == 1 && !StringUtils::isNumeric(value))
-                            {
-                                value = "0";
-                            }
-                            sheet(row - 1,column - 1) = value;
+                            value = "0";
+                        }
+                        sheet(row - 1,column - 1) = value;
 
-                        }
-                        else if (type == 1)
-                        {
-                            ++column;
-                            std::string nextLine;
-                            std::getline(in,nextLine);                            
-                            nextLine = StringUtils::trimmed(nextLine);
-                            nextLine = StringUtils::trimmed(nextLine, '"',false);
-                            nextLine = StringUtils::replace(nextLine,"\"\"","\"");
-                            sheet(row - 1,column - 1) = nextLine;
-                        }
+                    }
+                    else if (type == 1)
+                    {
+                        ++column;
+                        std::string nextLine;
+                        std::getline(in,nextLine);
+                        nextLine = StringUtils::trimmed(nextLine);
+                        nextLine = StringUtils::trimmed(nextLine, '"',false);
+                        nextLine = StringUtils::replace(nextLine,"\"\"","\"");
+                        sheet(row - 1,column - 1) = nextLine;
                     }
                 }
             }
         }
-        workbook.addWorksheet(sheet);
     }
+    workbook.addWorksheet(sheet);
     return workbook;
 }
 

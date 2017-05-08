@@ -12,40 +12,41 @@ namespace ratstats {
 namespace utils {
 namespace streams {
 
+/**
+ * @brief The RStatsXLSXWorkbookStream class provides read support for
+ * XLSX files.  WARNING: The write function is not implemented and will
+ * throw an exception if called. 
+ */
 class RStatsXLSXWorkbookStream :public RStatsWorkbookStream
 {
 public:
-	//! Constructor for RStatsXLSXWorkbookStream
-	/*!
-		Detailed description for RStatsXLSXWorkbookStream
-	*/
+
+    /**
+     * @brief RStatsXLSXWorkbookStream (Constructor)
+     * @param filePath The path to read from
+     */
     RStatsXLSXWorkbookStream(const std::string& filePath);
     
     /**
-     * @brief write
-     * @param workbook
+     * @brief write In the future this should write a workbook to
+     * a xlsx file. WARNING: The write function is not implemented and will
+     * throw an exception if called.
+     * @param workbook The workbook to write
+     * @throws GenericException
      */
     void write(const RStatsWorkbook &workbook);
 
     /**
-     * @brief read
-     * @return
+     * @brief read Parses XLSX file and returns it as a workbook object
+     * @return Returns workbook object of XLSX file
+     * @throws GenericException if xlsx file was unable to be opened
      */
     RStatsWorkbook read();
 
 	//! Destructor
 	~RStatsXLSXWorkbookStream();	
 
-private:    
-    struct XLSXWorksheetDefinition
-    {
-        std::string sheetName;
-        std::string id;
-        std::string sheetFile;
-    };
-
-    std::map<std::string, XLSXWorksheetDefinition> getWorksheetDefinitions(const std::string &workbookFilePath, const std::string &workbookRelationshipFilePath) const;
-    std::map<size_t, std::string> getSharedStrings(const std::string& sharedStringsFilePath) const;
+private:            
     std::string m_filePath;
 };
 }}}}//end namespace

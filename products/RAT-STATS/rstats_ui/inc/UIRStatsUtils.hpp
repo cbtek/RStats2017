@@ -30,7 +30,6 @@
 #include "rstats_utils/inc/RStatsUtils.hpp"
 #include "rstats_utils/inc/RStatsModuleSessionDataImpl.h"
 #include "rstats_utils/inc/RStatsWorkbook.h"
-#include "rstats_utils/inc/RStatsSettingsManager.h"
 
 #include "UIRStatsErrorMessage.h"
 
@@ -48,7 +47,10 @@
 namespace oig {
 namespace ratstats {
 namespace ui {
-
+/**
+ * @brief This namespace represents a collection of reusable functions
+ * that have access to the Qt classes.
+ */
 namespace UIRStatsUtils
 {
 
@@ -58,7 +60,7 @@ namespace UIRStatsUtils
      */
     inline void desktopOpen(const std::string& url)
     {
-        #ifdef __WIN32
+        #ifdef __WIN32            
             ShellExecute(NULL,"open",url.c_str(),NULL,NULL,SW_SHOWNORMAL);
         #else
             QDesktopServices::openUrl(QString::fromStdString(url));
@@ -66,16 +68,30 @@ namespace UIRStatsUtils
     }
 
     /**
-     * @brief launchHelp
-     * @param pdf
+     * @brief launchHtml Displays html content in system web browser
+     * @param content The html content to display
+     */
+    inline void launchHtml(const std::string& content)
+    {
+        std::string htmlPath = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserTempDirectory(), cbtek::common::utility::FileUtils::getRandomFileName(10,0)+".html");
+        cbtek::common::utility::FileUtils::writeFileContents(htmlPath,content);
+        desktopOpen(htmlPath);
+    }
+
+    /**
+     * @brief launchHelp Builds a url to the pdf item.  Launches system pdf viewer with url as filePath.
+     * @param pdf The filename portion of full url path
      */
     inline void launchHelp(const std::string& pdf)
     {
-        QUrl url = QUrl(QString::fromStdString(cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getCurrentExecutableDirectory(),"rstats_help/"+pdf)));
-        if (!QFile::exists(url.toString()) || !QDesktopServices::openUrl(url))
+        std::string url = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getCurrentExecutableDirectory(),"help/"+pdf);
+        url = cbtek::common::utility::StringUtils::replace(url,"\\","/");
+        if (!cbtek::common::utility::FileUtils::fileExists(url))
         {
-            UIRStatsErrorMessage("Could not load help file","Could not open the help file located at \"" + url.toString().toStdString() + "\"",false).exec();
+            UIRStatsErrorMessage("Could not load help file","Could not open the help file located at \"" + url+ "\"",false).exec();
+            return;
         }
+        desktopOpen(url);
     }
 
 
@@ -86,50 +102,7 @@ namespace UIRStatsUtils
      */
     inline void setCurrentText(QComboBox * combo, const std::string & text)
     {
-        int index = -1;
-        for (int a1 = 0; a1 < combo->count(); ++a1)
-        {
-            if (combo->itemText(a1).toUpper().toStdString() == cbtek::common::utility::StringUtils::toUpper(text))
-            {
-                index = a1;
-                break;
-            }
-        }
-        if (index > -1)
-        {
-            combo->setCurrentIndex(index);
-        }
-        else
-        {
-            combo->addItem(QString::fromStdString(text));
-            combo->setCurrentIndex(combo->count()-1);
-        }
-    }
-
-    /**
-     * @brief setButtonStyle
-     * @param button
-     * @param font
-     * @param icon
-     * @param buttonHeight
-     * @param squareButton
-     */
-    inline void setButtonStyle(QAbstractButton * button,
-                                 const QFont& font,
-                                 const QIcon& icon,
-                                 oig::ratstats::utils::RStatsInteger buttonHeight,
-                                 bool squareButton = false)
-    {
-        button->setFont(font);
-        button->setIcon(icon);
-        button->setIconSize(QSize(static_cast<int>(buttonHeight-8),static_cast<int>(buttonHeight-8)));
-        button->setMaximumHeight(static_cast<int>(buttonHeight));
-        button->setMinimumHeight(static_cast<int>(buttonHeight));
-        if (squareButton)
-        {
-            button->setMaximumWidth(static_cast<int>(buttonHeight));
-            button->setMinimumWidth(static_cast<int>(buttonHeight));
-        }
+        combo->setCurrentText(QString::fromStdString(text));
     }
 
     /**
@@ -235,8 +208,9 @@ namespace UIRStatsUtils
 
 
     /**
-     * @brief highlightErrorInValidationConsole
-     * @param widget
+     * @brief highlightErrorInValidationConsole Ensures that the next error in
+     * the validation console is highlighted/focused.
+     * @param widget The validation console list widget
      */
     inline void highlightErrorInValidationConsole(QListWidget * widget)
     {
@@ -248,6 +222,37 @@ namespace UIRStatsUtils
                 widget->setFocus();
                 return;
             }
+        }
+    }
+
+    /**
+    * @brief populateWithColumns Populates combobox widget with column headers
+    * @param columns Unique set of columns
+    * @param comboBox The combobox widget to populate
+    */
+    inline void populateWithColumns(const std::set<size_t>& columns,
+                                    QComboBox *comboBox)
+    {
+        comboBox->clear();
+        for(const auto& column : columns)
+        {
+            std::string label = utils::RStatsUtils::getColumnLabelFromIndex(column);
+            comboBox->addItem(QString::fromStdString(label));
+        }
+    }
+
+    /**
+    * @brief populateWithRows Populates combobox widget with row numbers
+    * @param rows Unique set of rows
+    * @param comboBox The combobox to populate
+    */
+    inline void populateWithRows(const std::set<size_t>& rows,
+                                 QComboBox *comboBox)
+    {
+        comboBox->clear();
+        for(const auto& row : rows)
+        {
+            comboBox->addItem(QString::number(row+1));
         }
     }
 
@@ -278,7 +283,6 @@ namespace UIRStatsUtils
                     std::uint8_t fgR = static_cast<std::uint8_t>(item->foreground().color().red());
                     std::uint8_t fgG = static_cast<std::uint8_t>(item->foreground().color().green());
                     std::uint8_t fgB = static_cast<std::uint8_t>(item->foreground().color().blue());
-
                     std::uint8_t bgR = static_cast<std::uint8_t>(item->background().color().red());
                     std::uint8_t bgG = static_cast<std::uint8_t>(item->background().color().green());
                     std::uint8_t bgB = static_cast<std::uint8_t>(item->background().color().blue());
@@ -307,18 +311,24 @@ namespace UIRStatsUtils
     }
 
     /**
-     * @brief bindSheetToUI
-     * @param sheet
-     * @param table
-     * @param padRows
-     * @param padColumns
+     * @brief bindSheetToUI This function copies fields in the model class (RStatsWorksheet)
+     * into the view object (QTableWidget)
+     * @param sheet The (model) worksheet input
+     * @param table The (view) table widget output
+     * @param padRows Number of extra (blank) rows to add
+     * @param padColumns Number of extra (blank) columns to add
+     * @param numDecimalPlaces Number of decimal places to round numeric values
+     * @param readOnly Makes the output table cells read only
+     * @param disableAllFormatting Overrides any formatting settings in worksheet
      */
     inline void bindSheetToUI(const oig::ratstats::utils::RStatsWorksheet &sheetIn,
                               QTableWidget *table,
                               bool checkableHeader = false,
                               int padRows=0,
                               int padColumns=0,
-                              int numDecimalPlaces = -1
+                              int numDecimalPlaces = -1,
+                              bool readOnly = false,
+                              bool disableAllFormatting = false
                               )
     {
         utils::RStatsWorksheet sheet = sheetIn;
@@ -344,6 +354,7 @@ namespace UIRStatsUtils
             std::pair<size_t,size_t> index = itNext.first;
             oig::ratstats::utils::RStatsCell cell = itNext.second;
             QTableWidgetItem * item = new QTableWidgetItem;           
+            cell.text = cbtek::common::utility::StringUtils::remove(cell.text,",");
 
             if (numDecimalPlaces > -1 && cbtek::common::utility::StringUtils::isNumeric(cell.text) &&
                                        !cbtek::common::utility::StringUtils::isSignedInteger(cell.text) &&
@@ -352,54 +363,79 @@ namespace UIRStatsUtils
             {
                     double toFloat = cbtek::common::utility::StringUtils::toFloat64(cell.text);
                     std::string toString = cbtek::common::utility::StringUtils::toString(toFloat,numDecimalPlaces);
-                    cell.text = toString;
+                    toString = cbtek::common::utility::StringUtils::removeTrailingZeroes(toString);
+                    cell.text = toString;                    
 
             }
 
-            item->setText(QString::fromStdString(cell.text));
 
-            table->setRowHeight(static_cast<int>(index.first),30);
-            //set colors
-            int r,g,b,a;
-            if (oig::ratstats::utils::RStatsCell::ms_DefaultBGColor != cell.bgColor)
+            if (cbtek::common::utility::StringUtils::isNumeric(cell.text))
             {
-                r = cell.bgColor.getRed();
-                g = cell.bgColor.getGreen();
-                b = cell.bgColor.getBlue();
-                a = cell.bgColor.getAlpha();
-                item->setBackground(QBrush(QColor(r,g,b,a)));
+                cell.text = cbtek::common::utility::StringUtils::formatWithThousandsLabel(cell.text);
             }
-            if (oig::ratstats::utils::RStatsCell::ms_DefaultFGColor != cell.fgColor)
+            item->setText(QString::fromStdString(cell.text));            
+            table->setRowHeight(static_cast<int>(index.first),26);
+            if (!disableAllFormatting)
             {
-                r = cell.fgColor.getRed();
-                g = cell.fgColor.getGreen();
-                b = cell.fgColor.getBlue();
-                a = cell.fgColor.getAlpha();
-                item->setForeground(QBrush(QColor(r,g,b,a)));
+                //set colors
+                int r,g,b,a;
+                if (oig::ratstats::utils::RStatsCell::ms_DefaultBGColor != cell.bgColor)
+                {
+                    r = cell.bgColor.getRed();
+                    g = cell.bgColor.getGreen();
+                    b = cell.bgColor.getBlue();
+                    a = cell.bgColor.getAlpha();
+                    item->setBackground(QBrush(QColor(r,g,b,a)));
+                }
+                if (oig::ratstats::utils::RStatsCell::ms_DefaultFGColor != cell.fgColor)
+                {
+                    r = cell.fgColor.getRed();
+                    g = cell.fgColor.getGreen();
+                    b = cell.fgColor.getBlue();
+                    a = cell.fgColor.getAlpha();
+                    item->setForeground(QBrush(QColor(r,g,b,a)));
+                }
+
+                //set font
+                QFont font;
+                font.setBold(cell.font.isBold());
+                font.setUnderline(cell.font.isUnderlined());
+                font.setItalic(cell.font.isItalic());
+                font.setFamily(QString::fromStdString(cell.font.getFontFamily()));
+                font.setPointSize(static_cast<int>(cell.font.getPointSize()));
+                item->setFont(font);
+                switch(cell.alignment)
+                {
+                    case oig::ratstats::utils::RStatsTextAlignment::AlignMiddle:item->setTextAlignment(Qt::AlignVCenter | Qt::AlignHCenter);break;
+                    case oig::ratstats::utils::RStatsTextAlignment::AlignRight:item->setTextAlignment(Qt::AlignVCenter | Qt::AlignRight);break;
+                    case oig::ratstats::utils::RStatsTextAlignment::AlignLeft:item->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);break;
+                    default:break;
+                }
             }
 
-            //set font
-            QFont font;
-            font.setBold(cell.font.isBold());
-            font.setUnderline(cell.font.isUnderlined());
-            font.setItalic(cell.font.isItalic());
-            font.setFamily(QString::fromStdString(cell.font.getFontFamily()));
-            font.setPointSize(static_cast<int>(cell.font.getPointSize()));
-            item->setFont(font);
-            switch(cell.alignment)
+            if (readOnly)
             {
-                case oig::ratstats::utils::RStatsTextAlignment::AlignMiddle:item->setTextAlignment(Qt::AlignVCenter | Qt::AlignHCenter);break;
-                case oig::ratstats::utils::RStatsTextAlignment::AlignRight:item->setTextAlignment(Qt::AlignVCenter | Qt::AlignRight);break;
-                case oig::ratstats::utils::RStatsTextAlignment::AlignLeft:item->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);break;
-                default:break;
+                item->setFlags(Qt::ItemIsEnabled);
             }
+
             table->setItem(static_cast<int>(index.first),
                            static_cast<int>(index.second),
                            item);
         }
+        if (readOnly)
+        {
+            table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        }
         table->show();
     }
 
+    /**
+     * @brief setOutputFile Common code used by all the modules for saving output file
+     * @param checkBox
+     * @param title
+     * @param extension
+     * @return
+     */
     inline QString setOutputFile(QCheckBox * checkBox,
                               const QString& title,
                               const QString& extension)
@@ -423,8 +459,15 @@ namespace UIRStatsUtils
         return "";
     }
 
-
-
+    /**
+     * @brief buildRecentSessions Constructs the "Recently Used" menu used by
+     * the modules
+     * @param parent The parent widget to hold the sessions
+     * @param menuRecentAction The "Recently Used" menu item widget
+     * @param sessionMapOut The map to hold the session data pointers
+     * @param sessionExtension The extension/id using for saving/loading the sessions
+     * @return Returns an action group and action pair to be used in module menu bar
+     */
     template<typename ModuleType>
     inline std::pair<QActionGroup *, QAction*> buildRecentSessions(
                                      QWidget * parent,
@@ -444,38 +487,61 @@ namespace UIRStatsUtils
         menuRecentAction->setDisabled(false);
         recentSessionActionGroup = new QActionGroup(parent);
         QMenu * recentMenu = new QMenu;
+
+        //Load all sessions from disk
         std::map<std::uint64_t,utils::RStatsModuleSessionDataPtr> last10Sessions;
         for (const auto& url : sessionUrls)
         {
+            //Create new data instance for "ModuleType"
             std::shared_ptr<ModuleType> data = std::shared_ptr<ModuleType>(new ModuleType);
+
+            //Load the data instance from file
             data->load(url);
+
+            //If data is valid then...
             if (data.get())
             {
+                //Cast the interface pointer to base implementation object
                 utils::RStatsModuleSessionDataImpl * impl = dynamic_cast<utils::RStatsModuleSessionDataImpl*>(data.get());
                 if (impl)
                 {
-                    std::uint64_t value = cbtek::common::utility::DateTimeUtils::getTimeStampInteger(impl->getCreationDate(),
-                                                                                                 impl->getCreationTime());
+                    //Get the date object
+                    cbtek::common::utility::DateEntity dateEntity = impl->getCreationDate();
+
+                    //Get the time object
+                    cbtek::common::utility::TimeEntity timeEntity = impl->getCreationTime();
+
+                    //Create integer timestamp
+                    std::uint64_t value = cbtek::common::utility::DateTimeUtils::getTimeStampInteger(dateEntity,timeEntity);
+
+                    //Add data to last10Sessions map
+                    //items should be sorted by
                     last10Sessions[value] = data;
                 }
             }
         }
 
+        //Loop over last ten sessions and add to sessionMapOut
         size_t sessionCount = 0;
         for (auto it = last10Sessions.rbegin();it != last10Sessions.rend(); ++it)
         {
-            sessionMapOut[it->second->getAuditName()] = it->second;
-            std::string dateTimeStr = cbtek::common::utility::DateTimeUtils::getDisplayTimeStamp(cbtek::common::utility::DateEntity(it->second->getCreationDate()),
-                                                                                                 cbtek::common::utility::TimeEntity(it->second->getCreationTime()));
-            QAction * action = new QAction(QString::fromStdString(it->second->getAuditName()), recentMenu);
-            action->setToolTip("Created on "+QString::fromStdString(dateTimeStr));
-            action->setProperty("name",QString::fromStdString(it->second->getAuditName()));
-            recentSessionActionGroup->addAction(action);
-            recentMenu->addAction(action);
-            ++sessionCount;
-            if (sessionCount == 10)
+            utils::RStatsModuleSessionDataImpl * impl = dynamic_cast<utils::RStatsModuleSessionDataImpl*>(it->second.get());
+            if (impl)
             {
-                break;
+                std::string sessionId = impl->getSessionId();
+                sessionMapOut[sessionId] = it->second;
+                std::string dateTimeStr = cbtek::common::utility::DateTimeUtils::getDisplayTimeStamp(cbtek::common::utility::DateEntity(it->second->getCreationDate()),
+                                                                                                     cbtek::common::utility::TimeEntity(it->second->getCreationTime()));
+                QAction * action = new QAction(QString::fromStdString(it->second->getAuditName()+" from "+dateTimeStr), recentMenu);
+                action->setToolTip("Created on "+QString::fromStdString(dateTimeStr));
+                action->setProperty("id",QString::fromStdString(sessionId));
+                recentSessionActionGroup->addAction(action);
+                recentMenu->addAction(action);
+                ++sessionCount;
+                if (sessionCount == 10)
+                {
+                    break;
+                }
             }
         }
         recentMenu->addSeparator();

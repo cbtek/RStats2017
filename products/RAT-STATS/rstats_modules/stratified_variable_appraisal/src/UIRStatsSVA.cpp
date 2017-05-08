@@ -35,7 +35,7 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     QMainWindow(parent),
     m_ui(new Ui_UIRStatsSVA)
 {
-    m_ui->setupUi(this);       
+    m_ui->setupUi(this);          
 
     //Set shortcut for File/Help menu
     m_ui->menuFile->setTitle("&File");
@@ -43,11 +43,11 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
 
     //Initialize size input preview table and add to dock container
     m_tblSizeInputPreview = new UIRStatsTablePreviewWidget;
-    m_ui->m_dockSampleSizeInputContainer->layout()->addWidget(m_tblSizeInputPreview);
+    m_ui->m_grpSizeInputPreviewTable->layout()->addWidget(m_tblSizeInputPreview);
 
     //Initialize data input preview table and add to dock container
     m_tblDataInputPreview = new UIRStatsTablePreviewWidget;
-    m_ui->m_dockSampleDataInputContainer->layout()->addWidget(m_tblDataInputPreview);
+    m_ui->m_grpDataInputPreviewTable->layout()->addWidget(m_tblDataInputPreview);
 
     //Initialize output table and add to its group box container
     m_outputWorkbook = new UIRStatsWorkbook;
@@ -59,8 +59,12 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     //Set the CSV/Text file output labels to null
     m_currentCSVFileOutputLabel = nullptr;
     m_currentTextFileOutputLabel = nullptr;
+    m_currentXLSFileOutputLabel = nullptr;
 
+    //Remove title bar from docks
     m_ui->m_dockOptions->setTitleBarWidget(new QWidget());
+    m_ui->m_dockSampleDataInput->setTitleBarWidget(new QWidget());
+    m_ui->m_dockSampleSizeInput->setTitleBarWidget(new QWidget());
 
     //Load icons used by validation console
     m_iconError = UIRStatsUtils::getIcon("img_error.png");
@@ -70,16 +74,22 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     m_currentDataFormat = RStatsDataFormatType::Examine;
 
     //Initialize button/action elements    
-    UIRStatsUtils::initButton(m_ui->m_btnImportSampleInputData, "img_folder.png");
-    UIRStatsUtils::initButton(m_ui->m_btnImportSampleSizeData, "img_folder.png");
+    UIRStatsUtils::initButton(m_ui->m_btnImportSampleInputData, "img_folder.png",this->font(),24);
+    UIRStatsUtils::initButton(m_ui->m_btnImportSampleSizeData, "img_folder.png",this->font(),24);
+    UIRStatsUtils::initButton(m_ui->m_btnImportSampleInputDataReload, "img_reload.png",this->font(),24);
+    UIRStatsUtils::initButton(m_ui->m_btnImportSampleSizeDataReload, "img_reload.png",this->font(),24);
     UIRStatsUtils::initButton(m_ui->m_btnExecute, "img_run.png");
     UIRStatsUtils::initButton(m_ui->m_btnExit, "img_exit.png");
-    UIRStatsUtils::initButton(m_ui->m_btnHelp, "img_help.png");
+    UIRStatsUtils::initButton(m_ui->m_btnHelp, "img_help.png");    
+
+    UIRStatsUtils::initAction(m_ui->actionImport_Input_Data_Sheet, "img_folder.png","Alt+D");
+    UIRStatsUtils::initAction(m_ui->actionImport_Input_Size_Sheet, "img_folder.png","Alt+S");
     UIRStatsUtils::initAction(m_ui->actionAbout,"img_about.png","Alt+A");
-    UIRStatsUtils::initAction(m_ui->actionExecute,"img_run.png","Alt+R");
+    UIRStatsUtils::initAction(m_ui->actionNew_Window,"img_add.png","Alt+N");
+    UIRStatsUtils::initAction(m_ui->actionExecute,"img_run.png","Alt+E");
     UIRStatsUtils::initAction(m_ui->actionExit,"img_exit.png","Alt+Q");
     UIRStatsUtils::initAction(m_ui->actionHelp,"img_help.png","Alt+H");
-    UIRStatsUtils::initAction(m_ui->actionRecently_Used,"img_clock.png","Alt+S");
+    UIRStatsUtils::initAction(m_ui->actionRecently_Used,"img_clock.png","Alt+R");
 
 
     //Initialize worksheet combo boxes
@@ -92,23 +102,38 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     connect(m_ui->actionExecute,SIGNAL(triggered(bool)),this,SLOT(onExecute()));
     connect(m_ui->actionExit,SIGNAL(triggered(bool)),this,SLOT(onExit()));
     connect(m_ui->actionHelp,SIGNAL(triggered(bool)),this,SLOT(onHelp()));
+    connect(m_ui->actionNew_Window,SIGNAL(triggered(bool)),this,SLOT(onLaunchNewWindow()));
     connect(m_ui->actionAbout,SIGNAL(triggered(bool)),this,SLOT(onAbout()));
+    connect(m_ui->actionImport_Input_Data_Sheet,SIGNAL(triggered(bool)),this,SLOT(onImportDataInput()));
+    connect(m_ui->actionImport_Input_Size_Sheet,SIGNAL(triggered(bool)),this,SLOT(onImportSizeInput()));
     connect(m_ui->m_chkTextOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveTextFile()));
     connect(m_ui->m_chkCSVOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveCSVFile()));
+    connect(m_ui->m_chkXLSOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveXLSFile()));
     connect(m_ui->m_btnImportSampleInputData,SIGNAL(clicked(bool)),this,SLOT(onImportDataInput()));
     connect(m_ui->m_btnImportSampleSizeData,SIGNAL(clicked(bool)),this,SLOT(onImportSizeInput()));
+    connect(m_ui->m_btnImportSampleInputDataReload,SIGNAL(clicked(bool)),this,SLOT(onSampleDataInputSheetReload()));
+    connect(m_ui->m_btnImportSampleSizeDataReload,SIGNAL(clicked(bool)),this,SLOT(onSampleSizeInputSheetReload()));
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
     connect(m_ui->m_btnExit,SIGNAL(clicked(bool)),this,SLOT(onExit()));
     connect(m_ui->m_btnExecute,SIGNAL(clicked(bool)),this,SLOT(onExecute()));    
     connect(m_ui->m_cmbDataInputSheets,SIGNAL(currentIndexChanged(int)),this,SLOT(onComboDataInputSheetSelected(int)));
-    connect(m_ui->m_cmbSizeInputSheets,SIGNAL(currentIndexChanged(int)),this,SLOT(onComboSizeInputSheetSelected(int)));
-    connect(&m_clock,SIGNAL(timeout()),this,SLOT(onUpdateClock()));    
+    connect(m_ui->m_cmbSizeInputSheets,SIGNAL(currentIndexChanged(int)),this,SLOT(onComboSizeInputSheetSelected(int)));    
+    connect(m_ui->m_cmbDataInputSheets,SIGNAL(currentIndexChanged(int)),this,SLOT(onUpdateValidation()));
+    connect(m_ui->m_cmbSizeInputSheets,SIGNAL(currentIndexChanged(int)),this,SLOT(onUpdateValidation()));
+    connect(m_ui->m_cmbAuditedDataTable,SIGNAL(currentIndexChanged(int)),this,SLOT(onUpdateValidation()));
+    connect(m_ui->m_cmbExaminedDataTable,SIGNAL(currentIndexChanged(int)),this,SLOT(onUpdateValidation()));
+    connect(m_ui->m_cmbDifferenceDataTable,SIGNAL(currentIndexChanged(int)),this,SLOT(onUpdateValidation()));
+    connect(m_ui->m_cmbSampleCountSizeTable,SIGNAL(currentIndexChanged(int)),this,SLOT(onUpdateValidation()));
+    connect(m_ui->m_cmbUniverseCountSizeTable,SIGNAL(currentIndexChanged(int)),this,SLOT(onUpdateValidation()));
+    connect(m_ui->m_cmbDataRowStartSizeTable,SIGNAL(currentIndexChanged(int)),this,SLOT(onUpdateValidation()));
+    connect(m_ui->m_cmbDataRowStartDataTable,SIGNAL(currentIndexChanged(int)),this,SLOT(onUpdateValidation()));
     connect(m_ui->m_rdbAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
     connect(m_ui->m_rdbExamined,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
     connect(m_ui->m_rdbDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
     connect(m_ui->m_rdbAuditedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
     connect(m_ui->m_rdbExaminedAndAudited,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
     connect(m_ui->m_rdbExaminedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
+    connect(m_ui->m_txtAuditName,SIGNAL(textChanged(QString)),this,SLOT(onUpdateValidation()));
 
     //Enable the Examined data format as default
     m_ui->m_rdbExamined->setChecked(true);
@@ -119,236 +144,24 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     //Update recently used
     updateRecentSessions();
 
-    //Start the internal clock
-    m_clock.start(1000);    
-    onUpdateClock();
-
+    //Set the manual tab order for widgets
     onSetTabOrder();
 }
 
 
-void UIRStatsSVA::onSetTabOrder()
-{
-    this->setTabOrder(m_ui->m_txtAuditName,m_ui->m_rdbExamined);
-    this->setTabOrder(m_ui->m_rdbExamined,m_ui->m_rdbAudited);
-    this->setTabOrder(m_ui->m_rdbAudited,m_ui->m_rdbDifference);
-    this->setTabOrder(m_ui->m_rdbDifference,m_ui->m_rdbExaminedAndAudited);
-    this->setTabOrder(m_ui->m_rdbExaminedAndAudited,m_ui->m_rdbAuditedAndDifference);
-    this->setTabOrder(m_ui->m_rdbAuditedAndDifference,m_ui->m_rdbExaminedAndDifference);
-    this->setTabOrder(m_ui->m_rdbExaminedAndDifference,m_ui->m_chkCSVOutput);
-    this->setTabOrder(m_ui->m_chkCSVOutput,m_ui->m_chkTextOutput);
-    this->setTabOrder(m_ui->m_chkTextOutput,m_ui->m_chkViewInBrowser);
-    this->setTabOrder(m_ui->m_chkViewInBrowser,m_ui->m_cmbSizeInputSheets);
-    this->setTabOrder(m_ui->m_cmbSizeInputSheets,m_ui->m_btnImportSampleSizeData);
-    this->setTabOrder(m_ui->m_btnImportSampleSizeData,m_ui->m_cmbDataRowStartSizeTable);
-    this->setTabOrder(m_ui->m_cmbDataRowStartSizeTable,m_ui->m_cmbUniverseCountSizeTable);
-    this->setTabOrder(m_ui->m_cmbUniverseCountSizeTable,m_ui->m_cmbSampleCountSizeTable);
-    this->setTabOrder(m_ui->m_cmbSampleCountSizeTable,m_tblSizeInputPreview);
-    this->setTabOrder(m_tblSizeInputPreview,m_outputWorkbook);
-    this->setTabOrder(m_outputWorkbook,m_ui->m_btnHelp);
-    this->setTabOrder(m_ui->m_btnHelp,m_ui->m_btnExecute);
-    this->setTabOrder(m_ui->m_btnExecute,m_ui->m_btnExit);
-    this->setTabOrder(m_ui->m_btnExit,m_ui->m_cmbDataInputSheets);
-    this->setTabOrder(m_ui->m_cmbDataInputSheets,m_ui->m_btnImportSampleInputData);
-    this->setTabOrder(m_ui->m_btnImportSampleInputData,m_ui->m_cmbDataRowStartDataTable);
-    this->setTabOrder(m_ui->m_cmbDataRowStartDataTable,m_ui->m_cmbExaminedDataTable);
-    this->setTabOrder(m_ui->m_cmbExaminedDataTable,m_ui->m_cmbAuditedDataTable);
-    this->setTabOrder(m_ui->m_cmbAuditedDataTable,m_ui->m_cmbDifferenceDataTable);
-    this->setTabOrder(m_ui->m_cmbDifferenceDataTable,m_tblDataInputPreview);
-    this->setTabOrder(m_tblDataInputPreview,m_ui->m_lstErrorConsole);
-}
-
-UIRStatsSVA::~UIRStatsSVA()
-{
-    delete m_ui;
-}
-
-void UIRStatsSVA::populateWithColumns(const std::set<size_t>& columns,
-                                      QComboBox *comboBox)
-{
-    comboBox->clear();
-    for(const auto& column : columns)
-    {
-        std::string label = RStatsUtils::getColumnLabelFromIndex(column);
-        comboBox->addItem(QString::fromStdString(label));
-    }
-}
-
-void UIRStatsSVA::populateWithRows(const std::set<size_t>& rows,
-                                   QComboBox *comboBox)
-{
-    comboBox->clear();
-    for(const auto& row : rows)
-    {
-        comboBox->addItem(QString::number(row + 1));
-    }
-}
-
-void UIRStatsSVA::onUpdateRowColumnExtentsForDataTable()
-{
-    std::set<size_t> rows,cols;
-    m_currentDataSheet.findDataRowsAndColumns(rows,cols);
-    populateWithColumns(cols,m_ui->m_cmbAuditedDataTable);
-    populateWithColumns(cols,m_ui->m_cmbExaminedDataTable);
-    populateWithColumns(cols,m_ui->m_cmbDifferenceDataTable);
-    populateWithRows(rows,m_ui->m_cmbDataRowStartDataTable);
-}
-
-void UIRStatsSVA::onUpdateRowColumnExtentsForSizeTable()
-{
-    std::set<size_t> rows,cols;
-    m_currentSizeSheet.findDataRowsAndColumns(rows,cols);
-    populateWithColumns(cols,m_ui->m_cmbSampleCountSizeTable);
-    populateWithColumns(cols,m_ui->m_cmbUniverseCountSizeTable);
-    populateWithRows(rows,m_ui->m_cmbDataRowStartSizeTable);
-}
-
-bool UIRStatsSVA::onValidate()
-{
-    m_conditionLogger.clear();
-    m_ui->m_lstErrorConsole->clear();
-    m_conditionLogger.addWarning((
-                                   m_ui->m_rdbAuditedAndDifference->isChecked() ||
-                                   m_ui->m_rdbExaminedAndAudited->isChecked()) &&
-                                   m_ui->m_cmbAuditedDataTable->count() < 2,
-                                   ("There are NOT enough columns for this 'audit' data format.\n Please choose another data format or import a different worksheet."));
-
-
-    m_conditionLogger.addWarning((
-                                   m_ui->m_rdbAuditedAndDifference->isChecked() ||
-                                   m_ui->m_rdbExaminedAndDifference->isChecked()) &&
-                                   m_ui->m_cmbAuditedDataTable->count() < 2,
-                                   "There are NOT enough columns for this 'difference' data format.\n Please choose another data format or import a different worksheet.");
-
-     m_conditionLogger.addError((m_tblDataInputPreview->rowCount() == 0),
-                                "You have NOT created/imported any content rows into the data table.");
-
-     m_conditionLogger.addError((m_tblSizeInputPreview->rowCount() == 0),
-                                "You have NOT created/imported any content rows into the universe/sample size table.");
-
-     m_conditionLogger.addError((m_tblDataInputPreview->columnCount() == 0),
-                                "You have NOT created/imported any content columns into the data table.");
-
-     m_conditionLogger.addError((m_tblSizeInputPreview->columnCount() == 0),
-                                "You have NOT created/imported any content columns into the universe/sample size table.");
-
-     m_conditionLogger.addWarning((!m_ui->m_chkCSVOutput->isChecked() && !m_ui->m_chkTextOutput->isChecked()),
-                                "You have NOT selected an output file for the results.  Assuming screen display only.");
-
-     m_conditionLogger.addWarning(m_ui->m_txtAuditName->text().isEmpty(),
-                                  "You have NOT set the name for this audit.  Using auto-generated name: '"+m_ui->m_txtAuditName->placeholderText().toStdString()+"'");
-
-
-     if (!m_conditionLogger.hasMessages())
-     {         
-         m_ui->m_dockErrorConsole->hide();
-         m_ui->m_lblErrorConsole->setVisible(true);
-         m_ui->m_lstErrorConsole->setVisible(false);
-         m_ui->m_btnExecute->setEnabled(true);
-         m_ui->actionExecute->setEnabled(true);
-         return true;
-     }     
-
-     m_ui->m_dockErrorConsole->show();
-     m_ui->m_lblErrorConsole->setVisible(false);
-     m_ui->m_lstErrorConsole->setVisible(true);
-
-     size_t index = 0;
-     for(const std::string & message : m_conditionLogger.getMessages())
-     {
-         QListWidgetItem * item = new QListWidgetItem;
-         item->setText(QString::fromStdString(message));
-         if (m_conditionLogger.isError(index))
-         {
-             item->setIcon(m_iconError);
-         }
-         else if (m_conditionLogger.isWarning(index))
-         {
-             item->setIcon(m_iconWarning);
-         }
-         else
-         {
-             item->setIcon(m_iconOK);
-         }
-         ++index;
-         m_ui->m_lstErrorConsole->addItem(item);
-     }
-
-     if (m_conditionLogger.hasError())
-     {
-         m_ui->m_btnExecute->setEnabled(false);
-         m_ui->actionExecute->setEnabled(false);
-         return false;
-     }
-     else
-     {
-         m_ui->m_btnExecute->setEnabled(true);
-         m_ui->actionExecute->setEnabled(true);
-         return true;
-     }     
-}
-
-void UIRStatsSVA::onSampleSizeInputSheetSelected(const RStatsWorksheet &sheet)
-{    
-    UIRStatsUtils::bindSheetToUI(sheet,m_tblSizeInputPreview,true,0,0);
-    m_currentSizeSheet = sheet;
-    onUpdateRowColumnExtentsForSizeTable();
-    m_tblSizeInputPreview->verticalHeader()->show();
-}
-
-void UIRStatsSVA::onSampleDataInputSheetSelected(const RStatsWorksheet &sheet)
-{
-    UIRStatsUtils::bindSheetToUI(sheet,m_tblDataInputPreview,true,0,0);
-    m_currentDataSheet = sheet;
-    onUpdateRowColumnExtentsForDataTable();
-    m_tblDataInputPreview->verticalHeader()->show();
-}
-
-void UIRStatsSVA::onComboSizeInputSheetSelected(int row)
-{
-    if (row < 0)
-    {
-        return;
-    }
-    size_t index = static_cast<size_t>(row);
-    if (index < m_currentSizeWorkbook.getNumWorksheets())
-    {
-        RStatsWorksheet sheet = m_currentSizeWorkbook(index);        
-        onSampleSizeInputSheetSelected(sheet);
-    }
-}
-
-void UIRStatsSVA::onComboDataInputSheetSelected(int row)
-{
-    if (row < 0)
-    {
-        return;
-    }
-    size_t index = static_cast<size_t>(row);
-    if (index < m_currentDataWorkbook.getNumWorksheets())
-    {        
-        RStatsWorksheet sheet = m_currentDataWorkbook(index);        
-        onSampleDataInputSheetSelected(sheet);
-    }
-}
-
-void UIRStatsSVA::onUpdateClock()
-{    
-    onValidate();
-}
-
 void UIRStatsSVA::onExecute()
 {
-    //Update validation console
+    //Update validation console and first error if validation fails
     if (!onValidate())
     {
-        UIRStatsUtils::highlightErrorInValidationConsole(m_ui->m_lstErrorConsole);
+        UIRStatsUtils::highlightErrorInValidationConsole(m_ui->m_lstValidationConsole);
         return;
     }
 
     try
     {
-        //Setup the dataformat index
+        //Construct dfIndex object from current data format type
+        //and primary/secondary column labels
         RStatsDataFormatTypeIndex dfIndex;
         if (m_ui->m_rdbAudited->isChecked())
         {
@@ -413,29 +226,45 @@ void UIRStatsSVA::onExecute()
         RStatsWorkbook workbook;
         sva.saveToWorkbook(workbook);
 
+        //Merge all output sheets into one for CSV, text and html browser formats
+        RStatsWorksheet worksheet = workbook.mergeSheets(RStatsWorkbookMergeDirection::MergeBottom,2);
+
         //Save output of function to display workbook
         m_outputWorkbook->clear();
         m_outputWorkbook->setWorkbook(workbook);
         m_ui->m_lblNoData->hide();
         m_ui->m_grpOutput->show();
 
-        //Save output formats if selected
-        if (!StringUtils::isEmpty(m_currentTextFileOutput.toStdString()))
+        //Save CSV file, if applicable
+        if (m_ui->m_chkCSVOutput->isChecked())
         {
-            workbook.save(m_currentTextFileOutput.toStdString());
+            FileUtils::writeFileContents(m_currentCSVFileOutput.toStdString(),worksheet.toCommaDelimitedString());
         }
 
-        if (!StringUtils::isEmpty(m_currentCSVFileOutput.toStdString()))
+        //Save Text file, if applicable
+        if (m_ui->m_chkTextOutput->isChecked())
         {
-            workbook.save(m_currentCSVFileOutput.toStdString());
+            FileUtils::writeFileContents(m_currentTextFileOutput.toStdString(),worksheet.toEvenlySpacedString());
+        }
+
+        //Save XLS file (for Excel/Access), if applicable
+        if (m_ui->m_chkXLSOutput->isChecked())
+        {
+            workbook.save(m_currentXLSFileOutput.toStdString());
+        }
+
+        //Show results in browser if applicable
+        if (m_ui->m_chkViewInBrowser->isChecked())
+        {
+            UIRStatsUtils::launchHtml(worksheet.toHTMLTableString());
         }
 
         //Set session data
         RStatsSVASessionData sessionData = getSessionData();
         sessionData.setCreationDate(DateUtils::getCurrentDate().toDateInteger());
         sessionData.setCreationTime(TimeUtils::getCurrentTime().toTimeInteger());
-        m_recentSessionsMap[sessionData.getAuditName()]=RStatsModuleSessionDataPtr(new RStatsSVASessionData(sessionData));
-        RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getAuditName()]);
+        m_recentSessionsMap[sessionData.getSessionId()]=RStatsModuleSessionDataPtr(new RStatsSVASessionData(sessionData));
+        RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getSessionId()]);
         updateRecentSessions();
 
 
@@ -455,6 +284,286 @@ void UIRStatsSVA::onExecute()
                              std::string(e.what()),false,this).exec();
         return;
     }
+}
+
+void UIRStatsSVA::onSetTabOrder()
+{
+    this->setTabOrder(m_ui->m_txtAuditName,m_ui->m_rdbExamined);
+    this->setTabOrder(m_ui->m_rdbExamined,m_ui->m_rdbAudited);
+    this->setTabOrder(m_ui->m_rdbAudited,m_ui->m_rdbDifference);
+    this->setTabOrder(m_ui->m_rdbDifference,m_ui->m_rdbExaminedAndAudited);
+    this->setTabOrder(m_ui->m_rdbExaminedAndAudited,m_ui->m_rdbAuditedAndDifference);
+    this->setTabOrder(m_ui->m_rdbAuditedAndDifference,m_ui->m_rdbExaminedAndDifference);
+    this->setTabOrder(m_ui->m_rdbExaminedAndDifference,m_ui->m_chkXLSOutput);
+    this->setTabOrder(m_ui->m_chkXLSOutput,m_ui->m_chkCSVOutput);
+    this->setTabOrder(m_ui->m_chkCSVOutput,m_ui->m_chkTextOutput);
+    this->setTabOrder(m_ui->m_chkTextOutput,m_ui->m_chkViewInBrowser);
+    this->setTabOrder(m_ui->m_chkViewInBrowser,m_tblSizeInputPreview);
+    this->setTabOrder(m_tblSizeInputPreview,m_ui->m_btnImportSampleSizeData);
+    this->setTabOrder(m_ui->m_btnImportSampleSizeData,m_ui->m_btnImportSampleSizeDataReload);
+    this->setTabOrder(m_ui->m_btnImportSampleSizeDataReload,m_ui->m_cmbSizeInputSheets);
+    this->setTabOrder(m_ui->m_cmbSizeInputSheets,m_ui->m_cmbDataRowStartSizeTable);
+    this->setTabOrder(m_ui->m_cmbDataRowStartSizeTable,m_ui->m_cmbUniverseCountSizeTable);
+    this->setTabOrder(m_ui->m_cmbUniverseCountSizeTable,m_ui->m_cmbSampleCountSizeTable);
+    this->setTabOrder(m_ui->m_cmbSampleCountSizeTable,m_outputWorkbook);
+    this->setTabOrder(m_outputWorkbook,m_ui->m_btnHelp);
+    this->setTabOrder(m_ui->m_btnHelp,m_ui->m_btnExecute);
+    this->setTabOrder(m_ui->m_btnExecute,m_ui->m_btnExit);
+    this->setTabOrder(m_ui->m_btnExit,m_ui->m_btnImportSampleInputData);
+    this->setTabOrder(m_ui->m_btnImportSampleInputData,m_ui->m_btnImportSampleInputDataReload);
+    this->setTabOrder(m_ui->m_btnImportSampleInputDataReload,m_ui->m_cmbDataInputSheets);
+    this->setTabOrder(m_ui->m_cmbDataInputSheets,m_ui->m_cmbDataRowStartDataTable);
+    this->setTabOrder(m_ui->m_cmbDataRowStartDataTable,m_ui->m_cmbExaminedDataTable);
+    this->setTabOrder(m_ui->m_cmbExaminedDataTable,m_ui->m_cmbAuditedDataTable);
+    this->setTabOrder(m_ui->m_cmbAuditedDataTable,m_ui->m_cmbDifferenceDataTable);
+    this->setTabOrder(m_ui->m_cmbDifferenceDataTable,m_tblDataInputPreview);
+    this->setTabOrder(m_tblDataInputPreview,m_ui->m_lstValidationConsole);
+}
+
+UIRStatsSVA::~UIRStatsSVA()
+{
+    delete m_ui;
+}
+
+void UIRStatsSVA::onUpdateRowColumnExtentsForDataTable()
+{
+    std::set<size_t> rows,cols;
+    m_currentDataSheet.findDataRowsAndColumns(rows,cols);
+    UIRStatsUtils::populateWithColumns(cols,m_ui->m_cmbAuditedDataTable);
+    UIRStatsUtils::populateWithColumns(cols,m_ui->m_cmbExaminedDataTable);
+    UIRStatsUtils::populateWithColumns(cols,m_ui->m_cmbDifferenceDataTable);
+    UIRStatsUtils::populateWithRows(rows,m_ui->m_cmbDataRowStartDataTable);
+}
+
+void UIRStatsSVA::onUpdateRowColumnExtentsForSizeTable()
+{
+    std::set<size_t> rows,cols;
+    m_currentSizeSheet.findDataRowsAndColumns(rows,cols);
+    UIRStatsUtils::populateWithColumns(cols,m_ui->m_cmbSampleCountSizeTable);
+    UIRStatsUtils::populateWithColumns(cols,m_ui->m_cmbUniverseCountSizeTable);
+    UIRStatsUtils::populateWithRows(rows,m_ui->m_cmbDataRowStartSizeTable);
+}
+
+bool UIRStatsSVA::onValidate()
+{
+    //Clear condition logger and validation console
+    m_conditionLogger.clear();
+    m_ui->m_lstValidationConsole->clear();
+
+    //Add warning conditions to condition logger
+    m_conditionLogger.addWarning((
+                                   m_ui->m_rdbAuditedAndDifference->isChecked() ||
+                                   m_ui->m_rdbExaminedAndAudited->isChecked()) &&
+                                   m_ui->m_cmbAuditedDataTable->count() < 2,
+                                   ("There are NOT enough columns for this 'audit' data format.\n Please choose another data format or import a different worksheet."));
+
+
+    m_conditionLogger.addWarning((
+                                   m_ui->m_rdbAuditedAndDifference->isChecked() ||
+                                   m_ui->m_rdbExaminedAndDifference->isChecked()) &&
+                                   m_ui->m_cmbAuditedDataTable->count() < 2,
+                                   "There are NOT enough columns for this 'difference' data format.\n Please choose another data format or import a different worksheet.");
+
+    m_conditionLogger.addWarning((!m_ui->m_chkXLSOutput->isChecked() && !m_ui->m_chkCSVOutput->isChecked() && !m_ui->m_chkTextOutput->isChecked()),
+                               "You have NOT selected an output type for the results.  Assuming screen display only.");
+
+    m_conditionLogger.addWarning(m_ui->m_txtAuditName->text().isEmpty(),
+                                 "You have NOT set the name for this audit.  Using auto-generated name: '"+m_ui->m_txtAuditName->placeholderText().toStdString()+"'");
+
+
+    //Add error conditions to condition logger
+     m_conditionLogger.addError((m_tblDataInputPreview->rowCount() == 0),
+                                "You have NOT created/imported any content rows into the data table.");    
+
+     m_conditionLogger.addError((m_tblDataInputPreview->columnCount() == 0),
+                                "You have NOT created/imported any content columns into the data table.");
+
+    onValidateSizeSheet(m_conditionLogger);
+
+     //Make sure the data input table is valid
+     if (m_tblDataInputPreview && m_tblDataInputPreview->rowCount() > 0)
+     {
+         int offset = m_ui->m_cmbDataRowStartDataTable->currentText().toInt();
+         if (offset > 0)
+         {
+             offset--;
+         }
+         m_currentDataSheet.validateWorksheet(offset,
+                                              m_conditionLogger,
+                                              "data input");
+     }
+
+
+     if (!m_conditionLogger.hasMessages())
+     {         
+         m_ui->m_dockErrorConsole->hide();
+         m_ui->m_lblErrorConsole->setVisible(true);
+         m_ui->m_lstValidationConsole->setVisible(false);
+         return true;
+     }     
+
+     m_ui->m_dockErrorConsole->show();
+     m_ui->m_lblErrorConsole->setVisible(false);
+     m_ui->m_lstValidationConsole->setVisible(true);
+
+     size_t index = 0;
+     for(const std::string & message : m_conditionLogger.getMessages())
+     {
+         QListWidgetItem * item = new QListWidgetItem;
+         item->setText(QString::fromStdString(message));
+         if (m_conditionLogger.isError(index))
+         {
+             item->setIcon(m_iconError);
+         }
+         else if (m_conditionLogger.isWarning(index))
+         {
+             item->setIcon(m_iconWarning);
+         }
+         else
+         {
+             item->setIcon(m_iconOK);
+         }
+         ++index;
+         m_ui->m_lstValidationConsole->addItem(item);
+     }
+
+     if (m_conditionLogger.hasError())
+     {         
+         return false;
+     }
+     else
+     {      
+         return true;
+     }
+}
+
+bool UIRStatsSVA::onValidateSizeSheet(RStatsConditionLogger &logger)
+{
+    std::string sampleColumnStr = m_ui->m_cmbSampleCountSizeTable->currentText().toStdString();
+    std::string universeColumnStr = m_ui->m_cmbUniverseCountSizeTable->currentText().toStdString();
+    size_t rowOffset = m_ui->m_cmbDataRowStartSizeTable->currentText().toUInt() - 1;
+    size_t sampleColumn = RStatsUtils::getColumnIndexFromLabel(sampleColumnStr);
+    size_t universeColumn = RStatsUtils::getColumnIndexFromLabel(universeColumnStr);
+
+    //Validate that size sheet has rows/columns
+    logger.addError((m_tblSizeInputPreview->rowCount() == 0),
+                               "You have NOT created/imported any content rows into the universe/sample size table.");
+
+    logger.addError((m_tblSizeInputPreview->columnCount() == 0),
+                               "You have NOT created/imported any content columns into the universe/sample size table.");
+
+    //Validate that the size sheet has valid numeric data
+    if (m_tblSizeInputPreview && m_tblSizeInputPreview->rowCount() > 0)
+    {
+        m_currentSizeSheet.validateWorksheet(rowOffset,
+                                             logger,
+                                             "size input");
+
+
+
+        logger.addError((sampleColumn == universeColumn),
+                        "The universe column and sample column should NOT be the same.");
+
+        std::string selectedSheetName = m_ui->m_cmbSizeInputSheets->currentText().toStdString();
+        if (sampleColumn != universeColumn &&
+            sampleColumn >= 0 &&
+            universeColumn >=0 &&
+            sampleColumn < m_currentSizeSheet.getNumColumns() &&
+            universeColumn < m_currentSizeSheet.getNumColumns())
+        {
+            for (size_t r = rowOffset; r < m_currentSizeSheet.getNumRows(); ++r)
+            {
+                RStatsCell cellUniverse = m_currentSizeSheet(r,universeColumn);
+                RStatsCell cellSample = m_currentSizeSheet(r,sampleColumn);
+                std::int64_t valueUniverse = StringUtils::toInt(cellUniverse.text);
+                std::int64_t valueSample = StringUtils::toInt(cellSample.text);
+
+                std::string sampleCellLabel = "At \""+selectedSheetName+"::"+RStatsUtils::getCellLabel(r,sampleColumn)+"\"";
+                std::string universeCellLabel = "At \""+selectedSheetName+"::"+RStatsUtils::getCellLabel(r,universeColumn)+"\"";
+                std::string rowLabel = "In \""+selectedSheetName+"\" on row "+std::to_string(r+1);
+
+
+                //Validate that the sample size is positive
+                logger.addError((valueSample < 1),
+                                sampleCellLabel + " the sample size must be positive.");
+
+                //Validate that the universe size is positive
+                logger.addError((valueUniverse < 1),
+                               universeCellLabel + " the universe size must be positive.");
+
+                //Validate that the universe size is greater than the sample size
+                logger.addError((valueSample > valueUniverse),
+                                rowLabel + " the universe size must not be less than the sample size.");
+
+            }
+        }
+    }
+}
+
+void UIRStatsSVA::onSampleSizeInputSheetSelected(const RStatsWorksheet &sheet)
+{    
+    UIRStatsUtils::bindSheetToUI(sheet,m_tblSizeInputPreview,true,0,0,2,true,true);
+    m_currentSizeSheet = sheet;
+    onUpdateRowColumnExtentsForSizeTable();
+    m_tblSizeInputPreview->setAlternatingRowColors(true);
+    if (sheet.getNumColumns() > 1)
+    {
+        m_tblSizeInputPreview->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+        m_tblSizeInputPreview->horizontalHeader()->setStretchLastSection(true);
+    }
+    else
+    {
+        m_tblSizeInputPreview->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    }
+    m_tblSizeInputPreview->verticalHeader()->show();
+}
+
+void UIRStatsSVA::onSampleDataInputSheetSelected(const RStatsWorksheet &sheet)
+{
+    UIRStatsUtils::bindSheetToUI(sheet,m_tblDataInputPreview,true,0,0,2,true,true);
+    m_currentDataSheet = sheet;
+    onUpdateRowColumnExtentsForDataTable();
+    m_tblDataInputPreview->setAlternatingRowColors(true);           
+    if (sheet.getNumColumns() > 1)
+    {
+        m_tblDataInputPreview->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+        m_tblDataInputPreview->horizontalHeader()->setStretchLastSection(true);
+    }
+    else
+    {
+        m_tblDataInputPreview->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    }
+    m_tblDataInputPreview->verticalHeader()->show();
+}
+
+void UIRStatsSVA::onComboSizeInputSheetSelected(int row)
+{
+    if (row < 0)
+    {
+        return;
+    }
+    size_t index = static_cast<size_t>(row);
+    if (index < m_currentSizeWorkbook.getNumWorksheets())
+    {
+        RStatsWorksheet sheet = m_currentSizeWorkbook(index);        
+        onSampleSizeInputSheetSelected(sheet);
+    }
+    onValidate();
+}
+
+void UIRStatsSVA::onComboDataInputSheetSelected(int row)
+{
+    if (row < 0)
+    {
+        return;
+    }
+    size_t index = static_cast<size_t>(row);
+    if (index < m_currentDataWorkbook.getNumWorksheets())
+    {        
+        RStatsWorksheet sheet = m_currentDataWorkbook(index);        
+        onSampleDataInputSheetSelected(sheet);
+    }
+    onValidate();
 }
 
 void UIRStatsSVA::onExit()
@@ -477,6 +586,8 @@ void UIRStatsSVA::importDataTable(const std::string &dataTableFilePath)
     try
     {
         std::string filePath = m_dataTableImportFilePath.toStdString();
+        m_currentDataWorkbook.clear();
+        m_currentDataSheet.clear();
         m_currentDataWorkbook.load(filePath);
         if (m_currentDataWorkbook.getNumWorksheets() == 0)
         {
@@ -505,6 +616,7 @@ void UIRStatsSVA::importDataTable(const std::string &dataTableFilePath)
             }
             m_ui->m_cmbDataInputSheets->addItem(QString::fromStdString(sheetName));
         }
+        onValidate();
         onUpdateRowColumnExtentsForDataTable();
     }
     catch(const std::exception& exception)
@@ -526,6 +638,8 @@ void UIRStatsSVA::importSizeTable(const std::string &sizeTableFilePath)
     }
     m_sizeTableImportFilePath = QString::fromStdString(sizeTableFilePath);
     m_ui->m_cmbSizeInputSheets->clear();
+    m_currentSizeWorkbook.clear();
+    m_currentSizeSheet.clear();
     try
     {
         std::string filePath = m_sizeTableImportFilePath.toStdString();
@@ -559,6 +673,7 @@ void UIRStatsSVA::importSizeTable(const std::string &sizeTableFilePath)
             }
             m_ui->m_cmbSizeInputSheets->addItem(QString::fromStdString(sheetName));
         }
+        onValidate();
         onUpdateRowColumnExtentsForSizeTable();
     }
     catch(const std::exception& exception)
@@ -573,7 +688,7 @@ void UIRStatsSVA::importSizeTable(const std::string &sizeTableFilePath)
 }
 void UIRStatsSVA::onImportDataInput()
 {
-    m_dataTableImportFilePath = QFileDialog::getOpenFileName(this,"Import Stratified Variable Appraisal Sample Input File...","","Supported Input Files(*.csv *.xlsx *.dif)");
+    m_dataTableImportFilePath = QFileDialog::getOpenFileName(this,"Import Stratified Variable Appraisal Sample Input File...","","Supported Input Files(*.csv *.xlsx *.xls *.dif *.txt *.dat *.ssv)");
     if (!m_dataTableImportFilePath.isEmpty() && QFile::exists(m_dataTableImportFilePath))
     {
         importDataTable(m_dataTableImportFilePath.toStdString());
@@ -582,7 +697,7 @@ void UIRStatsSVA::onImportDataInput()
 
 void UIRStatsSVA::onImportSizeInput()
 {
-    m_sizeTableImportFilePath = QFileDialog::getOpenFileName(this,"Import Stratified Variable Appraisal Universe/Sample Size Input File...","","Supported Input Files(*.csv *.xlsx *.dif)");
+    m_sizeTableImportFilePath = QFileDialog::getOpenFileName(this,"Import Stratified Variable Appraisal Universe/Sample Size Input File...","","Supported Input Files(*.csv *.xlsx *.xls *.dif *.txt *.dat *.ssv)");
     if (!m_sizeTableImportFilePath.isEmpty() && QFile::exists(m_sizeTableImportFilePath))
     {
        importSizeTable(m_sizeTableImportFilePath.toStdString());
@@ -692,6 +807,7 @@ RStatsSVASessionData UIRStatsSVA::getSessionData() const
     data.setDataTableFilePath(m_dataTableImportFilePath.toStdString());
     data.setSizeTableFilePath(m_sizeTableImportFilePath.toStdString());
     data.setCSVOutputFile(m_currentCSVFileOutput.toStdString());
+    data.setXLSOutputFile(m_currentXLSFileOutput.toStdString());
     data.setTextOutputFile(m_currentTextFileOutput.toStdString());
     data.setSizeTableSheetName(m_ui->m_cmbSizeInputSheets->currentText().toStdString());
     data.setDataTableSheetName(m_ui->m_cmbDataInputSheets->currentText().toStdString());
@@ -771,10 +887,16 @@ void UIRStatsSVA::setSessionData(const RStatsSVASessionData &data)
     m_ui->m_cmbUniverseCountSizeTable->setCurrentText(QString::fromStdString(data.getUniverseColumn()));
 
     m_autoSetFileOutput = true;
+    if (!data.getXLSOutputFile().empty())
+    {
+        m_ui->m_chkXLSOutput->setChecked(true);
+        setXLSFileOutput(data.getXLSOutputFile());
+        m_ui->m_chkXLSOutput->setToolTip(QString::fromStdString(data.getXLSOutputFile()));
+    }
     if (!data.getCSVOutputFile().empty())
     {
         m_ui->m_chkCSVOutput->setChecked(true);
-        setCSVFileOutput(data.getTextOutputFile());
+        setCSVFileOutput(data.getCSVOutputFile());
         m_ui->m_chkCSVOutput->setToolTip(QString::fromStdString(data.getCSVOutputFile()));
     }
     if (!data.getTextOutputFile().empty())
@@ -808,6 +930,32 @@ void UIRStatsSVA::onSaveTextFile()
 
 }
 
+void UIRStatsSVA::onSaveXLSFile()
+{
+    if (m_autoSetFileOutput) return;
+    if (m_ui->m_chkXLSOutput->isChecked())
+    {
+        m_currentXLSFileOutput = UIRStatsUtils::setOutputFile(
+                                                              m_ui->m_chkXLSOutput,
+                                                              "Save to XLS file...",
+                                                              "*.xls");
+        setXLSFileOutput(m_currentXLSFileOutput.toStdString());
+    }
+    else m_ui->m_statusBar->removeWidget(m_currentXLSFileOutputLabel);
+    onValidate();
+}
+
+void UIRStatsSVA::onUpdateValidation()
+{
+    onValidate();
+}
+
+void UIRStatsSVA::onLaunchNewWindow()
+{
+    (new UIRStatsSVA(nullptr))->show();
+}
+
+
 void UIRStatsSVA::onSaveCSVFile()
 {
     if (m_autoSetFileOutput) return;
@@ -824,10 +972,10 @@ void UIRStatsSVA::onSaveCSVFile()
 
 void UIRStatsSVA::onRecentSessionSelected(QAction* action)
 {
-    std::string name = action->property("name").toString().toStdString();
-    if (m_recentSessionsMap.count(name))
+    std::string id = action->property("id").toString().toStdString();
+    if (m_recentSessionsMap.count(id))
     {
-        RStatsSVASessionData * data = dynamic_cast<RStatsSVASessionData*>(m_recentSessionsMap[name].get());
+        RStatsSVASessionData * data = dynamic_cast<RStatsSVASessionData*>(m_recentSessionsMap[id].get());
         setSessionData(*data);
     }
     onValidate();
@@ -857,7 +1005,7 @@ void UIRStatsSVA::setTextFileOutput(const std::string& textFile)
         if (m_currentTextFileOutputLabel == nullptr)
         {
             m_currentTextFileOutputLabel = new QLabel;
-            m_currentTextFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+            m_currentTextFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAFFAA;color:#000000;border:1px solid grey;}");
 
         }
         m_ui->m_statusBar->removeWidget(m_currentTextFileOutputLabel);
@@ -897,6 +1045,28 @@ void UIRStatsSVA::setCSVFileOutput(const std::string& csvFile)
     else m_ui->m_statusBar->removeWidget(m_currentCSVFileOutputLabel);
 }
 
+void UIRStatsSVA::setXLSFileOutput(const std::string& xlsFile)
+{
+    m_currentXLSFileOutput = QString::fromStdString(xlsFile);
+    if (!m_currentXLSFileOutput.isEmpty())
+    {
+        if (m_currentXLSFileOutputLabel == nullptr)
+        {
+            m_currentXLSFileOutputLabel = new QLabel;
+            m_currentXLSFileOutputLabel->setStyleSheet("QLabel{padding:2px;border-radius:5px;background:#AAAAFF;color:#000000;border:1px solid grey;}");
+        }
+        m_ui->m_statusBar->removeWidget(m_currentXLSFileOutputLabel);
+        m_currentXLSFileOutputLabel->setToolTip(m_currentXLSFileOutput);
+        QString text = "<b>XLS File:</b> "+m_currentXLSFileOutput;
+        QFontMetrics metrics(this->font());
+        QString elidedText = metrics.elidedText(text, Qt::ElideMiddle, this->width() / 2);
+        m_currentXLSFileOutputLabel->setText(elidedText);
+
+        m_ui->m_statusBar->addPermanentWidget(m_currentXLSFileOutputLabel);
+        m_currentXLSFileOutputLabel->show();
+    }
+    else m_ui->m_statusBar->removeWidget(m_currentXLSFileOutputLabel);
+}
 
 void UIRStatsSVA::resizeEvent(QResizeEvent *)
 {
@@ -910,5 +1080,32 @@ void UIRStatsSVA::resizeEvent(QResizeEvent *)
     }
 }
 
-}}}}//end namespace
+void UIRStatsSVA::onSampleDataInputSheetReload()
+{
+    if (FileUtils::fileExists(this->m_dataTableImportFilePath.toStdString()))
+    {
+        m_currentDataSheetName = m_ui->m_cmbDataInputSheets->currentText();
+        importDataTable(m_dataTableImportFilePath.toStdString());
+        std::vector<std::string> worksheetNames = m_currentDataWorkbook.getWorksheetNames();
+        if (StringUtils::vectorContains(worksheetNames,m_currentDataSheetName.toStdString(),false))
+        {
+            m_ui->m_cmbDataInputSheets->setCurrentText(m_currentDataSheetName);
+        }
+    }
+}
 
+void UIRStatsSVA::onSampleSizeInputSheetReload()
+{
+    if (FileUtils::fileExists(this->m_sizeTableImportFilePath.toStdString()))
+    {
+        m_currentSizeSheetName = m_ui->m_cmbSizeInputSheets->currentText();
+        importSizeTable(m_sizeTableImportFilePath.toStdString());
+        std::vector<std::string> worksheetNames = m_currentSizeWorkbook.getWorksheetNames();
+        if (StringUtils::vectorContains(worksheetNames,m_currentSizeSheetName.toStdString(),false))
+        {
+            m_ui->m_cmbSizeInputSheets->setCurrentText(m_currentSizeSheetName);
+        }
+    }
+}
+
+}}}}//end namespace

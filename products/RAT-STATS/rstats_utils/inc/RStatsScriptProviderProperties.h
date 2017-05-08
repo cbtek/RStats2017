@@ -4,8 +4,7 @@
 
 */
 
-#ifndef _OIG_RATSTATS_UTILS_RSTATSSCRIPTPROVIDERPROPERTIES_H
-#define _OIG_RATSTATS_UTILS_RSTATSSCRIPTPROVIDERPROPERTIES_H
+#pragma once
 
 #include <string>
 
@@ -13,36 +12,39 @@ namespace oig {
 namespace ratstats {
 namespace utils {
 
-
+/**
+ * @brief The RStatsScriptProviderProperties class represents all the
+ * fields neccessary to represent a script provider.
+ */
 class RStatsScriptProviderProperties 
 {
 public:
-	//! Constructor for RStatsScriptProviderProperties
-	/*!
-		Detailed description for RStatsScriptProviderProperties
-	*/
+
+    /**
+     * @brief RStatsScriptProviderProperties (Constructor)
+     */
 	RStatsScriptProviderProperties();
         /**
     * @brief Setter for m_path
-    * @param Value to replace m_path
+    * @param value to replace m_path
     */
     void setPath(const std::string & value);
 
     /**
     * @brief Setter for m_icon
-    * @param Value to replace m_icon
+    * @param value to replace m_icon
     */
     void setIcon(const std::string & value);
 
     /**
     * @brief Setter for m_args
-    * @param Value to replace m_args
+    * @param value to replace m_args
     */
     void setArgs(const std::string & value);
 
     /**
     * @brief Setter for m_name
-    * @param Value to replace m_name
+    * @param value to replace m_name
     */
     void setName(const std::string & value);
 
@@ -121,6 +123,3 @@ private:
 
 };
 }}}//end namespace
-
-#endif // _OIG_RATSTATS_UTILS_RSTATSSCRIPTPROVIDERPROPERTIES_H
-

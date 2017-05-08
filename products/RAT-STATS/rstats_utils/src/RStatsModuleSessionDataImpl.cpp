@@ -8,6 +8,8 @@
 //----------------------------------------
 #include "RStatsModuleSessionDataImpl.h"
 
+#include "utility/inc/StringUtils.hpp"
+
 using namespace cbtek::common::utility;
 
 namespace oig {
@@ -20,6 +22,11 @@ RStatsModuleSessionDataImpl::RStatsModuleSessionDataImpl()
     m_viewInBrowser = false;
 }
 
+std::string RStatsModuleSessionDataImpl::getSessionId() const
+{
+    return m_sessionId;
+}
+
 RStatsModuleSessionDataImpl::~RStatsModuleSessionDataImpl()
 {
 
@@ -28,22 +35,35 @@ RStatsModuleSessionDataImpl::~RStatsModuleSessionDataImpl()
 void RStatsModuleSessionDataImpl::save(XMLStreamWriter& xml)
 {
     xml.writeTextElement("csvOutput",this->getCSVOutputFile());
+    xml.writeTextElement("xlsOutput",this->getXLSOutputFile());
     xml.writeTextElement("txtOutput",this->getTextOutputFile());
     xml.writeTextElement("name",this->getAuditName());
     xml.writeTextElement("date",StringUtils::toString(this->getCreationDate().toDateInteger()));
     xml.writeTextElement("time",StringUtils::toString(this->getCreationTime().toTimeInteger()));
     xml.writeTextElement("viewInBrowser",StringUtils::toString(m_viewInBrowser));
+    if (m_sessionId.empty())
+    {
+        m_sessionId = StringUtils::createUUID();
+    }
+    xml.writeTextElement("sessionId",m_sessionId);
 
 }
 
 void RStatsModuleSessionDataImpl::load(XMLDataElement* element)
 {
+    setXLSOutputFile(element->getChildElementData("xlsOutput"));
     setCSVOutputFile(element->getChildElementData("csvOutput"));
     setTextOutputFile(element->getChildElementData("txtOutput"));
     setAuditName(element->getChildElementData("name"));
     setCreationDate(DateEntity(element->getChildElementDataAsType<std::uint64_t>("date")));
     setCreationTime(TimeEntity(element->getChildElementDataAsType<std::uint64_t>("time")));
     setViewInBrowserFlag(element->getChildElementDataAsType<bool>("viewInBrowser"));
+    m_sessionId = StringUtils::trimmed(element->getChildElementData("sessionId"));
+
+    if (m_sessionId.empty())
+    {
+        m_sessionId = StringUtils::createUUID();
+    }
 }
 
 void RStatsModuleSessionDataImpl::setCreationDate(const cbtek::common::utility::DateEntity & value)
@@ -61,6 +81,11 @@ void RStatsModuleSessionDataImpl::setCSVOutputFile(const std::string & value)
     m_csvOutputFile=value;
 }
 
+void RStatsModuleSessionDataImpl::setXLSOutputFile(const std::string &value)
+{
+    m_xlsOutputFile = value;
+}
+
 void RStatsModuleSessionDataImpl::setTextOutputFile(const std::string & value)
 {
     m_textOutputFile=value;
@@ -70,8 +95,6 @@ void RStatsModuleSessionDataImpl::setAuditName(const std::string & value)
 {
     m_auditName=value;
 }
-
-
 
 const cbtek::common::utility::DateEntity &RStatsModuleSessionDataImpl::getCreationDate() const
 {
@@ -86,6 +109,11 @@ const cbtek::common::utility::TimeEntity &RStatsModuleSessionDataImpl::getCreati
 const std::string &RStatsModuleSessionDataImpl::getCSVOutputFile() const
 {
     return m_csvOutputFile;
+}
+
+const std::string &RStatsModuleSessionDataImpl::getXLSOutputFile() const
+{
+    return m_xlsOutputFile;
 }
 
 const std::string &RStatsModuleSessionDataImpl::getTextOutputFile() const
@@ -106,6 +134,11 @@ void RStatsModuleSessionDataImpl::setViewInBrowserFlag(bool flag)
 bool RStatsModuleSessionDataImpl::isViewableInBrowser() const
 {
     return m_viewInBrowser;
+}
+
+void RStatsModuleSessionDataImpl::createSessionId()
+{
+    m_sessionId = StringUtils::createUUID();
 }
 }}}//end namespace
 

@@ -14,17 +14,22 @@ namespace oig {
 namespace ratstats {
 namespace ui {
 
-
+/**
+ * @brief The UIRStatsErrorMessage class represents the code-behind for
+ * a custom dialog for displaying error/exception messages.
+ */
 class UIRStatsErrorMessage : public QDialog
 {
     Q_OBJECT
 
 public:
-    //! Constructor for UIRStatsErrorMessage
-	/*!
-        Detailed description for UIRStatsErrorMessage
-        @param      parent points to embedding super widget. Defaults to null.
-	*/
+    /**
+     * @brief UIRStatsErrorMessage (Constructor)
+     * @param title The message to display in title bar
+     * @param message The primary error message
+     * @param exitApplication Should application exit after message is dismissed
+     * @param parent The parent widget
+     */
     explicit UIRStatsErrorMessage(QString & title,
                                   QString & message,
                                   bool exitApplication=false,
@@ -32,11 +37,11 @@ public:
     
     
     /**
-     * @brief UIRStatsErrorMessage
-     * @param title
-     * @param message
-     * @param exitApplication
-     * @param parent
+     * @brief UIRStatsErrorMessage (Constructor)
+     * @param title The message to display in title bar
+     * @param message The primary error message
+     * @param exitApplication Should application exit after message is dismissed
+     * @param parent The parent widget
      */
     explicit UIRStatsErrorMessage(const std::string & title,
                                   const std::string & message,
@@ -51,11 +56,33 @@ private:
     */
      Ui_UIRStatsErrorMessage *m_ui;
 
+     /**
+      * @brief m_exitApplication Flag that determines if application should auto-exit when
+      * error message dialog is dismissed.
+      */
      bool m_exitApplication;
 private slots:
+
+     /**
+     * @brief onOk Closes/dismisses dialog
+     */
     void onOk();
+
+    /**
+     * @brief onSave Saves message text
+     */
     void onSave();
+
+    /**
+     * @brief onCopy Copies all message text
+     */
     void onCopy();
+
+    /**
+     * @brief onInit Initializes the dialog and sets the title bar text and message text
+     * @param title The title bar text
+     * @param message The main message text
+     */
     void onInit(const QString & title, const QString & message);
 };
 

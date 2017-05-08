@@ -17,6 +17,10 @@ namespace ssrn {
 
 static const std::string c_RECENT_SESSION_EXTENSION = "modules_ssrn";
 
+/**
+ * @brief The RStatsSSRNSessionData class represents the custom session
+ * data for single stage random numbers (SSRN)
+ */
 class RStatsSSRNSessionData : public utils::RStatsModuleSessionDataImpl
 {
 public:
@@ -27,31 +31,31 @@ public:
 	RStatsSSRNSessionData();
         /**
     * @brief Setter for m_seed
-    * @param Value to replace m_seed
+    * @param value to replace m_seed
     */
     void setSeed(const utils::RStatsFloat & value);
 
     /**
     * @brief Setter for m_order
-    * @param Value to replace m_order
+    * @param value to replace m_order
     */
     void setOrder(const utils::RStatsInteger & value);
 
     /**
     * @brief Setter for m_spares
-    * @param Value to replace m_spares
+    * @param value to replace m_spares
     */
     void setSpares(const utils::RStatsInteger & value);
 
     /**
     * @brief Setter for m_low
-    * @param Value to replace m_low
+    * @param value to replace m_low
     */
     void setLow(const utils::RStatsInteger & value);
 
     /**
     * @brief Setter for m_high
-    * @param Value to replace m_high
+    * @param value to replace m_high
     */
     void setHigh(const utils::RStatsInteger & value);
 

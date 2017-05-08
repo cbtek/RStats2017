@@ -15,9 +15,12 @@ namespace ratstats {
 namespace modules {
 namespace sva {
 
-
 static const std::string c_RECENT_SESSION_EXTENSION = "modules_sva";
 
+/**
+ * @brief The RStatsSVASessionData class represents the custom session
+ * data for stratified variable appraisal (SVA)
+ */
 class RStatsSVASessionData : public utils::RStatsModuleSessionDataImpl
 {
 public:
@@ -28,61 +31,61 @@ public:
 	RStatsSVASessionData();
         /**
     * @brief Setter for m_dataFormat
-    * @param Value to replace m_dataFormat
+    * @param value to replace m_dataFormat
     */
     void setDataFormat(const utils::RStatsDataFormatType&  value);
 
     /**
     * @brief Setter for m_sizeTable
-    * @param Value to replace m_sizeTable
+    * @param value to replace m_sizeTable
     */
     void setSizeTableFilePath(const std::string& value);
 
     /**
     * @brief Setter for m_dataTable
-    * @param Value to replace m_dataTable
+    * @param value to replace m_dataTable
     */
     void setDataTableFilePath(const std::string& value);
 
     /**
     * @brief Setter for m_sizeTableRowStart
-    * @param Value to replace m_sizeTableRowStart
+    * @param value to replace m_sizeTableRowStart
     */
     void setSizeTableRowStart(const utils::RStatsInteger&  value);
 
     /**
     * @brief Setter for m_dataTableRowStart
-    * @param Value to replace m_dataTableRowStart
+    * @param value to replace m_dataTableRowStart
     */
     void setDataTableRowStart(const utils::RStatsInteger&  value);
 
     /**
     * @brief Setter for m_universeColumn
-    * @param Value to replace m_universeColumn
+    * @param value to replace m_universeColumn
     */
     void setUniverseColumn(const std::string&  value);
 
     /**
     * @brief Setter for m_sampleColumn
-    * @param Value to replace m_sampleColumn
+    * @param value to replace m_sampleColumn
     */
     void setSampleColumn(const std::string&  value);
 
     /**
     * @brief Setter for m_differenceColumn
-    * @param Value to replace m_differenceColumn
+    * @param value to replace m_differenceColumn
     */
     void setDifferenceColumn(const std::string&  value);
 
     /**
     * @brief Setter for m_auditColumn
-    * @param Value to replace m_auditColumn
+    * @param value to replace m_auditColumn
     */
     void setAuditColumn(const std::string&  value);
 
     /**
     * @brief Setter for m_examineColumn
-    * @param Value to replace m_examineColumn
+    * @param value to replace m_examineColumn
     */
     void setExamineColumn(const std::string&  value);
 

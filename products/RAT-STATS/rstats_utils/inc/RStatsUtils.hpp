@@ -33,86 +33,36 @@ SOFTWARE.
 #include <cmath>
 
 #include "rstats_utils/inc/RStatsModuleProperties.h"
+#include "rstats_utils/inc/RStatsWorksheet.h"
 #include "rstats_utils/inc/RStatsScriptProviderProperties.h"
 
 #include "RStatsModuleSessionData.hpp"
 #include "RStatsObjectList.hpp"
+#include "RStatsTypes.hpp"
 
 #include "utility/inc/DateTimeUtils.hpp"
 #include "utility/inc/FileUtils.hpp"
 #include "utility/inc/SystemUtils.hpp"
 #include "utility/inc/StringUtils.hpp"
 
-#include "contrib/tiny-process/process.hpp"
-
 namespace oig {
 namespace ratstats {
 namespace utils {
 
-/***********************************************************/
-/**/
-/**/    typedef oig::ratstats::utils::float64_t RStatsFloat;
-/**/    typedef std::int64_t RStatsInteger;
-/**/    typedef oig::ratstats::utils::RStatsObjectList<RStatsFloat> RStatsFloatList;
-/**/    typedef oig::ratstats::utils::RStatsObjectList<RStatsInteger> RStatsIntegerList;
-/**/
-/***********************************************************/
-
 /**
- * @brief The RStatsCalculationType enum
+ * @brief This namespace provides commonly used functions without requiring
+ * any dependencies on the Qt SDK.
  */
-enum class RStatsCalculationType
-{
-    Subtract,
-    Multiply,
-    Add,
-    Divide
-};
 
-
-/**
- * @brief The RStatsDataFormatType enum
- */
-enum class RStatsDataFormatType
-{
-    Examine,
-    Audit,
-    Difference,
-    ExamineAndAudit,
-    ExamineAndDifference,
-    AuditAndDifference
-};
-
-/**
- * @brief The RStatsDataFormatTypeIndex struct
- */
-struct RStatsDataFormatTypeIndex
-{
-    RStatsDataFormatType type;
-    size_t primaryDatasetColumnIndex;
-    size_t secondaryDatasetColumnIndex;
-};
-
-/**
- * @brief The RStatsConditionalOperatorType enum
- */
-enum class RStatsConditionalOperatorType
-{
-    Equal,
-    NotEqual,
-    LessThan,
-    LessThanOrEqualTo,
-    GreaterThan,
-    GreaterThanOrEqualTo
-};
-
-/**
- *
- */
 namespace RStatsUtils
 {
 
-
+/**
+ * @brief getDataFormatTypeStr Gets the string representation of
+ * the data format type enumeration value
+ * @param type The enumeration value to convert to string
+ * @return Return string representation of data format type enumeration
+ */
 inline std::pair<std::string,std::string> getDataFormatTypeStr(RStatsDataFormatType type)
 {
     std::string primaryTypeStr;
@@ -149,60 +99,8 @@ inline std::pair<std::string,std::string> getDataFormatTypeStr(RStatsDataFormatT
 }
 
 /**
- * @brief isAHalfFraction
- * @param value
- * @param rf
- * @return
- */
-inline static bool isAHalfFraction(double value, double rf)
-{
-    double frac;
-    double integral;
-
-    frac = modf(value, &integral);
-
-    if (round(frac * 10) / 10 != 0.5 && round(frac * 10) / 10 != -0.5)
-    {
-        return false;
-    }
-    else
-    {
-        return true;
-    }
-}
-
-/**
- * @brief vbRound2
- * @param value
- * @param rf
- * @return
- */
-inline double vbRound2(double value, double rf = 100.)
-{
-    double tmp;
-
-    value *= rf;
-    if (!isAHalfFraction(value, rf))
-    {
-        return std::round(value) / rf;
-    }
-
-    tmp = floor(value);
-
-    if ((int)tmp % 2 == 0)
-    {
-        return tmp / rf;
-    }
-    else
-    {
-        return (tmp + 1) / rf;
-    }
-}
-
-
-/**
  * @brief vbRound This function attempts to simulate VB / VBA bankers rounding
- * @param value
+ * @param value The value to round
  * @return rounded integer value
  */
 template <class T>
@@ -390,12 +288,14 @@ inline RStatsInteger vbRound(T value)
     }
 
     /**
-     * @brief calculate
-     * @param input1
-     * @param input2
-     * @param result
-     * @param calculation
-     * @param dimension
+     * @brief calculate This function takes in to RStatsObjectList structures
+     * and performs calculations on each element.  The result is returned back
+     * in a third RStatsObjectList
+     * @param input1 The first number list
+     * @param input2 The second number list
+     * @param result Reference to the output list result
+     * @param calculation The calculation to perform
+     * @param dimension The dimension to perform the calculation in
      */
     template<typename Number>    
     inline void calculate(const RStatsObjectList<Number>& input1,
@@ -455,11 +355,12 @@ inline RStatsInteger vbRound(T value)
     }
 
     /**
-     * @brief getNumbersAdded
-     * @param input1
-     * @param input2
-     * @param dimension
-     * @return
+     * @brief getNumbersAdded This function adds together two RStatsObjetList
+     * structures and returns the result in another RStatsObjectList
+     * @param input1 The first number list
+     * @param input2 The second number list
+     * @param dimension The dimension to add
+     * @return Return number list of added results
      */
     template<typename Number>    
     inline RStatsObjectList<Number> getNumbersAdded(const RStatsObjectList<Number>& input1,
@@ -472,11 +373,12 @@ inline RStatsInteger vbRound(T value)
     }
 
     /**
-     * @brief getNumbersSubtracted
-     * @param input1
-     * @param input2
-     * @param dimension
-     * @return
+     * @brief getNumbersSubtracted This function subtracts two RStatsObjetList
+     * structures and returns the result in another RStatsObjectList
+     * @param input1 The first number list
+     * @param input2 The second number list
+     * @param dimension The dimension to subtract
+     * @return Return number list of subtracted results
      */
     template<typename Number>    
     inline RStatsObjectList<Number> getNumbersSubtracted(const RStatsObjectList<Number>& input1,
@@ -489,11 +391,12 @@ inline RStatsInteger vbRound(T value)
     }
 
     /**
-     * @brief getNumbersMultiplied
-     * @param input1
-     * @param input2
-     * @param dimension
-     * @return
+     * @brief getNumbersMultiplied This function multiplies two RStatsObjetList
+     * structures and returns the result in another RStatsObjectList
+     * @param input1 The first number list
+     * @param input2 The second number list
+     * @param dimension The dimension to multiply
+     * @return Return number list of multiplied results
      */
     template<typename Number>    
     inline RStatsObjectList<Number> getNumbersMultiplied(const RStatsObjectList<Number>& input1,
@@ -506,11 +409,12 @@ inline RStatsInteger vbRound(T value)
     }
 
     /**
-     * @brief getNumbersDivided
-     * @param input1
-     * @param input2
-     * @param dimension
-     * @return
+     * @brief getNumbersDivided This function divides two RStatsObjetList
+     * structures and returns the result in another RStatsObjectList
+     * @param input1 The first number list
+     * @param input2 The second number list
+     * @param dimension The dimension to divide
+     * @return Return number list of divided results
      */
     template<typename Number>    
     inline RStatsObjectList<Number> getNumbersDivided(const RStatsObjectList<Number>& input1,
@@ -523,9 +427,23 @@ inline RStatsInteger vbRound(T value)
     }
 
     /**
-     * @brief getValidPath
-     * @param path
-     * @return
+     * @brief getValidPath RAT-STATS makes use of external files and this
+     * function attempts to find a valid path for input files. To remain
+     * portable and self-contained, RAT-STATS checks the following places
+     * for external files:
+     * (1) The execution directory - This is where the RAT-STATS main menu
+     * and RAT-STATS internal modules are located.
+     *
+     * (2) The users application folder - This is different per platform but
+     * it represents a folder that is readable/writable by the current user.
+     *
+     * (3) The users home folder - As a last resort this folder is checked for
+     * the location of the file.
+     * If none of these paths are valid then an exception is thrown.
+     *
+     * @param pathToValidate The path to look for in the above 3 locations
+     * @return Returns validated path to "pathToValidate" item
+     * @throws FileAccessException if a valid path could not be found
      */
     inline std::string getValidPath(const std::string & pathToValidate)
     {
@@ -577,7 +495,8 @@ inline RStatsInteger vbRound(T value)
     }
 
     /**
-     * @brief getModulePropertiesPath
+     * @brief getModulePropertiesPath Return valid path to module
+     * XML config directory
      * @return
      */
     inline std::string getModulePropertiesPath()
@@ -586,7 +505,7 @@ inline RStatsInteger vbRound(T value)
     }
 
     /**
-     * @brief getConfigPath
+     * @brief getConfigPath Return valid path to config directory
      * @return
      */
     inline std::string getConfigPath()
@@ -595,7 +514,7 @@ inline RStatsInteger vbRound(T value)
     }
 
     /**
-     * @brief getContribPath
+     * @brief getContribPath Return valid path to contrib directory
      * @return
      */
     inline std::string getContribPath()
@@ -604,24 +523,8 @@ inline RStatsInteger vbRound(T value)
     }
 
     /**
-     * @brief getUnzipCommandPath
-     * @return
-     */
-    inline std::string getUnzipCommandPath()
-    {
-        std::string path;
-        #ifdef __WIN32
-        path = getValidPath("contrib/unzip/win32/unzip.exe");
-        #elif __gnu_linux__
-        path = getValidPath("contrib/unzip/linux/unzip");
-        #else
-        path = getValidPath("contrib/unzip/macos");
-        #endif
-        return path;
-    }
-
-    /**
-     * @brief getScriptProviderPropertiesPath
+     * @brief getScriptProviderPropertiesPath Return valid path to
+     * script provider XML config directory
      * @return
      */
     inline std::string getScriptProviderPropertiesPath()
@@ -629,19 +532,27 @@ inline RStatsInteger vbRound(T value)
        return getValidPath("config/.rstats_script_provider_properties");
     }
 
+    /**
+     * @brief getResourcePath
+     * @return
+     */
     inline std::string getResourcePath()
     {
         return getValidPath("resx");
     }
 
+    /**
+     * @brief getThemeSettingsFilePath
+     * @return
+     */
     inline std::string getThemeSettingsFilePath()
     {
         return cbtek::common::utility::FileUtils::buildFilePath(RStatsUtils::getConfigPath(),".theme_settings");
     }
 
     /**
-     * @brief getModulePropertiesList
-     * @return
+     * @brief getModulePropertiesList Read all module properties from disk
+     * @return Return vector of all parsed module properties
      */
     inline std::vector<RStatsModuleProperties> getModulePropertiesList()
     {
@@ -669,8 +580,8 @@ inline RStatsInteger vbRound(T value)
 
 
     /**
-     * @brief getModuleCategories
-     * @return
+     * @brief getModuleCategories Get list of all module categories
+     * @return Return vector of module category names
      */
     inline std::vector<std::string> getModuleCategories()
     {
@@ -702,8 +613,9 @@ inline RStatsInteger vbRound(T value)
     }
 
     /**
-     * @brief getScriptProviderPropertiesList
-     * @return
+     * @brief getScriptProviderPropertiesList Get list of all parsed script provider
+     * from disk
+     * @return Return vector of script provider properties
      */
     inline std::vector<RStatsScriptProviderProperties> getScriptProviderPropertiesList()
     {
@@ -914,9 +826,8 @@ inline RStatsInteger vbRound(T value)
     }
 
     /**
-     * @brief getRandomAuditName
-     * @param moduleName
-     * @return
+     * @brief getRandomAuditName Generates random audit name for use when none is provided
+     * @return Return newly created random audit name
      */
     inline std::string getAuditName()
     {
@@ -925,11 +836,128 @@ inline RStatsInteger vbRound(T value)
         return userName+"_audit_"+dateTime;
     }
 
+    /**
+     * @brief getApplicationName Returns name of application
+     * @return Returns name of application
+     */
     inline std::string getApplicationName()
     {
         return "RAT-STATS Statistical Software";
-    }   
-}
+    }
 
+    /**
+     * @brief getCellLabel Gets the spreadsheet cell label (A1, B4, etc) from 0-based
+     * row and column indices
+     * @param row The row index
+     * @param column The column index
+     * @return Return string with cell label (A1, B4, etc)
+     */
+    inline std::string getCellLabel(size_t row, size_t column)
+    {
+        std::string label = getColumnLabelFromIndex(column);
+        label+= std::to_string(row + 1);
+        return label;
+    }   
+
+    /**
+     * @brief getValidModule Returns string path to validated module
+     * @param modulePath Initial (unvalidated) path to module
+     * @return Returns validated path to module
+     * @throws GenericException if modulePath could not be validated
+     */
+    inline std::string getValidModule(const std::string& modulePath)
+    {
+        //Get proper path to module
+        std::string properPath = cbtek::common::utility::StringUtils::replace(modulePath,"\\","/");
+        bool hasPathSeperator = cbtek::common::utility::StringUtils::contains(properPath,"/");
+        //Attempt to locate a valid path for the module and disable it if no path can be found
+        bool isDisabled = !hasPathSeperator ||
+                          !cbtek::common::utility::FileUtils::fileExists(modulePath);
+
+        //On windows make sure we append .exe to binary before checking if it exists
+        #ifdef __WIN32
+            if (isDisabled &&
+                !cbtek::common::utility::StringUtils::endsWith(modulePath,".exe",false))
+            {
+                isDisabled = !hasPathSeperator ||
+                !cbtek::common::utility::FileUtils::fileExists(modulePath+".exe") ||
+                !cbtek::common::utility::FileUtils::fileExists(modulePath+".EXE") ||
+                !cbtek::common::utility::FileUtils::fileExists(modulePath+".ExE") ||
+                !cbtek::common::utility::FileUtils::fileExists(modulePath+".eXe") ||
+                !cbtek::common::utility::FileUtils::fileExists(modulePath+".EXe") ||
+                !cbtek::common::utility::FileUtils::fileExists(modulePath+".eXE") ||
+                !cbtek::common::utility::FileUtils::fileExists(modulePath+".Exe") ||
+                !cbtek::common::utility::FileUtils::fileExists(modulePath+".exE");
+                if (!isDisabled)
+                {
+                    return modulePath+".exe";
+                }
+            }
+            else if (isDisabled)
+            {
+                isDisabled = !hasPathSeperator ||
+                             !cbtek::common::utility::FileUtils::fileExists(modulePath);
+                if (!isDisabled)
+                {
+                    return modulePath;
+                }
+            }
+        #endif
+
+        if (isDisabled)
+        {
+            #ifdef __WIN32
+                std::string propsPath1 = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getCurrentExecutableDirectory(),modulePath+".exe");
+                std::string propsPath2 = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getCurrentExecutableDirectory(),modulePath+".EXE");
+                std::string propsPath3 = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getCurrentExecutableDirectory(),modulePath);
+                if (cbtek::common::utility::FileUtils::fileExists(propsPath1))
+                {
+                    isDisabled = false;
+                    return propsPath1;
+                }
+                else if (cbtek::common::utility::FileUtils::fileExists(propsPath2))
+                {
+                    isDisabled = false;
+                    return propsPath2;
+                }
+                else if (cbtek::common::utility::FileUtils::fileExists(propsPath3))
+                {
+                    isDisabled = false;
+                    return propsPath3;
+                }
+            #else
+                std::string propsPath = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getCurrentExecutableDirectory(),modulePath);
+                if (cbtek::common::utility::FileUtils::fileExists(propsPath))
+                {
+                    isDisabled = false;
+                    return propsPath;
+                }
+            #endif
+        }
+        THROW_GENERIC_EXCEPTION("Module could not be validated at \""+modulePath+"\".\nEither the module does not exist yet or it can not be found.");
+    }
+
+    /**
+     * @brief isValidModule Determines if a module path can be validated
+     * @param modulePath Initial path to module
+     * @return Returns true if path exists, false otherwise
+     */
+    inline bool isValidModule(const std::string& modulePath)
+    {
+        try
+        {
+            std::string path = getValidModule(modulePath);
+            if (cbtek::common::utility::FileUtils::fileExists(path))
+            {
+                return true;
+            }
+            return false;
+        }
+        catch(...)
+        {
+            return false;
+        }
+    }
+}
 }}}//end namespace
 

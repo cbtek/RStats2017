@@ -4,15 +4,19 @@
 
 */
 
-#ifndef _OIG_RATSTATS_UI_UIRSTATSSHORTCUT_H
-#define _OIG_RATSTATS_UI_UIRSTATSSHORTCUT_H
+#pragma once
+
 #include <QShortcut>
 
 namespace oig {
 namespace ratstats {
 namespace ui {
 
-
+/**
+ * @brief The UIRStatsShortcut class is a custom overload of QShortcut
+ * to provide more useful "activated" signal that returns pointer to
+ * shortcut.
+ */
 class UIRStatsShortcut :public QShortcut
 {
     Q_OBJECT
@@ -27,13 +31,18 @@ public:
 	~UIRStatsShortcut();	
 
 private slots:
+    /**
+     * @brief onActivated
+     */
     void onActivated();
 
 signals:
+    /**
+     * @brief activated
+     * @param shortcut
+     */
     void activated(QShortcut * shortcut);
     
 };
 }}}//end namespace
-
-#endif // _OIG_RATSTATS_UI_UIRSTATSSHORTCUT_H
 
