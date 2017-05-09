@@ -867,6 +867,12 @@ inline RStatsInteger vbRound(T value)
      */
     inline std::string getValidModule(const std::string& modulePath)
     {
+        // Check if modulePath is valid
+        if (cbtek::common::utility::FileUtils::fileExists(modulePath))
+        {
+            return modulePath;
+        }
+
         //Get proper path to module
         std::string properPath = cbtek::common::utility::StringUtils::replace(modulePath,"\\","/");
         bool hasPathSeperator = cbtek::common::utility::StringUtils::contains(properPath,"/");

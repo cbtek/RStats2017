@@ -637,7 +637,11 @@ inline std::string getUserName()
 inline int execute(const std::string& command,
                           const std::string& args)
 {
+#ifdef __WIN32
     return system((command+" "+args).c_str());  //one day this will do more
+#else
+    return system(("xterm -e "+command+" "+args).c_str());  //one day this will do more
+#endif
 }
 
 /**
@@ -702,40 +706,8 @@ inline int executeInTerminal(const std::string& command, const std::string& args
     #ifdef __WIN32
         cmd = "start cmd /K \"" + command+"\" \""+args+"\"";
     #else
-//        std::vector<std::string> entries = FileUtils::getFileEntries("/usr/bin","",false);
-//        std::vector<std::string> terminalsFound;
-//        SystemUtils_EmbeddedUtils::findAllThatEqual(entries,"gnome-terminal",terminalsFound,true);
-//        cmd = "/usr/bin/gnome-terminal -x \""+command+"\" \""+args+"\"";
-//        if (terminalsFound.size() == 0)
-//        {
-//            SystemUtils_EmbeddedUtils::findAllThatEqual(entries,"lxterminal",terminalsFound,true);
-//            cmd = "/usr/bin/lxterminal -x \""+command+"\" \""+args+"\"";
-//        }
-
-//        if (terminalsFound.size() == 0)
-//        {
-//            SystemUtils_EmbeddedUtils::findAllThatEqual(entries,"xfce4-terminal",terminalsFound,true);
-//            cmd = "/usr/bin/xfce4-terminal --execute \""+command+"\" \""+args+"\"";
-//        }
-
-//        if (terminalsFound.size() == 0)
-//        {
-//            SystemUtils_EmbeddedUtils::findAllThatEqual(entries,"konsole",terminalsFound,true);
-//            cmd = "/usr/bin/konsole -e \""+command+"\" \""+args+"\"";
-//        }
-
-//        if (terminalsFound.size() == 0)
-//        {
-//            SystemUtils_EmbeddedUtils::findAllThatEqual(entries,"rxvt",terminalsFound,true);
-//            cmd = "/usr/bin/rxvt -e \""+command+"\" \""+args+"\"";
-//        }
-
-//        if (terminalsFound.size() == 0)
-//        {
-//            cmd = "/usr/bin/xterm -e \""+command+"\" \""+args+"\"";
-//        }
-    #endif
-        //std::cerr <<"SystemUtils::executeInTerminal - " << cmd<<std::endl;
+        cmd = "xterm -e "+command +" " + args;
+    #endif                
     return system(cmd.c_str());
 }
 
