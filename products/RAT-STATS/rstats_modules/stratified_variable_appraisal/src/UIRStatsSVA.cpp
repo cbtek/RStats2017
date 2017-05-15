@@ -235,28 +235,40 @@ void UIRStatsSVA::onExecute()
         m_ui->m_lblNoData->hide();
         m_ui->m_grpOutput->show();
 
+        //Show results in browser if applicable
+        if (m_ui->m_chkViewInBrowser->isChecked())
+        {
+            UIRStatsUtils::launchHtml(worksheet.toHTMLTableString());
+        }
+
+        size_t row = worksheet.getNumRows();
+
         //Save CSV file, if applicable
         if (m_ui->m_chkCSVOutput->isChecked())
-        {
+        {            
+            worksheet(row,0) = "CSV File:";
+            worksheet(row,1) = m_currentCSVFileOutput.toStdString();
             FileUtils::writeFileContents(m_currentCSVFileOutput.toStdString(),worksheet.toCommaDelimitedString());
         }
 
         //Save Text file, if applicable
         if (m_ui->m_chkTextOutput->isChecked())
-        {
+        {        
+            worksheet(row,0) = "Text File:";
+            worksheet(row,1) = m_currentTextFileOutput.toStdString();
             FileUtils::writeFileContents(m_currentTextFileOutput.toStdString(),worksheet.toEvenlySpacedString());
         }
 
         //Save XLS file (for Excel/Access), if applicable
         if (m_ui->m_chkXLSOutput->isChecked())
         {
+            for (size_t a1 = 0; a1 < workbook.getNumWorksheets();++a1)
+            {
+                row = workbook(a1).getNumRows();
+                workbook(a1)(row,0) = "XLS File:";
+                workbook(a1)(row,1) = m_currentXLSFileOutput.toStdString();
+            }
             workbook.save(m_currentXLSFileOutput.toStdString());
-        }
-
-        //Show results in browser if applicable
-        if (m_ui->m_chkViewInBrowser->isChecked())
-        {
-            UIRStatsUtils::launchHtml(worksheet.toHTMLTableString());
         }
 
         //Set session data

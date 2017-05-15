@@ -128,16 +128,6 @@ private slots:
      void onRecentSessionSelected(QAction* action);
 
      /**
-      * @brief onUpdateSampleCount
-      */
-     void onUpdateSampleCount();
-
-     /**
-      * @brief onUpdateUniverseCount
-      */
-     void onUpdateUniverseCount();
-
-     /**
       * @brief onClearRecentSessions Deletes all sessions for current module
       */
      void onClearRecentSessions();
@@ -187,6 +177,11 @@ private slots:
       * Will launch new instance of the RStatsUAA window
       */
      void onLaunchNewWindow();
+
+     /**
+      * @brief onUpdateFields
+      */
+     void onUpdateFields();
 };
 
 }}}}//end namespace

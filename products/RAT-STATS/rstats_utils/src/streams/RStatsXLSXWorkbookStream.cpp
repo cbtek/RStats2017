@@ -53,6 +53,7 @@ RStatsWorkbook RStatsXLSXWorkbookStream::read()
               for (int c = 0; c < range.lastCol; c++)
               {
                   MiniExcelReader::Cell* cell = sheetIn.getCell(r+1, c+1);
+
                   sheetOut(r,c).text = cell ?cell->value: "";
               }
           }

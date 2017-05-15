@@ -17,6 +17,8 @@
 #include "utility/inc/FileUtils.hpp"
 #include "utility/inc/SystemUtils.hpp"
 
+#include <QDoubleValidator>
+#include <QIntValidator>
 #include <QFileDialog>
 #include <QFile>
 #include <QDesktopServices>
@@ -44,6 +46,17 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     m_iconOK = UIRStatsUtils::getIcon("img_ok.png");
     m_iconWarning = UIRStatsUtils::getIcon("img_warning.png");
 
+    // Add floating point validator
+    QIntValidator * validatorForFrame = new QIntValidator;
+    QIntValidator * validatorForValues = new QIntValidator;
+    validatorForValues->setBottom(0);
+
+    m_ui->m_txtSeed->setValidator( new QDoubleValidator(this) );
+    m_ui->m_txtSpares->setValidator( validatorForValues );
+    m_ui->m_txtOrder->setValidator( validatorForValues );
+    m_ui->m_txtHighNumber->setValidator( validatorForFrame );
+    m_ui->m_txtLowNumber->setValidator( validatorForFrame );
+
     //Initialize all menu actions with icons and shortcuts
     UIRStatsUtils::initButton(m_ui->m_btnExecute, "img_run.png");
     UIRStatsUtils::initButton(m_ui->m_btnExit, "img_exit.png");
@@ -67,25 +80,31 @@ UIRStatsSSRN::UIRStatsSSRN(QWidget *parent) :
     connect(m_ui->m_btnExecute,SIGNAL(clicked(bool)),this,SLOT(onExecute()));    
     connect(m_ui->m_btnHelp,SIGNAL(clicked(bool)),this,SLOT(onHelp()));
     connect(m_ui->m_txtAuditName,SIGNAL(textEdited(QString)),SLOT(onUpdateValidation()));
-    connect(m_ui->m_spnHighNumber,SIGNAL(valueChanged(int)),this,SLOT(onUpdateValidation()));
-    connect(m_ui->m_spnLowNumber,SIGNAL(valueChanged(int)),this,SLOT(onUpdateValidation()));
-    connect(m_ui->m_spnSpares,SIGNAL(valueChanged(int)),this,SLOT(onUpdateValidation()));
-    connect(m_ui->m_spnOrder,SIGNAL(valueChanged(int)),this,SLOT(onUpdateValidation()));
+    connect(m_ui->m_txtSeed,SIGNAL(textEdited(QString)),SLOT(onUpdateValidation()));
+    connect(m_ui->m_txtHighNumber,SIGNAL(textEdited(QString)),this,SLOT(onUpdateValidation()));
+    connect(m_ui->m_txtLowNumber,SIGNAL(textEdited(QString)),this,SLOT(onUpdateValidation()));
+    connect(m_ui->m_txtSpares,SIGNAL(textEdited(QString)),this,SLOT(onUpdateValidation()));
+    connect(m_ui->m_txtOrder,SIGNAL(textEdited(QString)),this,SLOT(onUpdateValidation()));
     connect(m_ui->m_chkCSVOutput,SIGNAL(clicked(bool)),this,SLOT(onSaveCSVFile()));
     connect(m_ui->m_chkXLSOutput,SIGNAL(clicked(bool)),this,SLOT(onSaveXLSFile()));
     connect(m_ui->m_chkTextOutput,SIGNAL(clicked(bool)),this,SLOT(onSaveTextFile()));    
     connect(m_ui->m_grpCustomSeed,SIGNAL(toggled(bool)),this,SLOT(onSeedBoxToggled(bool)));
     m_autoSetFileOutput = false;
 
+    //Set default values
+    m_ui->m_txtSpares->setText("0");
+    m_ui->m_txtOrder->setText("0");
+    m_ui->m_txtHighNumber->setText("0");
+    m_ui->m_txtLowNumber->setText("0");
+
     //Create default audit name
     QString defaultAuditName = QString::fromStdString(RStatsUtils::getAuditName());
     m_ui->m_txtAuditName->setPlaceholderText(defaultAuditName);
 
-    //Generate random seed
-    m_ui->m_spnSeed->setMaximum(std::numeric_limits<double>::max());
-    m_ui->m_spnSeed->setMinimum(std::numeric_limits<double>::min());    
-    m_ui->m_spnSeed->setValue(static_cast<RStatsFloat>(TimeUtils::getSecondsNow()) /
-                              static_cast<RStatsFloat>(m_rnd.next(10,1000)));
+    //Generate random seed    
+    double seed = static_cast<RStatsFloat>(TimeUtils::getSecondsNow()) /
+            static_cast<RStatsFloat>(m_rnd.next(10,1000));
+    m_ui->m_txtSeed->setText(QString::fromStdString(StringUtils::toString(seed,6)));
 
     //Set output labels to null
     m_currentCSVFileOutputLabel = nullptr;
@@ -125,14 +144,20 @@ void UIRStatsSSRN::onExecute()
             name = m_ui->m_txtAuditName->placeholderText().toStdString();
         }
 
+        //Get the high/low/order/spare values
+        std::int64_t low  = m_ui->m_txtLowNumber->text().toInt();
+        std::int64_t high = m_ui->m_txtHighNumber->text().toInt();
+        std::int64_t order= m_ui->m_txtOrder->text().toInt();
+        std::int64_t spare= m_ui->m_txtSpares->text().toInt();
+
         //Execute primary function for single stage random numbers
         RStatsSSRN ssrn;
         ssrn.execute(name,
-                     m_ui->m_spnSeed->value(),
-                     m_ui->m_spnOrder->value(),
-                     m_ui->m_spnSpares->value(),
-                     m_ui->m_spnLowNumber->value(),
-                     m_ui->m_spnHighNumber->value());
+                     m_ui->m_txtSeed->text().remove(",").toStdString(),
+                     order,
+                     spare,
+                     low,
+                     high);
 
         //Save results to a worksheet
         RStatsWorksheet worksheet;
@@ -142,15 +167,28 @@ void UIRStatsSSRN::onExecute()
         std::string htmlContent = worksheet.toHTMLTableString();
         m_ui->m_txtOutput->setHtml(QString::fromStdString(htmlContent));
 
+
+        //Show results in browser if selected
+        if (m_ui->m_chkViewInBrowser->isChecked())
+        {
+            UIRStatsUtils::launchHtml(htmlContent);
+        }
+
+        size_t row = worksheet.getNumRows();
+
         //Save CSV file, if applicable
         if (m_ui->m_chkCSVOutput->isChecked())
         {
+            worksheet(row,0) = "CSV File:";
+            worksheet(row,1) = m_currentCSVFileOutput.toStdString();
             FileUtils::writeFileContents(m_currentCSVFileOutput.toStdString(),worksheet.toCommaDelimitedString());
         }
 
         //Save Text file, if applicable
         if (m_ui->m_chkTextOutput->isChecked())
         {
+            worksheet(row,0) = "Text File:";
+            worksheet(row,1) = m_currentTextFileOutput.toStdString();
             FileUtils::writeFileContents(m_currentTextFileOutput.toStdString(),worksheet.toEvenlySpacedString());
         }
 
@@ -158,14 +196,10 @@ void UIRStatsSSRN::onExecute()
         if (m_ui->m_chkXLSOutput->isChecked())
         {
             RStatsWorkbook workbook;
+            worksheet(row,0) = "XLS File:";
+            worksheet(row,1) = m_currentXLSFileOutput.toStdString();
             workbook.addWorksheet(worksheet);
             workbook.save(m_currentXLSFileOutput.toStdString());
-        }
-
-        //Show results in browser if selected
-        if (m_ui->m_chkViewInBrowser->isChecked())
-        {
-            UIRStatsUtils::launchHtml(htmlContent);
         }
 
         //Show the output group box
@@ -196,20 +230,30 @@ UIRStatsSSRN::~UIRStatsSSRN()
     delete m_ui;
 }
 
-bool UIRStatsSSRN::onValidate()
+bool UIRStatsSSRN::
+
+
+
+
+
+onValidate()
 {
     //Clear the validation console and logger
     m_conditionLogger.clear();
     m_ui->m_lstValidationConsole->clear();
 
-
-    //Get the high/low/order/spare values
-    std::int64_t low  = m_ui->m_spnLowNumber->value();
-    std::int64_t high = m_ui->m_spnHighNumber->value();
-    std::int64_t order= m_ui->m_spnOrder->value();
-    std::int64_t spare= m_ui->m_spnSpares->value();
+    //Get the high/low/order/spare values    
+    std::int64_t low  = m_ui->m_txtLowNumber->text().toInt();
+    std::int64_t high = m_ui->m_txtHighNumber->text().toInt();
+    std::int64_t order= m_ui->m_txtOrder->text().toInt();
+    std::int64_t spare= m_ui->m_txtSpares->text().toInt();
 
     //Add validation warnings
+
+    m_conditionLogger.addWarning(spare+order > 10000,
+                                 "Total number of random values exceeds data limitation(10,000) imposed by RAT-STATS 2010.");
+
+
     m_conditionLogger.addWarning(m_ui->m_txtAuditName->text().isEmpty(),
                         "You did not specify an audit name.  Using default: ("+m_ui->m_txtAuditName->placeholderText().toStdString()+")");
 
@@ -226,7 +270,7 @@ bool UIRStatsSSRN::onValidate()
     m_conditionLogger.addError(low > high,
                       "The low number is greater than or equal to the high number!");
 
-    m_conditionLogger.addError((high - low)  < (order + spare),
+    m_conditionLogger.addError(((high - low) + 1)  < (order + spare),
                         "The sampling frame is less than the total number of values to be generated!");
 
     //If condition logger has no messages then hide the dock and
@@ -318,10 +362,11 @@ void UIRStatsSSRN::onSaveXLSFile()
 
 void UIRStatsSSRN::onUpdateSeed()
 {
-    if (!m_ui->m_grpCustomSeed->isChecked() && !m_ui->m_spnSeed->isEnabled())
+    if (!m_ui->m_grpCustomSeed->isChecked() && !m_ui->m_txtSeed->isEnabled())
     {        
-        m_ui->m_spnSeed->setValue(static_cast<RStatsFloat>(TimeUtils::getSecondsNow()) /
-                                  static_cast<RStatsFloat>(m_rnd.next(10,1000)));
+        double seed = static_cast<RStatsFloat>(TimeUtils::getSecondsNow()) /
+                static_cast<RStatsFloat>(m_rnd.next(10,1000));
+        m_ui->m_txtSeed->setText(QString::fromStdString(StringUtils::toString(seed,6)));
     }
 }
 
@@ -349,16 +394,21 @@ RStatsSSRNSessionData UIRStatsSSRN::getSessionData() const
     {
         text = m_ui->m_txtAuditName->placeholderText();
     }
+    std::int64_t low  = m_ui->m_txtLowNumber->text().toInt();
+    std::int64_t high = m_ui->m_txtHighNumber->text().toInt();
+    std::int64_t order= m_ui->m_txtOrder->text().toInt();
+    std::int64_t spare= m_ui->m_txtSpares->text().toInt();
+
     RStatsSSRNSessionData data;
     data.setAuditName(text.toStdString());
     data.setCSVOutputFile(m_currentCSVFileOutput.toStdString());
     data.setXLSOutputFile(m_currentXLSFileOutput.toStdString());
     data.setTextOutputFile(m_currentTextFileOutput.toStdString());
-    data.setSeed(m_ui->m_spnSeed->value());
-    data.setOrder(m_ui->m_spnOrder->value());
-    data.setSpares(m_ui->m_spnSpares->value());
-    data.setLow(m_ui->m_spnLowNumber->value());
-    data.setHigh(m_ui->m_spnHighNumber->value());
+    data.setSeed(m_ui->m_txtSeed->text().toStdString());
+    data.setOrder(order);
+    data.setSpares(spare);
+    data.setLow(low);
+    data.setHigh(high);
     data.setViewInBrowserFlag(m_ui->m_chkViewInBrowser->isChecked());
     return data;
 }
@@ -368,12 +418,12 @@ void UIRStatsSSRN::setSessionData(const RStatsSSRNSessionData &data)
     m_ui->m_chkViewInBrowser->setChecked(data.isViewableInBrowser());
     m_ui->m_grpCustomSeed->setChecked(true);
     m_ui->m_txtAuditName->setText(QString::fromStdString(data.getAuditName()));
-    m_ui->m_spnSeed->setValue(data.getSeed());
-    m_ui->m_spnSeed->setEnabled(true);
-    m_ui->m_spnHighNumber->setValue(static_cast<int>(data.getHigh()));
-    m_ui->m_spnLowNumber->setValue(static_cast<int>(data.getLow()));
-    m_ui->m_spnSpares->setValue(static_cast<int>(data.getSpares()));
-    m_ui->m_spnOrder->setValue(static_cast<int>(data.getOrder()));
+    m_ui->m_txtSeed->setText(QString::fromStdString(data.getSeed()));
+    m_ui->m_txtSeed->setEnabled(true);
+    m_ui->m_txtHighNumber->setText(QString::number(static_cast<std::int64_t>(data.getHigh())));
+    m_ui->m_txtLowNumber->setText(QString::number(static_cast<std::int64_t>(data.getLow())));
+    m_ui->m_txtSpares->setText(QString::number(static_cast<std::int64_t>(data.getSpares())));
+    m_ui->m_txtOrder->setText(QString::number(static_cast<std::int64_t>(data.getOrder())));
 
     m_autoSetFileOutput=true;
     if (!data.getCSVOutputFile().empty())
@@ -439,13 +489,13 @@ void UIRStatsSSRN::onSeedBoxToggled(bool toggle)
 {
     if (toggle)
     {
-        m_ui->m_spnSeed->setEnabled(true);
-        m_ui->m_spnSeed->clear();
-        m_ui->m_spnSeed->setFocus();        
+        m_ui->m_txtSeed->setEnabled(true);
+        m_ui->m_txtSeed->clear();
+        m_ui->m_txtSeed->setFocus();
     }
     else
     {     
-        m_ui->m_spnSeed->setEnabled(false);
+        m_ui->m_txtSeed->setEnabled(false);
         onUpdateSeed();
     }
 

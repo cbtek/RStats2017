@@ -374,23 +374,28 @@ void RStatsUVA::createOutputData(const std::string &title, size_t index)
     outputData.nonZeroSize = static_cast<RStatsInteger>(m_totalNonZeroCount(index));
     outputData.kurtosis = m_kurtosis(index);
 
-    //Set precision percentage to zero if point estimate less than 0
-    if (outputData.pointEstimate < 0)
-    {
-        outputData.precisionPercent80 = 0.;
-        outputData.precisionPercent90 = 0.;
-        outputData.precisionPercent95 = 0.;
-    }
-    else
-    {
+    //Set precision percentage to zero if point estimate less than or equal to 0
+    outputData.precisionPercent80 = 0.;
+    outputData.precisionPercent90 = 0.;
+    outputData.precisionPercent95 = 0.;
+
+    if (outputData.pointEstimate > 0)
+    {        
         outputData.precisionPercent80 = m_precision80(index) * m_universeSize;
         outputData.precisionPercent90 = m_precision90(index) * m_universeSize;
         outputData.precisionPercent95 = m_precision95(index) * m_universeSize;
+
         if (m_means(index) > 0)
         {
             outputData.precisionPercent80 = m_precision80(index) / m_means(index);
             outputData.precisionPercent90 = m_precision90(index) / m_means(index);
             outputData.precisionPercent95 = m_precision95(index) / m_means(index);
+        }        
+        else
+        {
+            outputData.precisionPercent80 = 0.;
+            outputData.precisionPercent90 = 0.;
+            outputData.precisionPercent95 = 0.;
         }
     }
 

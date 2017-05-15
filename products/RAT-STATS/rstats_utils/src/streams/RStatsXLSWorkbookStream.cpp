@@ -66,6 +66,7 @@ RStatsWorkbook RStatsXLSWorkbookStream::read()
             reader.GetSheetName(a1,sheetName);
             YExcel::BasicExcelWorksheet * sheetIn = reader.GetWorksheet(a1);
             RStatsWorksheet sheetOut;
+            sheetOut.setWorksheetTitle(std::string(sheetName));
             size_t rowCount = sheetIn->GetTotalRows();
             size_t columnCount = sheetIn->GetTotalCols();
             //std::cerr << rowCount << " x "<<columnCount << std::endl;

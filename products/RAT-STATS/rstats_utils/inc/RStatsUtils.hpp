@@ -187,8 +187,8 @@ inline RStatsInteger vbRound(T value)
      * @return True if the floats are equal, false otherwise
      */    
     inline bool isEqual(RStatsFloat value1, RStatsFloat value2)
-    {
-        return std::fabs(value1 - value2) < DBL_EPSILON;
+    {        
+        return (fabs(value1 - value2) <= DBL_EPSILON * std::fmax(fabs(value1), fabs(value2)));
     }
 
     /**
@@ -963,7 +963,7 @@ inline RStatsInteger vbRound(T value)
         {
             return false;
         }
-    }
+    }        
 }
 }}}//end namespace
 

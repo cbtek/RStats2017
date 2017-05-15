@@ -33,7 +33,7 @@ public:
     * @brief Setter for m_seed
     * @param value to replace m_seed
     */
-    void setSeed(const utils::RStatsFloat & value);
+    void setSeed(const std::string &value);
 
     /**
     * @brief Setter for m_order
@@ -64,7 +64,7 @@ public:
     * @brief Getter for m_seed
     * @return Return copy of m_seed
     */
-    const utils::RStatsFloat & getSeed() const;
+    const std::string &getSeed() const;
 
     /**
     * @brief Getter for m_order
@@ -109,7 +109,7 @@ public:
 	~RStatsSSRNSessionData();	
 
 private:
-    utils::RStatsFloat m_seed;
+    std::string m_seed;
     utils::RStatsInteger m_order;
     utils::RStatsInteger m_spares;
     utils::RStatsInteger m_low;

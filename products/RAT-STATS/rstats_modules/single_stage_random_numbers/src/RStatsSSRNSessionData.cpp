@@ -29,7 +29,7 @@ RStatsSSRNSessionData::~RStatsSSRNSessionData()
 
 }
 
-void RStatsSSRNSessionData::setSeed(const RStatsFloat & value)
+void RStatsSSRNSessionData::setSeed(const std::string & value)
 {
     m_seed=value;
 }
@@ -56,7 +56,7 @@ void RStatsSSRNSessionData::setHigh(const RStatsInteger & value)
 
 
 
-const RStatsFloat &RStatsSSRNSessionData::getSeed() const
+const std::string &RStatsSSRNSessionData::getSeed() const
 {
     return m_seed;
 }
@@ -98,7 +98,7 @@ void RStatsSSRNSessionData::load(const std::string &url)
         setLow(element->getChildElementDataAsType<RStatsInteger>("low"));
         setSpares(element->getChildElementDataAsType<RStatsInteger>("spares"));
         setOrder(element->getChildElementDataAsType<RStatsInteger>("order"));
-        setSeed(element->getChildElementDataAsType<RStatsFloat>("seed"));
+        setSeed(element->getChildElementData("seed"));
     }
 }
 

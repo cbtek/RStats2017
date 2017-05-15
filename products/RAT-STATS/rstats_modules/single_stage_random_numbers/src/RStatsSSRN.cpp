@@ -73,9 +73,8 @@ void RStatsSSRN::saveToWorksheet(RStatsWorksheet &worksheetOut)
 
     worksheetOut.setDefaultFont(Font("arial",10,true));
     worksheetOut.setDefaultTextAlignment(RStatsTextAlignment::AlignLeft);
-    worksheetOut("B1") = m_outputData.auditName;
-    double seed = m_outputData.seed;
-    worksheetOut("B2") = StringUtils::removeTrailingZeroes(StringUtils::toString(seed));
+    worksheetOut("B1") = m_outputData.auditName;    
+    worksheetOut("B2") = m_inputSeedStr;
     worksheetOut("B3") = StringUtils::toString(m_outputData.frameSize);
     worksheetOut("B4") = DateUtils::toLongDateString(m_outputData.createDate);
     worksheetOut("B5") = TimeUtils::to12HourTimeString(m_outputData.createTime);
@@ -121,12 +120,14 @@ void RStatsSSRN::saveToTextFile(const std::string &filePath)
 }
 
 RStatsSSRNOutputData RStatsSSRN::execute(const std::string &auditName,
-                                         RStatsFloat inputSeed,
+                                         std::string inputSeedStr,
                                          RStatsInteger sequentialOrder,
                                          RStatsInteger sparesInRandomOrder,
                                          RStatsInteger lowNumber,
                                          RStatsInteger highNumber)
 {
+    m_inputSeedStr = inputSeedStr;
+    RStatsFloat inputSeed = StringUtils::toFloat64(inputSeedStr);
     RStatsSSRNInputData vbRandOutput,vbRandOutputA,vbRandOutputB,vbRandOutputC;
     RStatsInteger currentSeed = this->vbRandInit(-1);
     this->vbRand(currentSeed, 30269,vbRandOutput);

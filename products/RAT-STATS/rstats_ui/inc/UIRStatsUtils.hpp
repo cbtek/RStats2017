@@ -353,8 +353,9 @@ namespace UIRStatsUtils
         {
             std::pair<size_t,size_t> index = itNext.first;
             oig::ratstats::utils::RStatsCell cell = itNext.second;
-            QTableWidgetItem * item = new QTableWidgetItem;           
+            QTableWidgetItem * item = new QTableWidgetItem;
             cell.text = cbtek::common::utility::StringUtils::remove(cell.text,",");
+            bool hasData = cbtek::common::utility::StringUtils::trimmed(cell.text).size() > 0;
 
             if (numDecimalPlaces > -1 && cbtek::common::utility::StringUtils::isNumeric(cell.text) &&
                                        !cbtek::common::utility::StringUtils::isSignedInteger(cell.text) &&
@@ -362,7 +363,13 @@ namespace UIRStatsUtils
                                        cbtek::common::utility::StringUtils::isFloat(cell.text))
             {
                     double toFloat = cbtek::common::utility::StringUtils::toFloat64(cell.text);
-                    std::string toString = cbtek::common::utility::StringUtils::toString(toFloat,numDecimalPlaces);
+                    std::string toString;
+                    if (std::fabs(toFloat) < 0.01)
+                    {
+                        toString = cbtek::common::utility::StringUtils::toString(toFloat,16);
+                    }
+                    else toString = cbtek::common::utility::StringUtils::toString(toFloat,numDecimalPlaces);
+
                     toString = cbtek::common::utility::StringUtils::removeTrailingZeroes(toString);
                     cell.text = toString;                    
 
@@ -373,6 +380,12 @@ namespace UIRStatsUtils
             {
                 cell.text = cbtek::common::utility::StringUtils::formatWithThousandsLabel(cell.text);
             }
+
+            if (hasData && cbtek::common::utility::StringUtils::trimmed(cell.text).size() == 0)
+            {
+                cell.text = "0";
+            }
+
             item->setText(QString::fromStdString(cell.text));            
             table->setRowHeight(static_cast<int>(index.first),26);
             if (!disableAllFormatting)

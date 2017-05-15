@@ -49,6 +49,7 @@ struct RStatsSVAOutputData
     oig::ratstats::utils::RStatsInteger sampleSize;
     oig::ratstats::utils::RStatsInteger nonZeroCount;
     oig::ratstats::utils::RStatsFloat mean;
+    oig::ratstats::utils::RStatsFloat totalSum;
     oig::ratstats::utils::RStatsFloat standardDeviation;
     oig::ratstats::utils::RStatsFloat skewness;
     oig::ratstats::utils::RStatsFloat standardErrorMean;
@@ -307,7 +308,7 @@ private:
 
     oig::ratstats::utils::RStatsIntegerList m_summaryUniverse;
     oig::ratstats::utils::RStatsIntegerList m_summaryNonZeroCount;
-    oig::ratstats::utils::RStatsInteger m_summaryTotalSum;
+    oig::ratstats::utils::RStatsFloat m_summaryTotalSum;
     oig::ratstats::utils::RStatsInteger m_summaryPopulationSize;
     oig::ratstats::utils::RStatsInteger m_summarySampleSize;
     oig::ratstats::utils::RStatsInteger m_summaryNonZero;

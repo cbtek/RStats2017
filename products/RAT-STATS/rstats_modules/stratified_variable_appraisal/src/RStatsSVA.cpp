@@ -148,22 +148,31 @@ void RStatsSVA::processSummaryTotals(RStatsSVAOutputData& summary, size_t index)
     summary.lower80 = m_summaryLowerLimit80(index);
     summary.lower90 = m_summaryLowerLimit90(index);
     summary.lower95 = m_summaryLowerLimit95(index);
-
+    summary.totalSum = m_summaryTotalSum;
     summary.upper80 = m_summaryUpperLimit80(index);
     summary.upper90 = m_summaryUpperLimit90(index);
     summary.upper95 = m_summaryUpperLimit95(index);
 
     summary.tValue80 = constants::ZVAL80;
     summary.tValue90 = constants::ZVAL90;
-    summary.tValue95 = constants::ZVAL95;
+    summary.tValue95 = constants::ZVAL95;   
 
-    summary.precisionAmount80 = m_summaryPrecisionAmount80(index);
-    summary.precisionAmount90 = m_summaryPrecisionAmount90(index);
-    summary.precisionAmount95 = m_summaryPrecisionAmount95(index);
+    summary.precisionAmount80 = m_summaryPrecisionAmount80(index) * static_cast<RStatsFloat>(summary.populationSize);
+    summary.precisionAmount90 = m_summaryPrecisionAmount90(index) * static_cast<RStatsFloat>(summary.populationSize);
+    summary.precisionAmount95 = m_summaryPrecisionAmount95(index) * static_cast<RStatsFloat>(summary.populationSize);
 
-    summary.precisionPercent80 =  RStatsUtils::isEqual(m_summaryPointEstimate(index),0.) ? 0. : 100. * (m_summaryPrecisionAmount80(index) / m_summaryPointEstimate(index));
-    summary.precisionPercent90 =  RStatsUtils::isEqual(m_summaryPointEstimate(index),0.) ? 0. : 100. * (m_summaryPrecisionAmount90(index) / m_summaryPointEstimate(index));
-    summary.precisionPercent95 =  RStatsUtils::isEqual(m_summaryPointEstimate(index),0.) ? 0. : 100. * (m_summaryPrecisionAmount95(index) / m_summaryPointEstimate(index));
+    if (m_summaryPointEstimate(index) > 0)
+    {
+        summary.precisionPercent80 =  (m_summaryPrecisionAmount80(index) / m_summaryPointEstimate(index));
+        summary.precisionPercent90 =  (m_summaryPrecisionAmount90(index) / m_summaryPointEstimate(index));
+        summary.precisionPercent95 =  (m_summaryPrecisionAmount95(index) / m_summaryPointEstimate(index));
+    }
+    else
+    {
+        summary.precisionPercent80 = 0.;
+        summary.precisionPercent90 = 0.;
+        summary.precisionPercent95 = 0.;
+    }
 
     summary.standardErrorMean = m_summaryStandardErrorMean(index) / static_cast<RStatsFloat>(summary.populationSize);
     summary.standardErrorTotal = m_summaryStandardErrorMean(index);
@@ -279,7 +288,7 @@ void RStatsSVA::saveOutputDataToWorksheet(const RStatsSVAOutputData &data,
     sheet("C5")="Std. Err. Mean:";
     sheet("C6")="Std. Err. Total:";
     sheet("C7")="Point Estimate:";
-
+    sheet("C8")="Total Sum:";
     sheet("A11") = "Lower:";
     sheet("A12") = "Upper:";
     sheet("A13")="Precision Amount:";
@@ -313,6 +322,7 @@ void RStatsSVA::saveOutputDataToWorksheet(const RStatsSVAOutputData &data,
     sheet("D5") = !std::isnan(data.standardErrorMean) ? StringUtils::toString(data.standardErrorMean,2): "0.00";
     sheet("D6") = !std::isnan(data.standardErrorTotal) ? StringUtils::toString(data.standardErrorTotal,0) : "0";
     sheet("D7") = !std::isnan(data.pointEstimate) ? StringUtils::toString(data.pointEstimate,0) : "0";
+    sheet("D8") = !std::isnan(data.totalSum) ? StringUtils::toString(data.totalSum,2) : "0";
 
     for (size_t a1 = 1;a1 <=5;++a1)
     {
@@ -343,9 +353,9 @@ void RStatsSVA::saveOutputDataToWorksheet(const RStatsSVAOutputData &data,
     if (data.isDisplaySummary)
     {
 
-        std::string percent80 = StringUtils::toString(data.precisionPercent80,2)+"%";
-        std::string percent90 = StringUtils::toString(data.precisionPercent90,2)+"%";
-        std::string percent95 = StringUtils::toString(data.precisionPercent95,2)+"%";
+        std::string percent80 = StringUtils::toString(data.precisionPercent80*100.,2)+"%";
+        std::string percent90 = StringUtils::toString(data.precisionPercent90*100.,2)+"%";
+        std::string percent95 = StringUtils::toString(data.precisionPercent95*100.,2)+"%";
 
         sheet("B14") = percent80;
         sheet("C14") = percent90;
@@ -385,7 +395,7 @@ void RStatsSVA::saveOutputDataToWorksheet(const RStatsSVAOutputData &data,
         sheet("B15") = data.tValue80;
         sheet("C15") = data.tValue90;
         sheet("D15") = data.tValue95;
-    }
+    }        
 }
 
 void RStatsSVA::buildOutputData(RStatsSVAOutputDataList& outputDataList,
@@ -443,6 +453,7 @@ void RStatsSVA::copyOutputData(RStatsSVAOutputData& outputData,
     outputData.isDisplaySummary = false;
     outputData.auditName = m_auditName;
     outputData.type = type;
+    outputData.totalSum = m_summaryTotalSum;
     outputData.sampleSize = inputData.sampleSize;
     outputData.populationSize = inputData.universeSize;
     outputData.nonZeroCount = static_cast<RStatsInteger>(m_outputNonZero(dataFormatIndex));
@@ -461,6 +472,7 @@ void RStatsSVA::copyOutputData(RStatsSVAOutputData& outputData,
     outputData.kurtosis = m_outputKurtosisAmount(dataFormatIndex);
     outputData.createDate = DateUtils::getCurrentDate();
     outputData.createTime = TimeUtils::getCurrentTime();
+
     outputData.precisionAmount80 = m_outputPrecision80(dataFormatIndex) * inputData.universeSize;
     outputData.precisionAmount90 = m_outputPrecision90(dataFormatIndex) * inputData.universeSize;
     outputData.precisionAmount95 = m_outputPrecision95(dataFormatIndex) * inputData.universeSize;
@@ -471,14 +483,17 @@ void RStatsSVA::copyOutputData(RStatsSVAOutputData& outputData,
         outputData.precisionPercent90 = m_outputPrecision90(dataFormatIndex) / outputData.mean;
         outputData.precisionPercent95 = m_outputPrecision95(dataFormatIndex) / outputData.mean;
     }
+    else
+    {
+        outputData.precisionPercent80 = 0.;
+        outputData.precisionPercent90 = 0.;
+        outputData.precisionPercent95 = 0.;
+    }
 
     outputData.tValue80 = m_outputTValue80;
     outputData.tValue90 = m_outputTValue90;
     outputData.tValue95 = m_outputTValue95;
-
 }
-
-
 
 RStatsSVA::RStatsSVA()
 {
@@ -869,8 +884,8 @@ void RStatsSVA::calculateStandardDeviation(const RStatsSVAInputData &inputData)
             {
                 m_outputStdDev(a1) = 0.;
             }
-            m_outputStdDevTemp(a1) += (m_outputStdDevTemp(a1) + std::pow(m_outputStdDev(a1),2) * std::pow(universeSize,2));
-            m_summaryStandardDeviation(a1) += m_outputStdDevTemp(a1);
+            m_outputStdDevTemp(a1) = (m_outputStdDevTemp(a1) + std::pow(m_outputStdDev(a1),2) * std::pow(universeSize,2));
+            m_summaryStandardDeviation(a1) = m_outputStdDevTemp(a1);
         }
         m_outputVStdDev(a1) = m_outputStdDev(a1);
     }
@@ -1223,8 +1238,6 @@ void RStatsSVA::processFindProbVal(RStatsFloat tempValue)
     m_currentProbability = .5 * (m_frontValue * tempValue + 1);
 }
 
-
-
 void RStatsSVA::calculateIntervals(const RStatsSVAInputData & inputData)
 {
     m_outputTValue80 = m_temporary80;
@@ -1255,9 +1268,8 @@ void RStatsSVA::calculateIntervals(const RStatsSVAInputData & inputData)
 void RStatsSVA::calculateOverallPrecision()
 {
     for (size_t a1 = 0; a1 < 3; ++a1)
-    {
-        if (m_outputNonZero(a1) > 0 &&
-            m_dataFormatTypeAvailableFlag(a1))
+    {        
+        if (m_summaryNonZeroCount(a1) > 0)
         {
 
             m_summaryStandardErrorMean(a1) = std::sqrt(m_summaryStandardErrorMean(a1));

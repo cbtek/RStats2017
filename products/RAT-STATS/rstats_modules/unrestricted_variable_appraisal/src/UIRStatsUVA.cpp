@@ -22,6 +22,7 @@
 #include <QListWidgetItem>
 #include <QDesktopServices>
 #include <QAbstractButton>
+#include <QIntValidator>
 
 using namespace oig::ratstats::ui;
 using namespace oig::ratstats::utils;
@@ -37,6 +38,11 @@ UIRStatsUVA::UIRStatsUVA(QWidget *parent) :
     m_ui(new Ui_UIRStatsUVA)
 {    
     m_ui->setupUi(this);
+
+    //Set validators for text boxes
+    QIntValidator * validator = new QIntValidator;
+    validator->setBottom(0);
+    m_ui->m_txtUniverseSize->setValidator(validator);
 
     //Initialize output labels for status bar
     m_currentCSVFileOutputLabel = nullptr;
@@ -91,7 +97,7 @@ UIRStatsUVA::UIRStatsUVA(QWidget *parent) :
     connect(m_ui->actionAbout,SIGNAL(triggered(bool)),this,SLOT(onAbout()));
     connect(m_ui->actionImport_Input_Data,SIGNAL(triggered(bool)),this,SLOT(onImportDataInput()));
 
-    connect(m_ui->m_spnUniverseSize,SIGNAL(valueChanged(int)),this,SLOT(onUpdateValidation()));
+    connect(m_ui->m_txtUniverseSize,SIGNAL(textEdited(QString)),this,SLOT(onUpdateValidation()));
 
     connect(m_ui->m_chkTextOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveTextFile()));
     connect(m_ui->m_chkCSVOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveCSVFile()));
@@ -137,7 +143,7 @@ void UIRStatsUVA::onExecute()
     try
     {
         //Convert universe size to unsigned integer
-        size_t universeSize = static_cast<size_t>(m_ui->m_spnUniverseSize->value());
+        size_t universeSize = static_cast<size_t>(m_ui->m_txtUniverseSize->text().toUInt());
 
         //Construct dfIndex object from current data format type
         //and primary/secondary column labels
@@ -199,29 +205,40 @@ void UIRStatsUVA::onExecute()
         RStatsWorksheet worksheet = workbook.mergeSheets(RStatsWorkbookMergeDirection::MergeBottom,2);
         m_ui->m_txtOutput->setHtml(QString::fromStdString(worksheet.toHTMLTableString()));
 
+        //Show results in browser if applicable
+        if (m_ui->m_chkViewInBrowser->isChecked())
+        {
+            RStatsWorksheet worksheet = workbook.mergeSheets(RStatsWorkbookMergeDirection::MergeBottom,2);
+            UIRStatsUtils::launchHtml(worksheet.toHTMLTableString());
+        }
+
+        size_t row = worksheet.getNumRows();
         //Save CSV file, if applicable
         if (m_ui->m_chkCSVOutput->isChecked())
         {
+            worksheet(row,0) = "CSV File:";
+            worksheet(row,1) = m_currentCSVFileOutput.toStdString();
             FileUtils::writeFileContents(m_currentCSVFileOutput.toStdString(),worksheet.toCommaDelimitedString());
         }
 
         //Save Text file, if applicable
         if (m_ui->m_chkTextOutput->isChecked())
         {
+            worksheet(row,0) = "Text File:";
+            worksheet(row,1) = m_currentTextFileOutput.toStdString();
             FileUtils::writeFileContents(m_currentTextFileOutput.toStdString(),worksheet.toEvenlySpacedString());
         }
 
         //Save XLS file (for Excel/Access), if applicable
         if (m_ui->m_chkXLSOutput->isChecked())
         {
+            for (size_t a1 = 0; a1 < workbook.getNumWorksheets();++a1)
+            {
+                row = workbook(a1).getNumRows();
+                workbook(a1)(row,0) = "XLS File:";
+                workbook(a1)(row,1) = m_currentXLSFileOutput.toStdString();
+            }
             workbook.save(m_currentXLSFileOutput.toStdString());
-        }
-
-        //Show results in browser if applicable
-        if (m_ui->m_chkViewInBrowser->isChecked())
-        {
-            RStatsWorksheet worksheet = workbook.mergeSheets(RStatsWorkbookMergeDirection::MergeBottom,2);            
-            UIRStatsUtils::launchHtml(worksheet.toHTMLTableString());
         }
 
         //Show the output window
@@ -304,8 +321,8 @@ void UIRStatsUVA::importDataTable(const std::string& dataTableFilePath)
 
 void UIRStatsUVA::onSetTabOrder()
 {
-    this->setTabOrder(m_ui->m_txtAuditName,m_ui->m_spnUniverseSize);
-    this->setTabOrder(m_ui->m_spnUniverseSize,m_ui->m_rdbExamined);
+    this->setTabOrder(m_ui->m_txtAuditName,m_ui->m_txtUniverseSize);
+    this->setTabOrder(m_ui->m_txtUniverseSize,m_ui->m_rdbExamined);
     this->setTabOrder(m_ui->m_rdbExamined,m_ui->m_rdbAudited);
     this->setTabOrder(m_ui->m_rdbAudited,m_ui->m_rdbDifference);
     this->setTabOrder(m_ui->m_rdbDifference,m_ui->m_rdbExaminedAndAudited);
@@ -481,8 +498,13 @@ bool UIRStatsUVA::onValidate()
     //Clear condition logger and validation console
     m_conditionLogger.clear();
     m_ui->m_lstValidationConsole->clear();
+    std::uint64_t universeSize = m_ui->m_txtUniverseSize->text().toUInt();
 
     //Add error conditions to condition logger
+
+    m_conditionLogger.addError(universeSize >= 1000000000,
+                               "You have EXCEEDED the universe size(999,999,999) data limitation imposed by RAT-STATS 2010.");
+
     m_conditionLogger.addError((m_tblPreview->rowCount() == 0),
                                "You have NOT imported any content rows into the data table.");
 
@@ -592,7 +614,7 @@ RStatsUVASessionData UIRStatsUVA::getSessionData() const
     RStatsUVASessionData data;
     data.setAuditName(text.toStdString());
     data.setDataFormat(m_currentDataFormat);
-    data.setUniverseSize(m_ui->m_spnUniverseSize->value());
+    data.setUniverseSize(m_ui->m_txtUniverseSize->text().toUInt());
     data.setDataRowStart(m_ui->m_cmbDataRowStartDataTable->currentText().toInt());
     data.setAuditColumn(m_ui->m_cmbAuditedDataTable->currentText().toStdString());
     data.setExamineColumn(m_ui->m_cmbExaminedDataTable->currentText().toStdString());
@@ -612,7 +634,7 @@ void UIRStatsUVA::setSessionData(const RStatsUVASessionData& data)
     m_currentDataWorkbook.clear();
     m_currentDataSheet.setWorksheetTitle("Data Sheet");
     m_currentDataWorkbook.addWorksheet(m_currentDataSheet);
-    m_ui->m_spnUniverseSize->setValue(static_cast<int>(data.getUniverseSize()));
+    m_ui->m_txtUniverseSize->setText(QString::number(static_cast<int>(data.getUniverseSize())));
     m_ui->m_chkViewInBrowser->setChecked(data.isViewableInBrowser());
 
     //set audit name

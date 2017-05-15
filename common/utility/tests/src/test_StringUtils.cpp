@@ -38,7 +38,17 @@ TEST_CASE("Testing StringUtils::isNumeric","[utility::StringUtils]")
     std::string test4 = "-";
     std::string test5 = "$-5,000.00";
     std::string test6 = "-$5,000.00";
-    std::string test7 = "";
+    std::string test7 = "-$(5,000.00)";
+    std::string test8 = "5E-10";
+    std::string test9 = "-5E-10";
+    std::string test10 = "5E-010";
+    std::string test11 = "-5E-010";
+    std::string test12 = "5E-10";
+    std::string test13 = "-5E-10";
+    std::string test14 = "5E-010";
+    std::string test15 = "-5E-010";
+    std::string test16 = "-1000.e.e.e";
+
 
     REQUIRE(StringUtils::isNumeric(test1) == true);
     REQUIRE(StringUtils::isNumeric(test2) == true);
@@ -46,7 +56,16 @@ TEST_CASE("Testing StringUtils::isNumeric","[utility::StringUtils]")
     REQUIRE(StringUtils::isNumeric(test4) == false);
     REQUIRE(StringUtils::isNumeric(test5) == true);
     REQUIRE(StringUtils::isNumeric(test6) == true);
-    REQUIRE(StringUtils::isNumeric(test7) == false);
+    REQUIRE(StringUtils::isNumeric(test7) == true);
+    REQUIRE(StringUtils::isNumeric(test8) == true);
+    REQUIRE(StringUtils::isNumeric(test9) == true);
+    REQUIRE(StringUtils::isNumeric(test10) == true);
+    REQUIRE(StringUtils::isNumeric(test11) == true);
+    REQUIRE(StringUtils::isNumeric(test12) == true);
+    REQUIRE(StringUtils::isNumeric(test13) == true);
+    REQUIRE(StringUtils::isNumeric(test14) == true);
+    REQUIRE(StringUtils::isNumeric(test15) == true);
+    REQUIRE(StringUtils::isNumeric(test16) == false);
 }
 
 TEST_CASE("Testing StringUtils::isWholeWord","[utility::StringUtils]")
@@ -209,13 +228,19 @@ TEST_CASE("Testing StringUtils::splitByTokens","[utility::StringUtils]")
 }
 TEST_CASE("Testing StringUtils::removeTrailingZeroes","[utility::StringUtils]")
 {
+
     std::string trail1 = "1.100000";
     std::string trail2 = "101.111100";
     std::string trail3 = "1.0";
     std::string trail4 = "1.";
+    std::string trail5 = "11000";
+    std::string trail6 = "-3452100000";
+
     REQUIRE(StringUtils::removeTrailingZeroes(trail1) == "1.1");
     REQUIRE(StringUtils::removeTrailingZeroes(trail2) == "101.1111");
     REQUIRE(StringUtils::removeTrailingZeroes(trail3) == "1");
     REQUIRE(StringUtils::removeTrailingZeroes(trail4) == "1");
+    REQUIRE(StringUtils::removeTrailingZeroes(trail5) == "11000");
+    REQUIRE(StringUtils::removeTrailingZeroes(trail6) == "-3452100000");
 }
 

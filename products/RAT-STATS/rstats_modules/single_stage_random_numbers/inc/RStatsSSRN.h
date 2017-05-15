@@ -105,7 +105,7 @@ public:
        * @return
        */
       RStatsSSRNOutputData execute(const std::string & auditName,
-                                   RStatsFloat inputSeed,
+                                   std::string inputSeed,
                                    oig::ratstats::utils::RStatsInteger sequentialOrder,
                                    oig::ratstats::utils::RStatsInteger sparesInRandomOrder,
                                    oig::ratstats::utils::RStatsInteger lowNumber,
@@ -137,7 +137,7 @@ private:
     size_t m_sequentialCount;
     size_t m_sparesCount;
     RStatsSSRNOutputData m_outputData;
-
+    std::string m_inputSeedStr;
     /**
      * @brief vbRand
      * @param ExcelSeed

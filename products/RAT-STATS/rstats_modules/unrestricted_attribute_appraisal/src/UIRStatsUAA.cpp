@@ -15,6 +15,7 @@
 #include <QDesktopServices>
 #include <QFile>
 #include <QListWidgetItem>
+#include <QIntValidator>
 
 #include "rstats_ui/inc/UIRStatsAbout.h"
 #include "rstats_ui/inc/UIRStatsUtils.hpp"
@@ -45,6 +46,18 @@ UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
     m_iconWarning = UIRStatsUtils::getIcon("img_warning.png");
     m_iconOK = UIRStatsUtils::getIcon("img_ok.png");
 
+    //Set validators for text boxes
+    QIntValidator * validatorForValues = new QIntValidator;
+    validatorForValues->setBottom(0);
+    m_ui->m_txtUniverseSize->setValidator(validatorForValues);
+    m_ui->m_txtCOI->setValidator(validatorForValues);
+    m_ui->m_txtSampleSize->setValidator(validatorForValues);
+
+    //Set Default values
+    m_ui->m_txtUniverseSize->setText("0");
+    m_ui->m_txtCOI->setText("0");
+    m_ui->m_txtSampleSize->setText("0");
+
     //Initialize all buttons and menu items
     UIRStatsUtils::initButton(m_ui->m_btnExecute, "img_run.png");
     UIRStatsUtils::initButton(m_ui->m_btnExit, "img_exit.png");
@@ -67,9 +80,14 @@ UIRStatsUAA::UIRStatsUAA(QWidget *parent) :
     connect(m_ui->m_btnHelp,SIGNAL(clicked()),this,SLOT(onHelp()));
     connect(m_ui->m_chkCSVOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveCSVFile()));
     connect(m_ui->m_chkTextOutput,SIGNAL(toggled(bool)),this,SLOT(onSaveTextFile()));    
-    connect(m_ui->m_spnSampleSize,SIGNAL(valueChanged(int)),this,SLOT(onUpdateValidation()));
-    connect(m_ui->m_spnUniverseSize,SIGNAL(valueChanged(int)),this,SLOT(onUpdateValidation()));
-    connect(m_ui->m_spnCOI,SIGNAL(valueChanged(int)),this,SLOT(onUpdateValidation()));
+    connect(m_ui->m_txtSampleSize,SIGNAL(textEdited(QString)),this,SLOT(onUpdateValidation()));
+    connect(m_ui->m_txtUniverseSize,SIGNAL(textEdited(QString)),this,SLOT(onUpdateValidation()));
+    connect(m_ui->m_txtCOI,SIGNAL(textEdited(QString)),this,SLOT(onUpdateValidation()));
+
+    connect(m_ui->m_txtSampleSize,SIGNAL(editingFinished()),this,SLOT(onUpdateFields()));
+    connect(m_ui->m_txtUniverseSize,SIGNAL(editingFinished()),this,SLOT(onUpdateFields()));
+    connect(m_ui->m_txtCOI,SIGNAL(editingFinished()),this,SLOT(onUpdateFields()));
+
     connect(m_ui->m_txtAuditName,SIGNAL(textChanged(QString)),this,SLOT(onUpdateValidation()));
 
 
@@ -99,16 +117,6 @@ UIRStatsUAA::~UIRStatsUAA()
     delete m_ui;
 }
 
-void UIRStatsUAA::onUpdateSampleCount()
-{
-    m_ui->m_spnCOI->setMaximum(m_ui->m_spnSampleSize->value());
-}
-
-void UIRStatsUAA::onUpdateUniverseCount()
-{
-    m_ui->m_spnSampleSize->setMaximum(m_ui->m_spnUniverseSize->value());
-}
-
 void UIRStatsUAA::onHelp()
 {
     UIRStatsUtils::launchHelp("rstats_user_uaa.pdf");
@@ -124,18 +132,33 @@ bool UIRStatsUAA::onValidate()
     m_conditionLogger.clear();
     m_ui->m_lstValidationConsole->clear();
 
+    std::int64_t universe = m_ui->m_txtUniverseSize->text().toInt();
+    std::int64_t coi = m_ui->m_txtCOI->text().toInt();
+    std::int64_t sample = m_ui->m_txtSampleSize->text().toInt();
+
+
     //Define list of conditions for condition logger
-     m_conditionLogger.addError((m_ui->m_spnCOI->value() > m_ui->m_spnSampleSize->value()),
+
+    m_conditionLogger.addError((coi > sample),
                                 "The number of items with characteristics of interest (COI) must be less than the sample size.");
 
-     m_conditionLogger.addError((m_ui->m_spnSampleSize->value() > m_ui->m_spnUniverseSize->value()),
+     m_conditionLogger.addError((sample > universe),
                                 "The sample size must be less than the universe size.");
+
+     m_conditionLogger.addError(universe > 2147483647,
+                                "You have EXCEEDED the universe size data limitation imposed by RAT-STATS 2010.");
+
 
      m_conditionLogger.addWarning((!m_ui->m_chkCSVOutput->isChecked() && !m_ui->m_chkTextOutput->isChecked()),
                                 "You have NOT selected an output file for the results.  Assuming screen display only.");
 
+
      m_conditionLogger.addWarning(m_ui->m_txtAuditName->text().isEmpty(),
                                   "You have NOT set the name for this audit.  Using auto-generated name: '"+m_ui->m_txtAuditName->placeholderText().toStdString()+"'");
+
+     m_conditionLogger.addWarning(universe < 0, "Universe size is less than 0." );
+     m_conditionLogger.addError(coi < 0, "Characteristic of interest size must be greather than or equal to 0." );
+     m_conditionLogger.addError(sample <= 0, "Sample size must be greater than 0." );
 
      //Check if any conditions passed
     if (!m_conditionLogger.hasMessages())
@@ -192,6 +215,29 @@ void UIRStatsUAA::onLaunchNewWindow()
     (new UIRStatsUAA(nullptr))->show();
 }
 
+void UIRStatsUAA::onUpdateFields()
+{
+    if (m_ui->m_txtSampleSize->text().isEmpty())
+    {
+        disconnect(m_ui->m_txtSampleSize,SIGNAL(textEdited(QString)),this,SLOT(onUpdateValidation()));
+        m_ui->m_txtSampleSize->setText("0");
+        connect(m_ui->m_txtSampleSize,SIGNAL(textEdited(QString)),this,SLOT(onUpdateValidation()));
+    }
+    else if (m_ui->m_txtCOI->text().isEmpty())
+    {
+        disconnect(m_ui->m_txtCOI,SIGNAL(textEdited(QString)),this,SLOT(onUpdateValidation()));
+        m_ui->m_txtCOI->setText("0");
+        connect(m_ui->m_txtCOI,SIGNAL(textEdited(QString)),this,SLOT(onUpdateValidation()));
+    }
+    else if (m_ui->m_txtUniverseSize->text().isEmpty())
+    {
+        disconnect(m_ui->m_txtUniverseSize,SIGNAL(textEdited(QString)),this,SLOT(onUpdateValidation()));
+        m_ui->m_txtUniverseSize->setText("0");
+        connect(m_ui->m_txtUniverseSize,SIGNAL(textEdited(QString)),this,SLOT(onUpdateValidation()));
+    }
+    onValidate();
+}
+
 void UIRStatsUAA::onExecute()
 {    
     if (!onValidate())
@@ -203,9 +249,9 @@ void UIRStatsUAA::onExecute()
     {
 
         //Grab the values from the UI
-        RStatsInteger sampleSize = m_ui->m_spnSampleSize->value();
-        RStatsInteger universeSize = m_ui->m_spnUniverseSize->value();
-        RStatsInteger coiSize = m_ui->m_spnCOI->value();
+        RStatsInteger sampleSize = m_ui->m_txtSampleSize->text().toInt();
+        RStatsInteger universeSize = m_ui->m_txtUniverseSize->text().toInt();
+        RStatsInteger coiSize = m_ui->m_txtCOI->text().toInt();
 
         //Grab the name of the audit
         std::string name = m_ui->m_txtAuditName->text().toStdString();
@@ -237,9 +283,20 @@ void UIRStatsUAA::onExecute()
         std::string htmlContent = worksheet.toHTMLTableString();
         m_ui->m_txtOutput->setHtml(QString::fromStdString(htmlContent));
 
+
+        //Show results in browser if selected
+        if (m_ui->m_chkViewInBrowser->isChecked())
+        {
+            UIRStatsUtils::launchHtml(htmlContent);
+        }
+
+        size_t row =  worksheet.getNumRows();
+
         //Save CSV file (for Excel/Access) if applicable
         if (m_ui->m_chkCSVOutput->isChecked())
         {
+            worksheet(row,0) = "CSV File:";
+            worksheet(row,1) = m_currentCSVFileOutput.toStdString();
             FileUtils::writeFileContents(m_currentCSVFileOutput.toStdString(),
                                          worksheet.toCommaDelimitedString());
         }
@@ -247,6 +304,8 @@ void UIRStatsUAA::onExecute()
         //Save Text file, if applicable
         if (m_ui->m_chkTextOutput->isChecked())
         {
+            worksheet(row,0) = "Text File:";
+            worksheet(row,1) = m_currentTextFileOutput.toStdString();
             FileUtils::writeFileContents(m_currentTextFileOutput.toStdString(),
                                          worksheet.toEvenlySpacedString());
         }
@@ -255,14 +314,10 @@ void UIRStatsUAA::onExecute()
         if (m_ui->m_chkXLSOutput->isChecked())
         {
             RStatsWorkbook workbook;
+            worksheet(row,0) = "XLS File:";
+            worksheet(row,1) = m_currentXLSFileOutput.toStdString();
             workbook.addWorksheet(worksheet);
             workbook.save(m_currentXLSFileOutput.toStdString());
-        }
-
-        //Show results in browser if selected
-        if (m_ui->m_chkViewInBrowser->isChecked())
-        {
-            UIRStatsUtils::launchHtml(htmlContent);
         }
 
         m_ui->m_frmOutput->show();
@@ -299,9 +354,9 @@ RStatsUAASessionData UIRStatsUAA::getSessionData() const
     }
     RStatsUAASessionData data;
     data.setAuditName(text.toStdString());
-    data.setSampleSize(m_ui->m_spnSampleSize->value());
-    data.setCoiSize(m_ui->m_spnCOI->value());
-    data.setUniverseSize(m_ui->m_spnUniverseSize->value());
+    data.setSampleSize(m_ui->m_txtSampleSize->text().toInt());
+    data.setCoiSize(m_ui->m_txtCOI->text().toInt());
+    data.setUniverseSize(m_ui->m_txtUniverseSize->text().toInt());
     data.setCSVOutputFile(m_currentCSVFileOutput.toStdString());
     data.setXLSOutputFile(m_currentXLSFileOutput.toStdString());
     data.setTextOutputFile(m_currentTextFileOutput.toStdString());
@@ -312,9 +367,9 @@ RStatsUAASessionData UIRStatsUAA::getSessionData() const
 void UIRStatsUAA::setSessionData(const RStatsUAASessionData &data)
 {
     m_ui->m_txtAuditName->setText(QString::fromStdString(data.getAuditName()));
-    m_ui->m_spnSampleSize->setValue(static_cast<int>(data.getSampleSize()));
-    m_ui->m_spnCOI->setValue(static_cast<int>(data.getCoiSize()));
-    m_ui->m_spnUniverseSize->setValue(static_cast<int>(data.getUniverseSize()));
+    m_ui->m_txtSampleSize->setText(QString::number(static_cast<int>(data.getSampleSize())));
+    m_ui->m_txtCOI->setText(QString::number(static_cast<int>(data.getCoiSize())));
+    m_ui->m_txtUniverseSize->setText(QString::number(static_cast<int>(data.getUniverseSize())));
     m_ui->m_chkViewInBrowser->setChecked(data.isViewableInBrowser());
     m_autoSetFileOutput = true;
     if (!data.getCSVOutputFile().empty())

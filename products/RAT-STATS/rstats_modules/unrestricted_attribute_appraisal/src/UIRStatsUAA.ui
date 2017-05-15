@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1024</width>
+    <width>1025</width>
     <height>768</height>
    </rect>
   </property>
@@ -306,24 +306,9 @@
             <number>11</number>
            </property>
            <item>
-            <widget class="QSpinBox" name="m_spnUniverseSize">
-             <property name="alignment">
-              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-             </property>
-             <property name="suffix">
-              <string/>
-             </property>
-             <property name="prefix">
-              <string/>
-             </property>
-             <property name="minimum">
-              <number>1</number>
-             </property>
-             <property name="maximum">
-              <number>2147483646</number>
-             </property>
-             <property name="value">
-              <number>10</number>
+            <widget class="QLineEdit" name="m_txtUniverseSize">
+             <property name="placeholderText">
+              <string>0</string>
              </property>
             </widget>
            </item>
@@ -349,12 +334,9 @@
             <number>11</number>
            </property>
            <item>
-            <widget class="QSpinBox" name="m_spnSampleSize">
-             <property name="minimum">
-              <number>2</number>
-             </property>
-             <property name="maximum">
-              <number>2147483646</number>
+            <widget class="QLineEdit" name="m_txtSampleSize">
+             <property name="placeholderText">
+              <string>0</string>
              </property>
             </widget>
            </item>
@@ -380,9 +362,9 @@
             <number>11</number>
            </property>
            <item row="0" column="0">
-            <widget class="QSpinBox" name="m_spnCOI">
-             <property name="maximum">
-              <number>2147483647</number>
+            <widget class="QLineEdit" name="m_txtCOI">
+             <property name="placeholderText">
+              <string>0</string>
              </property>
             </widget>
            </item>
@@ -467,7 +449,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1024</width>
+     <width>1025</width>
      <height>20</height>
     </rect>
    </property>
@@ -548,9 +530,9 @@
  </widget>
  <tabstops>
   <tabstop>m_txtAuditName</tabstop>
-  <tabstop>m_spnUniverseSize</tabstop>
-  <tabstop>m_spnSampleSize</tabstop>
-  <tabstop>m_spnCOI</tabstop>
+  <tabstop>m_txtUniverseSize</tabstop>
+  <tabstop>m_txtSampleSize</tabstop>
+  <tabstop>m_txtCOI</tabstop>
   <tabstop>m_chkXLSOutput</tabstop>
   <tabstop>m_chkCSVOutput</tabstop>
   <tabstop>m_chkTextOutput</tabstop>
