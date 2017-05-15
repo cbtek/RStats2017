@@ -101,10 +101,6 @@ RStatsXLSWorkbookStream::~RStatsXLSWorkbookStream()
 {
 
 }
-
-
-
-
 }}}}//end namespace
 
 
