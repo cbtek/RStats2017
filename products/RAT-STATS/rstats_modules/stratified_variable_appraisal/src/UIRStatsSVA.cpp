@@ -135,6 +135,9 @@ UIRStatsSVA::UIRStatsSVA(QWidget *parent) :
     connect(m_ui->m_rdbExaminedAndDifference,SIGNAL(toggled(bool)),this,SLOT(onUpdateDataFormatButtons()));
     connect(m_ui->m_txtAuditName,SIGNAL(textChanged(QString)),this,SLOT(onUpdateValidation()));
 
+    //Set auto set file output to false
+    m_autoSetFileOutput = false;
+
     //Enable the Examined data format as default
     m_ui->m_rdbExamined->setChecked(true);
 
