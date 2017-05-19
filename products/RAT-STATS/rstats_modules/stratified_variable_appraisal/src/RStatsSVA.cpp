@@ -54,7 +54,7 @@ RStatsSVAOutputDataList RStatsSVA::execute(const std::string& auditName,
                                                                sizeSheetRowStart);
     RStatsDataFormatType dataFormatType = RStatsDataFormatType::Audit;
     RStatsInteger index = 0;    
-    m_summaryTotalSum = 0;
+    m_summaryTotalOverallSum = 0;
     m_summaryPopulationSize = 0;
     m_summarySampleSize  = 0;
     m_summaryNonZero = 0;
@@ -77,6 +77,7 @@ RStatsSVAOutputDataList RStatsSVA::execute(const std::string& auditName,
     m_summaryTValue95.initialize(3);
     m_summaryTotalMean.initialize(3);
     m_summaryStandardDeviation.initialize(3);
+    m_summaryTotalSum.initialize(3);
     m_auditName = auditName;
     m_currentIndex = 0;
 
@@ -105,7 +106,7 @@ RStatsSVAOutputDataList RStatsSVA::execute(const std::string& auditName,
 
         m_summarySampleSize += inputData.sampleSize;
         m_summaryNonZero += RStatsUtils::getSum(m_outputNonZero);
-        m_summaryTotalSum += RStatsUtils::getSum(m_outputSum);
+        m_summaryTotalOverallSum += RStatsUtils::getSum(m_outputSum);
         m_summaryPopulationSize += inputData.universeSize;        
         buildOutputData(m_outputDataList,
                         inputData,
@@ -148,7 +149,7 @@ void RStatsSVA::processSummaryTotals(RStatsSVAOutputData& summary, size_t index)
     summary.lower80 = m_summaryLowerLimit80(index);
     summary.lower90 = m_summaryLowerLimit90(index);
     summary.lower95 = m_summaryLowerLimit95(index);
-    summary.totalSum = m_summaryTotalSum;
+    summary.totalSum = m_summaryTotalSum(index);
     summary.upper80 = m_summaryUpperLimit80(index);
     summary.upper90 = m_summaryUpperLimit90(index);
     summary.upper95 = m_summaryUpperLimit95(index);
@@ -288,7 +289,12 @@ void RStatsSVA::saveOutputDataToWorksheet(const RStatsSVAOutputData &data,
     sheet("C5")="Std. Err. Mean:";
     sheet("C6")="Std. Err. Total:";
     sheet("C7")="Point Estimate:";
-    sheet("C8")="Total Sum:";
+
+    if (data.isDisplaySummary)
+    {
+        sheet("C8")="Total Sum:";
+    }
+
     sheet("A11") = "Lower:";
     sheet("A12") = "Upper:";
     sheet("A13")="Precision Amount:";
@@ -322,7 +328,10 @@ void RStatsSVA::saveOutputDataToWorksheet(const RStatsSVAOutputData &data,
     sheet("D5") = !std::isnan(data.standardErrorMean) ? StringUtils::toString(data.standardErrorMean,2): "0.00";
     sheet("D6") = !std::isnan(data.standardErrorTotal) ? StringUtils::toString(data.standardErrorTotal,0) : "0";
     sheet("D7") = !std::isnan(data.pointEstimate) ? StringUtils::toString(data.pointEstimate,0) : "0";
-    sheet("D8") = !std::isnan(data.totalSum) ? StringUtils::toString(data.totalSum,2) : "0";
+    if (data.isDisplaySummary)
+    {
+        sheet("D8") = !std::isnan(data.totalSum) ? StringUtils::toString(data.totalSum,2) : "0";
+    }
 
     for (size_t a1 = 1;a1 <=5;++a1)
     {
@@ -452,8 +461,7 @@ void RStatsSVA::copyOutputData(RStatsSVAOutputData& outputData,
     outputData.isValid = true;
     outputData.isDisplaySummary = false;
     outputData.auditName = m_auditName;
-    outputData.type = type;
-    outputData.totalSum = m_summaryTotalSum;
+    outputData.type = type;   
     outputData.sampleSize = inputData.sampleSize;
     outputData.populationSize = inputData.universeSize;
     outputData.nonZeroCount = static_cast<RStatsInteger>(m_outputNonZero(dataFormatIndex));
@@ -684,7 +692,7 @@ void RStatsSVA::onReset()
     m_outputPrecisionTemp90.initialize(3);
     m_outputPrecisionTemp95.initialize(3);
     m_outputVStdErr.initialize(3);
-    m_outputNonZeroTemp.initialize(3);
+    m_outputNonZeroTemp.initialize(3);    
 
     m_currentIteration = 0;
     m_currentNonZero = 0;
@@ -705,6 +713,7 @@ void RStatsSVA::onUpdateSums(const RStatsFloatList &auditValues,
 {
 
     m_outputSum(0) += RStatsUtils::getSum(examValues);
+    m_summaryTotalSum(0) += m_outputSum(0);
     m_outputSumSqrt(0) += RStatsUtils::getSumRaisedTo<RStatsFloat>(examValues,2);
     m_outputSumCbrt(0) += RStatsUtils::getSumRaisedTo<RStatsFloat>(examValues,3);
     m_outputSumQdrt(0) += RStatsUtils::getSumRaisedTo<RStatsFloat>(examValues,4);
@@ -715,6 +724,7 @@ void RStatsSVA::onUpdateSums(const RStatsFloatList &auditValues,
     m_summaryNonZeroCount(0) += m_outputNonZero(0);
 
     m_outputSum(1) += RStatsUtils::getSum(auditValues);
+    m_summaryTotalSum(1) += m_outputSum(1);
     m_outputSumSqrt(1) += RStatsUtils::getSumRaisedTo<RStatsFloat>(auditValues,2);
     m_outputSumCbrt(1) += RStatsUtils::getSumRaisedTo<RStatsFloat>(auditValues,3);
     m_outputSumQdrt(1) += RStatsUtils::getSumRaisedTo<RStatsFloat>(auditValues,4);
@@ -724,6 +734,7 @@ void RStatsSVA::onUpdateSums(const RStatsFloatList &auditValues,
     m_summaryNonZeroCount(1) += m_outputNonZero(1);
 
     m_outputSum(2) += RStatsUtils::getSum(differenceValues);
+    m_summaryTotalSum(2) += m_outputSum(2);
     m_outputSumSqrt(2) += RStatsUtils::getSumRaisedTo<RStatsFloat>(differenceValues,2);
     m_outputSumCbrt(2) += RStatsUtils::getSumRaisedTo<RStatsFloat>(differenceValues,3);
     m_outputSumQdrt(2) += RStatsUtils::getSumRaisedTo<RStatsFloat>(differenceValues,4);
@@ -747,6 +758,7 @@ void RStatsSVA::initializeDataTypeFormat(RStatsDataFormatType dataTypeFormat,
         m_dataFormatTypeAvailableFlag(0) = true;
         m_examineSum = RStatsUtils::getSum(inputData.samples);
         m_outputSum(0) += m_examineSum;        
+        m_summaryTotalSum(0) += m_outputSum(0);
         m_outputSumSqrt(0) += RStatsUtils::getSumRaisedTo<RStatsFloat>(inputData.samples,2);
         m_outputSumCbrt(0) += RStatsUtils::getSumRaisedTo<RStatsFloat>(inputData.samples,3);
         m_outputSumQdrt(0) += RStatsUtils::getSumRaisedTo<RStatsFloat>(inputData.samples,4);
@@ -762,6 +774,7 @@ void RStatsSVA::initializeDataTypeFormat(RStatsDataFormatType dataTypeFormat,
         m_dataFormatTypeAvailableFlag(1) = true;
         m_auditSum = RStatsUtils::getSum(inputData.samples);
         m_outputSum(1) += m_auditSum;
+        m_summaryTotalSum(1) += m_outputSum(1);
         m_outputSumSqrt(1) += RStatsUtils::getSumRaisedTo<RStatsFloat>(inputData.samples,2);
         m_outputSumCbrt(1) += RStatsUtils::getSumRaisedTo<RStatsFloat>(inputData.samples,3);
         m_outputSumQdrt(1) += RStatsUtils::getSumRaisedTo<RStatsFloat>(inputData.samples,4);
@@ -778,6 +791,7 @@ void RStatsSVA::initializeDataTypeFormat(RStatsDataFormatType dataTypeFormat,
         m_dataFormatTypeAvailableFlag(2) = true;
         m_differenceSum = RStatsUtils::getSum(inputData.samples);
         m_outputSum(2) += m_differenceSum;
+        m_summaryTotalSum(2) += m_outputSum(2);
         m_outputSumSqrt(2) += RStatsUtils::getSumRaisedTo<RStatsFloat>(inputData.samples,2);
         m_outputSumCbrt(2) += RStatsUtils::getSumRaisedTo<RStatsFloat>(inputData.samples,3);
         m_outputSumQdrt(2) += RStatsUtils::getSumRaisedTo<RStatsFloat>(inputData.samples,4);

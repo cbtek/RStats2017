@@ -70,7 +70,7 @@ struct RStatsSVAOutputData
     oig::ratstats::utils::RStatsFloat tValue95;
     oig::ratstats::utils::RStatsFloat precisionPercent80;
     oig::ratstats::utils::RStatsFloat precisionPercent90;
-    oig::ratstats::utils::RStatsFloat precisionPercent95;
+    oig::ratstats::utils::RStatsFloat precisionPercent95;    
     RStatsSVAOutputData()
     {
         this->isDisplaySummary = false;
@@ -308,7 +308,7 @@ private:
 
     oig::ratstats::utils::RStatsIntegerList m_summaryUniverse;
     oig::ratstats::utils::RStatsIntegerList m_summaryNonZeroCount;
-    oig::ratstats::utils::RStatsFloat m_summaryTotalSum;
+    oig::ratstats::utils::RStatsFloat m_summaryTotalOverallSum;
     oig::ratstats::utils::RStatsInteger m_summaryPopulationSize;
     oig::ratstats::utils::RStatsInteger m_summarySampleSize;
     oig::ratstats::utils::RStatsInteger m_summaryNonZero;
@@ -351,6 +351,7 @@ private:
     oig::ratstats::utils::RStatsFloat m_outputTValue90;
     oig::ratstats::utils::RStatsFloat m_outputTValue95;
 
+
     oig::ratstats::utils::RStatsFloatList m_summaryPointEstimate;
     oig::ratstats::utils::RStatsFloatList m_summaryStandardErrorMean;
     oig::ratstats::utils::RStatsFloatList m_summaryLowerLimit80;
@@ -370,6 +371,7 @@ private:
     oig::ratstats::utils::RStatsFloatList m_summaryTValue95;
     oig::ratstats::utils::RStatsFloatList m_summaryTotalMean;
     oig::ratstats::utils::RStatsFloatList m_summaryStandardDeviation;
+    oig::ratstats::utils::RStatsFloatList m_summaryTotalSum;
 
     oig::ratstats::utils::RStatsFloatList m_auditValues;
     oig::ratstats::utils::RStatsFloatList m_differenceValues;
