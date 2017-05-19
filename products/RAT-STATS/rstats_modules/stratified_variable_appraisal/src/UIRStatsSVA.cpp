@@ -278,17 +278,7 @@ void UIRStatsSVA::onExecute()
         m_recentSessionsMap[sessionData.getSessionId()]=RStatsModuleSessionDataPtr(new RStatsSVASessionData(sessionData));
         RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getSessionId()]);
         updateRecentSessions();
-
-
-        //Show results in browser if selected
-        if (m_ui->m_chkViewInBrowser->isChecked())
-        {
-            RStatsWorksheet worksheet = workbook.mergeSheets(RStatsWorkbookMergeDirection::MergeBottom,2);
-            std::string htmlPath = FileUtils::buildFilePath(SystemUtils::getUserTempDirectory(), FileUtils::getRandomFileName(10,0)+".html");
-            FileUtils::writeFileContents(htmlPath,worksheet.toHTMLTableString());
-            QDesktopServices::openUrl(QUrl(QString::fromStdString(htmlPath)));
-        }
-
+        m_ui->m_txtAuditName->setFocus();
     }
     catch (std::exception& e)
     {

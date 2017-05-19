@@ -303,6 +303,11 @@ private:
      * Will launch new instance of the RStatsUVA window
      */
     void onLaunchNewWindow();
+
+    /**
+     * @brief resetFocus
+     */
+    void onResetFocus();
 };
 }}}}//end namespace
 

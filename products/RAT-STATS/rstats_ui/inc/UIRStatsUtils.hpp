@@ -24,6 +24,7 @@
 #include <QDesktopServices>
 #include <QComboBox>
 #include <QListWidget>
+#include <QFocusEvent>
 
 #include <map>
 
@@ -51,14 +52,35 @@ namespace ui {
  * @brief This namespace represents a collection of reusable functions
  * that have access to the Qt classes.
  */
-namespace UIRStatsUtils
+class UIRStatsUtils
 {
+private:
+    UIRStatsUtils();
+    UIRStatsUtils(const UIRStatsUtils&);
+    UIRStatsUtils& operator=(const UIRStatsUtils&);
+    ~UIRStatsUtils();
+public:
+
+    /**
+     * @brief forceFocus Forces focus on a widget
+     * @param widget The widget to force focus on
+     */
+    static void forceFocus(QWidget* widget)
+    {
+        // unless set active, no stable set focus here
+        widget->activateWindow();
+        // the event object is released then in event loop (?)
+        QFocusEvent* eventFocus = new QFocusEvent(QEvent::FocusIn);
+        // posting event for forcing the focus with low priority
+        qApp->postEvent(widget, (QEvent *)eventFocus, Qt::LowEventPriority);
+    }
+
 
     /**
      * @brief desktopOpen Opens files and web urls on the desktp
      * @param url Location of item to open
      */
-    inline void desktopOpen(const std::string& url)
+    static void desktopOpen(const std::string& url)
     {
         #ifdef __WIN32            
             ShellExecute(NULL,"open",url.c_str(),NULL,NULL,SW_SHOWNORMAL);
@@ -71,7 +93,7 @@ namespace UIRStatsUtils
      * @brief launchHtml Displays html content in system web browser
      * @param content The html content to display
      */
-    inline void launchHtml(const std::string& content)
+    static void launchHtml(const std::string& content)
     {
         std::string htmlPath = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getUserTempDirectory(), cbtek::common::utility::FileUtils::getRandomFileName(10,0)+".html");
         cbtek::common::utility::FileUtils::writeFileContents(htmlPath,content);
@@ -82,7 +104,7 @@ namespace UIRStatsUtils
      * @brief launchHelp Builds a url to the pdf item.  Launches system pdf viewer with url as filePath.
      * @param pdf The filename portion of full url path
      */
-    inline void launchHelp(const std::string& pdf)
+    static void launchHelp(const std::string& pdf)
     {
         std::string url = cbtek::common::utility::FileUtils::buildFilePath(cbtek::common::utility::SystemUtils::getCurrentExecutableDirectory(),"help/"+pdf);
         url = cbtek::common::utility::StringUtils::replace(url,"\\","/");
@@ -100,7 +122,7 @@ namespace UIRStatsUtils
      * @param combo
      * @param text
      */
-    inline void setCurrentText(QComboBox * combo, const std::string & text)
+    static void setCurrentText(QComboBox * combo, const std::string & text)
     {
         combo->setCurrentText(QString::fromStdString(text));
     }
@@ -110,7 +132,7 @@ namespace UIRStatsUtils
      * @param pixmapFileName
      * @return
      */
-    inline QPixmap getPixmap(const std::string & pixmapFileName)
+    static QPixmap getPixmap(const std::string & pixmapFileName)
     {
         if (cbtek::common::utility::FileUtils::fileExists(pixmapFileName))
         {
@@ -132,7 +154,7 @@ namespace UIRStatsUtils
      * @param iconFileName
      * @return
      */
-    inline QIcon getIcon(const std::string & iconFileName)
+    static QIcon getIcon(const std::string & iconFileName)
     {
         if (cbtek::common::utility::FileUtils::fileExists(iconFileName))
         {
@@ -153,7 +175,7 @@ namespace UIRStatsUtils
      * @brief getCurrentTheme
      * @return
      */
-    inline std::string getCurrentTheme()
+    static std::string getCurrentTheme()
     {
         std::string path = utils::RStatsUtils::getThemeSettingsFilePath();
         cbtek::common::utility::XMLReader xmlReader;
@@ -172,7 +194,7 @@ namespace UIRStatsUtils
      * @brief loadThemeSettings
      * @param app
      */
-    inline void loadThemeSettings(QApplication * app)
+    static void loadThemeSettings(QApplication * app)
     {
 
         // set the RAT-STATS icon
@@ -212,7 +234,7 @@ namespace UIRStatsUtils
      * the validation console is highlighted/focused.
      * @param widget The validation console list widget
      */
-    inline void highlightErrorInValidationConsole(QListWidget * widget)
+    static void highlightErrorInValidationConsole(QListWidget * widget)
     {
         for (int a1 = 0; a1 < widget->count(); ++a1)
         {
@@ -230,7 +252,7 @@ namespace UIRStatsUtils
     * @param columns Unique set of columns
     * @param comboBox The combobox widget to populate
     */
-    inline void populateWithColumns(const std::set<size_t>& columns,
+    static void populateWithColumns(const std::set<size_t>& columns,
                                     QComboBox *comboBox)
     {
         comboBox->clear();
@@ -246,7 +268,7 @@ namespace UIRStatsUtils
     * @param rows Unique set of rows
     * @param comboBox The combobox to populate
     */
-    inline void populateWithRows(const std::set<size_t>& rows,
+    static void populateWithRows(const std::set<size_t>& rows,
                                  QComboBox *comboBox)
     {
         comboBox->clear();
@@ -261,7 +283,7 @@ namespace UIRStatsUtils
      * @param table
      * @param sheetOut
      */
-    inline void bindUIToSheet(QTableWidget * table,
+    static void bindUIToSheet(QTableWidget * table,
                               oig::ratstats::utils::RStatsWorksheet& sheetOut)
     {
         sheetOut.clear();
@@ -321,7 +343,7 @@ namespace UIRStatsUtils
      * @param readOnly Makes the output table cells read only
      * @param disableAllFormatting Overrides any formatting settings in worksheet
      */
-    inline void bindSheetToUI(const oig::ratstats::utils::RStatsWorksheet &sheetIn,
+    static void bindSheetToUI(const oig::ratstats::utils::RStatsWorksheet &sheetIn,
                               QTableWidget *table,
                               bool checkableHeader = false,
                               int padRows=0,
@@ -449,7 +471,7 @@ namespace UIRStatsUtils
      * @param extension
      * @return
      */
-    inline QString setOutputFile(QCheckBox * checkBox,
+    static QString setOutputFile(QCheckBox * checkBox,
                               const QString& title,
                               const QString& extension)
     {
@@ -482,7 +504,7 @@ namespace UIRStatsUtils
      * @return Returns an action group and action pair to be used in module menu bar
      */
     template<typename ModuleType>
-    inline std::pair<QActionGroup *, QAction*> buildRecentSessions(
+    static std::pair<QActionGroup *, QAction*> buildRecentSessions(
                                      QWidget * parent,
                                      QAction * menuRecentAction,
                                      std::map<std::string,utils::RStatsModuleSessionDataPtr> &sessionMapOut,
@@ -572,7 +594,7 @@ namespace UIRStatsUtils
      * @param shortcut
      * @param font
      */
-    inline void initAction(QAction* action,
+    static void initAction(QAction* action,
                            const QString& icon,
                            const QString& shortcut,
                            const QFont& font = QFont())
@@ -589,7 +611,7 @@ namespace UIRStatsUtils
      * @param font
      * @param height
      */
-    inline void initButton(QPushButton* button,
+    static void initButton(QPushButton* button,
                            const QString& icon,
                            const QFont& font = QFont(),
                            int height = 32)
@@ -600,6 +622,6 @@ namespace UIRStatsUtils
         button->setMaximumHeight(height + 8);
         button->setFont(font);
     }
-}
+};
 }}}//end namespace
 

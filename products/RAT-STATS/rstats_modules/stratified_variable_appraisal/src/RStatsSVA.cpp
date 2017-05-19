@@ -161,18 +161,16 @@ void RStatsSVA::processSummaryTotals(RStatsSVAOutputData& summary, size_t index)
     summary.precisionAmount90 = m_summaryPrecisionAmount90(index) * static_cast<RStatsFloat>(summary.populationSize);
     summary.precisionAmount95 = m_summaryPrecisionAmount95(index) * static_cast<RStatsFloat>(summary.populationSize);
 
+    summary.precisionPercent80 = 0.;
+    summary.precisionPercent90 = 0.;
+    summary.precisionPercent95 = 0.;
+
     if (m_summaryPointEstimate(index) > 0)
     {
         summary.precisionPercent80 =  (m_summaryPrecisionAmount80(index) / m_summaryPointEstimate(index));
         summary.precisionPercent90 =  (m_summaryPrecisionAmount90(index) / m_summaryPointEstimate(index));
         summary.precisionPercent95 =  (m_summaryPrecisionAmount95(index) / m_summaryPointEstimate(index));
-    }
-    else
-    {
-        summary.precisionPercent80 = 0.;
-        summary.precisionPercent90 = 0.;
-        summary.precisionPercent95 = 0.;
-    }
+    }    
 
     summary.standardErrorMean = m_summaryStandardErrorMean(index) / static_cast<RStatsFloat>(summary.populationSize);
     summary.standardErrorTotal = m_summaryStandardErrorMean(index);

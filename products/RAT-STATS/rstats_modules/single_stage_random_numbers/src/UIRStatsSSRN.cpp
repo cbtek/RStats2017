@@ -215,6 +215,7 @@ void UIRStatsSSRN::onExecute()
         m_recentSessionsMap[sessionData.getSessionId()]=RStatsModuleSessionDataPtr(new RStatsSSRNSessionData(sessionData));
         RStatsUtils::saveRecentSession(m_recentSessionsMap[sessionData.getSessionId()]);
         updateRecentSessions();
+        m_ui->m_txtAuditName->setFocus();
     }
     catch (std::exception& e)
     {

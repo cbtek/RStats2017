@@ -388,6 +388,14 @@ void UIRStatsUVA::onLaunchNewWindow()
     (new UIRStatsUVA(NULL))->show();
 }
 
+void UIRStatsUVA::onResetFocus()
+{
+    m_ui->m_txtAuditName->selectAll();
+    m_ui->m_txtAuditName->setFocus();
+    std::cerr << "focus reset"<<std::endl;
+    m_ui->m_btnExecute->setFocusPolicy(Qt::StrongFocus);
+}
+
 void UIRStatsUVA::onUpdateDataFormatSelection()
 {    
     m_ui->m_cmbAuditedDataTable->setEnabled(false);
@@ -871,4 +879,3 @@ void UIRStatsUVA::resizeEvent(QResizeEvent *)
     }
 }
 }}}}//end namespace
-
