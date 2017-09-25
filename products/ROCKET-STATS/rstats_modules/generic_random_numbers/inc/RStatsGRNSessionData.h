@@ -1,5 +1,5 @@
 /*
-    RStatsSSRNSessionData.h
+    RStatsGRNSessionData.h
     
 
 */
@@ -13,22 +13,22 @@
 namespace cbtek {
 namespace rocketstats {
 namespace modules {
-namespace ssrn {
+namespace grn {
 
 static const std::string c_RECENT_SESSION_EXTENSION = "modules_ssrn";
 
 /**
- * @brief The RStatsSSRNSessionData class represents the custom session
- * data for single stage random numbers (SSRN)
+ * @brief The RStatsGRNSessionData class represents the custom session
+ * data for single stage random numbers (GRN)
  */
-class RStatsSSRNSessionData : public utils::RStatsModuleSessionDataImpl
+class RStatsGRNSessionData : public utils::RStatsModuleSessionDataImpl
 {
 public:
-	//! Constructor for RStatsSSRNSessionData
+    //! Constructor for RStatsGRNSessionData
 	/*!
-		Detailed description for RStatsSSRNSessionData
+        Detailed description for RStatsGRNSessionData
 	*/
-	RStatsSSRNSessionData();
+    RStatsGRNSessionData();
         /**
     * @brief Setter for m_seed
     * @param value to replace m_seed
@@ -106,7 +106,7 @@ public:
     void save(const std::string& url);
 
 	//! Destructor
-	~RStatsSSRNSessionData();	
+    ~RStatsGRNSessionData();
 
 private:
     std::string m_seed;

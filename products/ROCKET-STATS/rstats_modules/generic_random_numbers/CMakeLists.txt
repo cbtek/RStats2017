@@ -12,9 +12,7 @@ set(CURR_TARGET_HEADERS "${CURR_TARGET}_HEADERS")
 set(CURR_TARGET_HEADERS_NO_MOC "${CURR_TARGET}_HEADERS_NO_MOC")
 set(CURR_TARGET_RESOURCES "${CURR_TARGET}_RESOURCES")
 
-include_directories(src)
 include_directories(inc)
-include_directories(resx)
 
 include(${CMAKE_MODULE_PATH}/flags.cmake)
 

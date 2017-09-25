@@ -10,7 +10,6 @@ set(CURR_TARGET_FORMS "${CURR_TARGET}_FORMS")
 set(CURR_TARGET_HEADERS "${CURR_TARGET}_HEADERS")
 set(CURR_TARGET_HEADERS_NO_MOC "${CURR_TARGET}_HEADERS_NO_MOC")
 
-include_directories(src)
 include_directories(inc)
 
 set(CMAKE_AUTOMOC ON)
